@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Внесення даних - Предмети</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <div class="header-content">
+                <div>
+                    <h1>Внесення даних по предметах</h1>
+                    <p class="subtitle">Користувач: <strong>{{ user.name }}</strong></p>
+                </div>
+                <a href="{{ url_for('logout') }}" class="btn btn-secondary">Вийти</a>
+            </div>
+        </header>
+        
+        <main class="data-form">
+            <div class="form-card">
+                <form id="subjectDataForm">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="subject">Предмет *</label>
+                            <select id="subject" name="subject" required>
+                                <option value="">Виберіть предмет</option>
+                                {% for subject in subjects %}
+                                <option value="{{ subject }}">{{ subject }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="class">Клас *</label>
+                            <input 
+                                type="text" 
+                                id="class" 
+                                name="class" 
+                                required 
+                                placeholder="Наприклад: 11-А"
+                            >
+                        </div>
+                    </div>
+                    
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="student">Учень/учениця *</label>
+                            <input 
+                                type="text" 
+                                id="student" 
+                                name="student" 
+                                required 
+                                placeholder="Прізвище Ім'я"
+                            >
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="date">Дата</label>
+                            <input 
+                                type="date" 
+                                id="date" 
+                                name="date"
+                            >
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="grade">Оцінка/бал</label>
+                        <input 
+                            type="number" 
+                            id="grade" 
+                            name="grade" 
+                            min="1" 
+                            max="12" 
+                            placeholder="1-12"
+                        >
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="attendance">Відвідуваність</label>
+                        <select id="attendance" name="attendance">
+                            <option value="">Виберіть</option>
+                            <option value="present">Присутній/на</option>
+                            <option value="absent">Відсутній/на</option>
+                            <option value="late">Запізнився/лась</option>
+                            <option value="excused">Відсутній/на з поважної причини</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="notes">Примітки</label>
+                        <textarea 
+                            id="notes" 
+                            name="notes" 
+                            rows="3"
+                            placeholder="Додаткова інформація (необов'язково)"
+                        ></textarea>
+                    </div>
+                    
+                    <div class="form-actions">
+                        <button type="submit" class="btn btn-primary">Зберегти запис</button>
+                        <button type="reset" class="btn btn-secondary">Очистити форму</button>
+                    </div>
+                </form>
+                
+                <div id="message" class="message" style="display: none;"></div>
+            </div>
+            
+            <div class="info-card">
+                <h3>Інструкція:</h3>
+                <ol>
+                    <li>Виберіть предмет зі списку</li>
+                    <li>Вкажіть клас (наприклад: 11-А, 10-Б)</li>
+                    <li>Введіть ПІБ учня/учениці</li>
+                    <li>Заповніть необхідні поля (оцінка, відвідуваність)</li>
+                    <li>Натисніть "Зберегти запис"</li>
+                </ol>
+                <p><strong>Примітка:</strong> Всі дані вносяться через цей режим. Режими "Класи" та "Школа" призначені для перегляду та коригування.</p>
+            </div>
+        </main>
+        
+        <footer>
+            <p>Коломийський ліцей "Коломийська гімназія імені Михайла Грушевського" © 2025</p>
+        </footer>
+    </div>
+    
+    <script src="{{ url_for('static', filename='js/subject_form.js') }}"></script>
+</body>
+</html>

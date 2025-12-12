@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Перегляд даних - Клас</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <div class="header-content">
+                <div>
+                    <h1>Перегляд даних класу</h1>
+                    <p class="subtitle">Користувач: <strong>{{ user.name }}</strong> | Клас: <strong>{{ user.get('class', 'Не вказано') }}</strong></p>
+                </div>
+                <a href="{{ url_for('logout') }}" class="btn btn-secondary">Вийти</a>
+            </div>
+        </header>
+        
+        <main class="data-view">
+            <div class="view-card">
+                <h2>Дані по класу {{ user.get('class', '') }}</h2>
+                
+                <div class="filter-section">
+                    <div class="form-group">
+                        <label for="subjectFilter">Фільтр по предмету:</label>
+                        <select id="subjectFilter">
+                            <option value="">Всі предмети</option>
+                            {% for subject, data in subjects_data.items() %}
+                            <option value="{{ subject }}">{{ subject }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="studentFilter">Фільтр по учню:</label>
+                        <input type="text" id="studentFilter" placeholder="Прізвище учня">
+                    </div>
+                    
+                    <button onclick="applyFilters()" class="btn btn-primary">Застосувати фільтри</button>
+                </div>
+                
+                <div id="dataTable" class="data-table">
+                    {% if subjects_data %}
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Предмет</th>
+                                <th>Учень/учениця</th>
+                                <th>Дата</th>
+                                <th>Оцінка</th>
+                                <th>Відвідуваність</th>
+                                <th>Примітки</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tableBody">
+                            {% for subject, classes in subjects_data.items() %}
+                                {% for class_name, students in classes.items() %}
+                                    {% if class_name == user.get('class', '') %}
+                                        {% for student, dates in students.items() %}
+                                            {% for date, record in dates.items() %}
+                                            <tr data-subject="{{ subject }}" data-student="{{ student }}">
+                                                <td>{{ subject }}</td>
+                                                <td>{{ student }}</td>
+                                                <td>{{ date }}</td>
+                                                <td>{{ record.get('grade', '-') }}</td>
+                                                <td>
+                                                    {% if record.get('attendance') == 'present' %}
+                                                        ✓ Присутній/на
+                                                    {% elif record.get('attendance') == 'absent' %}
+                                                        ✗ Відсутній/на
+                                                    {% elif record.get('attendance') == 'late' %}
+                                                        ⏰ Запізнився/лась
+                                                    {% elif record.get('attendance') == 'excused' %}
+                                                        ⚠ Поважна причина
+                                                    {% else %}
+                                                        -
+                                                    {% endif %}
+                                                </td>
+                                                <td>{{ record.get('notes', '') }}</td>
+                                            </tr>
+                                            {% endfor %}
+                                        {% endfor %}
+                                    {% endif %}
+                                {% endfor %}
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                    {% else %}
+                    <div class="no-data">
+                        <p>📊 Даних по класу поки немає</p>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+            
+            <div class="stats-card">
+                <h3>Статистика</h3>
+                <div id="statistics">
+                    <p>Завантаження статистики...</p>
+                </div>
+            </div>
+        </main>
+        
+        <footer>
+            <p>Коломийський ліцей "Коломийська гімназія імені Михайла Грушевського" © 2025</p>
+        </footer>
+    </div>
+    
+    <script src="{{ url_for('static', filename='js/class_form.js') }}"></script>
+</body>
+</html>

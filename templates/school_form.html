@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Адміністрування - Школа</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <div class="header-content">
+                <div>
+                    <h1>Адміністрування школи</h1>
+                    <p class="subtitle">Загальна статистика та управління даними</p>
+                </div>
+                <a href="{{ url_for('logout') }}" class="btn btn-secondary">Вийти</a>
+            </div>
+        </header>
+        
+        <main class="admin-view">
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-icon">📚</div>
+                    <div class="stat-content">
+                        <h3>Предмети</h3>
+                        <p class="stat-number">{{ subjects_data|length }}</p>
+                    </div>
+                </div>
+                
+                <div class="stat-card">
+                    <div class="stat-icon">👥</div>
+                    <div class="stat-content">
+                        <h3>Класи</h3>
+                        <p class="stat-number" id="classCount">-</p>
+                    </div>
+                </div>
+                
+                <div class="stat-card">
+                    <div class="stat-icon">👨‍🎓</div>
+                    <div class="stat-content">
+                        <h3>Учні</h3>
+                        <p class="stat-number" id="studentCount">-</p>
+                    </div>
+                </div>
+                
+                <div class="stat-card">
+                    <div class="stat-icon">📝</div>
+                    <div class="stat-content">
+                        <h3>Записи</h3>
+                        <p class="stat-number" id="recordCount">-</p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="view-card">
+                <h2>Фільтри перегляду даних</h2>
+                
+                <div class="filter-section">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="subjectFilter">Предмет:</label>
+                            <select id="subjectFilter">
+                                <option value="">Всі предмети</option>
+                                {% for subject in subjects_data.keys() %}
+                                <option value="{{ subject }}">{{ subject }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="classFilter">Клас:</label>
+                            <select id="classFilter">
+                                <option value="">Всі класи</option>
+                            </select>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="studentFilter">Учень:</label>
+                            <input type="text" id="studentFilter" placeholder="Прізвище учня">
+                        </div>
+                    </div>
+                    
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="dateFrom">Від дати:</label>
+                            <input type="date" id="dateFrom">
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="dateTo">До дати:</label>
+                            <input type="date" id="dateTo">
+                        </div>
+                    </div>
+                    
+                    <div class="form-actions">
+                        <button onclick="applyFilters()" class="btn btn-primary">Застосувати фільтри</button>
+                        <button onclick="resetFilters()" class="btn btn-secondary">Скинути</button>
+                        <button onclick="exportData()" class="btn btn-success">📥 Експорт даних</button>
+                    </div>
+                </div>
+                
+                <div id="dataTable" class="data-table">
+                    {% if subjects_data %}
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Предмет</th>
+                                <th>Клас</th>
+                                <th>Учень/учениця</th>
+                                <th>Дата</th>
+                                <th>Оцінка</th>
+                                <th>Відвідуваність</th>
+                                <th>Примітки</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tableBody">
+                            {% for subject, classes in subjects_data.items() %}
+                                {% for class_name, students in classes.items() %}
+                                    {% for student, dates in students.items() %}
+                                        {% for date, record in dates.items() %}
+                                        <tr data-subject="{{ subject }}" data-class="{{ class_name }}" data-student="{{ student }}" data-date="{{ date }}">
+                                            <td>{{ subject }}</td>
+                                            <td>{{ class_name }}</td>
+                                            <td>{{ student }}</td>
+                                            <td>{{ date }}</td>
+                                            <td>{{ record.get('grade', '-') }}</td>
+                                            <td>
+                                                {% if record.get('attendance') == 'present' %}
+                                                    ✓ Присутній/на
+                                                {% elif record.get('attendance') == 'absent' %}
+                                                    ✗ Відсутній/на
+                                                {% elif record.get('attendance') == 'late' %}
+                                                    ⏰ Запізнився/лась
+                                                {% elif record.get('attendance') == 'excused' %}
+                                                    ⚠ Поважна причина
+                                                {% else %}
+                                                    -
+                                                {% endif %}
+                                            </td>
+                                            <td>{{ record.get('notes', '') }}</td>
+                                        </tr>
+                                        {% endfor %}
+                                    {% endfor %}
+                                {% endfor %}
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                    {% else %}
+                    <div class="no-data">
+                        <p>📊 Даних у системі поки немає</p>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+            
+            <div class="view-card">
+                <h2>Аналітика по предметах</h2>
+                <div id="subjectAnalytics">
+                    <p>Завантаження аналітики...</p>
+                </div>
+            </div>
+        </main>
+        
+        <footer>
+            <p>Коломийський ліцей "Коломийська гімназія імені Михайла Грушевського" © 2025</p>
+        </footer>
+    </div>
+    
+    <script src="{{ url_for('static', filename='js/school_form.js') }}"></script>
+</body>
+</html>

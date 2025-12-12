@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Авторизація - Моніторинг якості освіти</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Коломийський ліцей "Коломийська гімназія імені Михайла Грушевського"</h1>
+            <h2>Коломийської міської ради Івано-Франківської області</h2>
+            <h3>Моніторинг якості освіти</h3>
+        </header>
+        
+        <main class="login-form">
+            <div class="form-card">
+                <h2 style="text-align: center; margin-bottom: 2rem; color: var(--primary-color);">Авторизація</h2>
+                
+                {% if error %}
+                <div class="error-message">
+                    {{ error }}
+                </div>
+                {% endif %}
+                
+                <form method="POST" action="{{ url_for('login') }}">
+                    <div class="form-group">
+                        <label for="email">Електронна пошта *</label>
+                        <input 
+                            type="email" 
+                            id="email" 
+                            name="email" 
+                            required 
+                            placeholder="example@school.com"
+                            autocomplete="email"
+                        >
+                    </div>
+                    
+                    <button type="submit" class="btn btn-primary" style="width: 100%;">Увійти</button>
+                </form>
+            </div>
+            
+            <div class="info-card">
+                <h3>Приклади облікових записів:</h3>
+                <ul>
+                    <li><strong>Адміністрація:</strong> tkachuk_volodymyr@kolgym.if.ua</li>
+                    <li><strong>Класний керівник:</strong> kudyba_liliya@kolgym.if.ua (5-А)</li>
+                    <li><strong>Вчитель:</strong> petranyuk_ulyana@kolgym.if.ua</li>
+                </ul>
+                <p style="margin-top: 1rem; font-size: 0.9rem; color: var(--secondary-color);">
+                    <strong>Формат email:</strong> прізвище_ім'я@kolgym.if.ua
+                </p>
+            </div>
+        </main>
+        
+        <footer>
+            <p>Коломийський ліцей "Коломийська гімназія імені Михайла Грушевського" © 2025</p>
+        </footer>
+    </div>
+</body>
+</html>

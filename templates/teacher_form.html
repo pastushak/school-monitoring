@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Внесення даних - Моніторинг якості освіти</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+    <div class="container">
+        <header class="compact-header">
+            <div class="header-wrapper">
+                <div class="header-info">
+                    <h1>Коломийський ліцей "Коломийська гімназія імені Михайла Грушевського"</h1>
+                    <h2>Коломийської міської ради Івано-Франківської області</h2>
+                    <h3>МОНІТОРИНГ ЯКОСТІ ОСВІТИ - ВНЕСЕННЯ ДАНИХ</h3>
+                </div>
+                <div class="header-actions">
+                    <div class="user-info">Користувач: <strong>{{ teacher_name }}</strong></div>
+                    <div style="display: flex; gap: 0.5rem;">
+                        {% if session.available_roles and session.available_roles|length > 1 %}
+                        <a href="{{ url_for('mode_selection') }}" class="btn btn-primary btn-sm">Змінити режим</a>
+                        {% endif %}
+                        <a href="{{ url_for('logout') }}" class="btn btn-secondary btn-sm">Вийти</a>
+                    </div>
+                </div>
+            </div>
+        </header>
+        
+        <main class="monitoring-form-compact">
+            <div class="form-card-compact">
+                <form id="monitoringForm">
+                    <!-- Компактна сітка вибору параметрів -->
+                    <div class="selection-grid">
+                        <div class="form-group-inline">
+                            <label for="year">Навчальний рік *</label>
+                            <select id="year" name="year" required>
+                                <option value="">Оберіть рік</option>
+                                {% for year in academic_years %}
+                                <option value="{{ year }}">{{ year }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        
+                        <div class="form-group-inline">
+                            <label for="class">Клас *</label>
+                            <select id="class" name="class" required disabled>
+                                <option value="">Оберіть рік</option>
+                            </select>
+                        </div>
+                        
+                        <div class="form-group-inline">
+                            <label for="teacher">Вчитель *</label>
+                            <select id="teacher" name="teacher" required disabled>
+                                <option value="">Оберіть клас</option>
+                            </select>
+                        </div>
+                        
+                        <div class="form-group-inline">
+                            <label for="subject">Предмет *</label>
+                            <select id="subject" name="subject" required disabled>
+                                <option value="">Оберіть вчителя</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <!-- Дані для обрахунку -->
+                    <div class="data-section-compact" id="dataSection" style="display: none;">
+                        <div class="section-header">
+                            <h3>Дані для обрахунку</h3>
+                            <div class="student-count-inline">
+                                <label>Кількість учнів:</label>
+                                <input type="number" id="studentCount" readonly>
+                            </div>
+                        </div>
+                        
+                        <!-- Таблиця оцінок -->
+                        <div class="grades-table-compact">
+                            <h4>Успішність за групами оцінок <small>(введіть кількість учнів)</small></h4>
+                            
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th colspan="3" class="high-level">високий рівень</th>
+                                        <th colspan="3" class="sufficient-level">достатній рівень</th>
+                                        <th colspan="3" class="average-level">середній рівень</th>
+                                        <th colspan="3" class="initial-level">початковий рівень</th>
+                                    </tr>
+                                    <tr>
+                                        <th>"12"</th>
+                                        <th>"11"</th>
+                                        <th>"10"</th>
+                                        <th>"9"</th>
+                                        <th>"8"</th>
+                                        <th>"7"</th>
+                                        <th>"6"</th>
+                                        <th>"5"</th>
+                                        <th>"4"</th>
+                                        <th>"3"</th>
+                                        <th>"2"</th>
+                                        <th>"1"</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td><input type="number" id="grade12" min="0" value="0"></td>
+                                        <td><input type="number" id="grade11" min="0" value="0"></td>
+                                        <td><input type="number" id="grade10" min="0" value="0"></td>
+                                        <td><input type="number" id="grade9" min="0" value="0"></td>
+                                        <td><input type="number" id="grade8" min="0" value="0"></td>
+                                        <td><input type="number" id="grade7" min="0" value="0"></td>
+                                        <td><input type="number" id="grade6" min="0" value="0"></td>
+                                        <td><input type="number" id="grade5" min="0" value="0"></td>
+                                        <td><input type="number" id="grade4" min="0" value="0"></td>
+                                        <td><input type="number" id="grade3" min="0" value="0"></td>
+                                        <td><input type="number" id="grade2" min="0" value="0"></td>
+                                        <td><input type="number" id="grade1" min="0" value="0"></td>
+                                    </tr>
+                                    <tr class="percentage-row">
+                                        <td id="percent12">0%</td>
+                                        <td id="percent11">0%</td>
+                                        <td id="percent10">0%</td>
+                                        <td id="percent9">0%</td>
+                                        <td id="percent8">0%</td>
+                                        <td id="percent7">0%</td>
+                                        <td id="percent6">0%</td>
+                                        <td id="percent5">0%</td>
+                                        <td id="percent4">0%</td>
+                                        <td id="percent3">0%</td>
+                                        <td id="percent2">0%</td>
+                                        <td id="percent1">0%</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                        
+                        <!-- Результати розрахунків - компактно -->
+                        <div class="results-section-compact">
+                            <h4>Автоматичні розрахунки</h4>
+                            
+                            <div class="results-grid">
+                                <div class="result-item">
+                                    <span class="result-label">Середній бал:</span>
+                                    <span class="result-value" id="avgScore">0</span>
+                                </div>
+                                <div class="result-item">
+                                    <span class="result-label">Ступінь навченості:</span>
+                                    <span class="result-value" id="learningLevel">0%</span>
+                                </div>
+                                <div class="result-item wide">
+                                    <span class="result-label">Рівень:</span>
+                                    <span class="result-value-text" id="learningLevelText">-</span>
+                                </div>
+                                <div class="result-item">
+                                    <span class="result-label">КЯЗ:</span>
+                                    <span class="result-value" id="qualityCoeff">0%</span>
+                                </div>
+                                <div class="result-item">
+                                    <span class="result-label">ЯЗ:</span>
+                                    <span class="result-value" id="qualityPercent">0%</span>
+                                </div>
+                                <div class="result-item">
+                                    <span class="result-label">КР:</span>
+                                    <span class="result-value" id="resultCoeff">0%</span>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="form-actions-compact">
+                            <button type="button" id="calculateBtn" class="btn btn-primary">Розрахувати</button>
+                            <button type="submit" class="btn btn-success">Зберегти</button>
+                            <button type="reset" class="btn btn-secondary">Очистити</button>
+                        </div>
+                    </div>
+                </form>
+                
+                <div id="message" class="message" style="display: none;"></div>
+            </div>
+        </main>
+        
+        <footer>
+            <p>Коломийський ліцей "Коломийська гімназія імені Михайла Грушевського" © 2025</p>
+        </footer>
+    </div>
+    
+    <script src="{{ url_for('static', filename='js/monitoring.js') }}"></script>
+</body>
+</html>

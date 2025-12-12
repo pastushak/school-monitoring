@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Вибір режиму</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Коломийський ліцей "Коломийська гімназія імені Михайла Грушевського"</h1>
+            <h2>Коломийської міської ради Івано-Франківської області</h2>
+            <h3>Моніторинг якості освіти</h3>
+        </header>
+        
+        <main class="mode-selection">
+            <div class="mode-card-wrapper">
+                <h2 style="text-align: center; margin-bottom: 2rem; color: var(--primary-color);">
+                    Вітаємо, {{ user_name }}!
+                </h2>
+                <p style="text-align: center; margin-bottom: 2rem; color: var(--secondary-color);">
+                    Оберіть режим роботи:
+                </p>
+                
+                <div class="mode-grid">
+                    <!-- Завжди доступний режим вчителя -->
+                    <a href="{{ url_for('switch_mode', mode='teacher') }}" class="mode-card teacher-mode">
+                        <div class="icon">📚</div>
+                        <h3>Вчитель</h3>
+                        <p>Внесення даних по предметах</p>
+                    </a>
+                    
+                    <!-- Режим класного керівника -->
+                    {% if 'class_head' in available_roles %}
+                    <a href="{{ url_for('switch_mode', mode='class_head') }}" class="mode-card class-mode">
+                        <div class="icon">👥</div>
+                        <h3>Класний керівник</h3>
+                        <p>Звіт по класу {{ user_class }}</p>
+                    </a>
+                    {% endif %}
+                    
+                    <!-- Режим адміністратора -->
+                    {% if 'admin' in available_roles %}
+                    <a href="{{ url_for('switch_mode', mode='admin') }}" class="mode-card admin-mode">
+                        <div class="icon">🏫</div>
+                        <h3>Адміністрація</h3>
+                        <p>Звіт по школі</p>
+                    </a>
+                    {% endif %}
+                </div>
+                
+                <div style="text-align: center; margin-top: 2rem;">
+                    <a href="{{ url_for('logout') }}" class="btn btn-secondary">Вийти</a>
+                </div>
+            </div>
+        </main>
+        
+        <footer>
+            <p>ЦПРПП Коломийської міської ради © 2024</p>
+        </footer>
+    </div>
+</body>
+</html>

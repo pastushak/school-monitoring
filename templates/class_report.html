@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Звіт по класу</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <div style="max-width: 1400px; margin: 0 auto; display: flex; justify-content: space-between; align-items: center;">
+                <div>
+                    <h1>Коломийський ліцей "Коломийська гімназія імені Михайла Грушевського"</h1>
+                    <h2>Коломийської міської ради Івано-Франківської області</h2>
+                    <h3>Попредметний звіт за семестр</h3>
+                </div>
+                <div style="display: flex; gap: 0.5rem;">
+                    {% if session.available_roles and session.available_roles|length > 1 %}
+                    <a href="{{ url_for('mode_selection') }}" class="btn btn-primary btn-sm">Змінити режим</a>
+                    {% endif %}
+                    <a href="{{ url_for('logout') }}" class="btn btn-secondary btn-sm">Вийти</a>
+                </div>
+            </div>
+        </header>
+        
+        <main class="report-page">
+            <div class="form-card">
+                <div class="filter-section">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="yearFilter">Навчальний рік *</label>
+                            <select id="yearFilter" required>
+                                <option value="">Оберіть навчальний рік</option>
+                                {% for year in academic_years %}
+                                <option value="{{ year }}">{{ year }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="classFilter">Клас *</label>
+                            <select id="classFilter" required disabled>
+                                <option value="">Спочатку оберіть рік</option>
+                                {% for class_name in classes %}
+                                <option value="{{ class_name }}">{{ class_name }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="semesterFilter">Семестр *</label>
+                            <select id="semesterFilter" required>
+                                <option value="1">I семестр</option>
+                                <option value="2">II семестр</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <div class="form-actions">
+                        <button id="loadReportBtn" class="btn btn-primary">Завантажити звіт</button>
+                    </div>
+                </div>
+                
+                <!-- Прогрес бар -->
+                <div id="progressSection" style="display: none; margin: 2rem 0;">
+                    <h4>Прогрес заповнення</h4>
+                    <div class="progress-bar">
+                        <div class="progress-fill" id="progressFill"></div>
+                        <span class="progress-text" id="progressText">0%</span>
+                    </div>
+                    <p style="text-align: center; margin-top: 0.5rem; color: var(--secondary-color);">
+                        Заповнено: <strong id="filledCount">0</strong> з <strong id="totalCount">0</strong> предметів
+                    </p>
+                </div>
+                
+                <!-- Таблиця звіту -->
+                <div id="reportTable" style="display: none; margin-top: 2rem;">
+                    <h3 style="text-align: center; margin-bottom: 1rem;">
+                        Попредметний звіт за <span id="reportTitle"></span>
+                    </h3>
+                    
+                    <div class="data-table">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>№</th>
+                                    <th>Предмет</th>
+                                    <th>н/а (%)</th>
+                                    <th>початковий</th>
+                                    <th>середній</th>
+                                    <th>достатній</th>
+                                    <th>високий</th>
+                                    <th>СБ</th>
+                                    <th>СН(%)</th>
+                                    <th>СН</th>
+                                    <th>КЯЗ</th>
+                                    <th>ЯЗ</th>
+                                    <th>КР</th>
+                                </tr>
+                            </thead>
+                            <tbody id="reportBody">
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                
+                <div id="message" class="message" style="display: none;"></div>
+            </div>
+        </main>
+        
+        <footer>
+            <p>Коломийський ліцей "Коломийська гімназія імені Михайла Грушевського" © 2025</p>
+        </footer>
+    </div>
+    
+    <script src="{{ url_for('static', filename='js/class_report.js') }}"></script>
+</body>
+</html>

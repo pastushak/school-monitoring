@@ -1,0 +1,985 @@
+:root {
+    --primary-color: #2563eb;
+    --secondary-color: #64748b;
+    --success-color: #16a34a;
+    --danger-color: #dc2626;
+    --warning-color: #ea580c;
+    --bg-color: #f8fafc;
+    --card-bg: #ffffff;
+    --text-color: #1e293b;
+    --border-color: #e2e8f0;
+    --shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+    
+    --high-level: #d4edda;
+    --sufficient-level: #fff3cd;
+    --average-level: #f8d7da;
+    --initial-level: #f5c6cb;
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background-color: var(--bg-color);
+    color: var(--text-color);
+    line-height: 1.6;
+}
+
+.container {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+}
+
+header {
+    background: linear-gradient(135deg, var(--primary-color), #1d4ed8);
+    color: white;
+    padding: 2rem;
+    box-shadow: var(--shadow-lg);
+    text-align: center;
+}
+
+header h1 {
+    font-size: 1.5rem;
+    margin-bottom: 0.5rem;
+}
+
+header h2 {
+    font-size: 1.1rem;
+    margin-bottom: 0.5rem;
+    opacity: 0.9;
+}
+
+header h3 {
+    font-size: 1.3rem;
+    margin-top: 1rem;
+    font-weight: bold;
+    text-transform: uppercase;
+}
+
+main {
+    flex: 1;
+    max-width: 1400px;
+    margin: 2rem auto;
+    padding: 0 1rem;
+    width: 100%;
+}
+
+.monitoring-form {
+    padding: 1rem 0;
+}
+
+.form-card {
+    background: var(--card-bg);
+    border-radius: 12px;
+    padding: 2rem;
+    box-shadow: var(--shadow);
+}
+
+/* Форми */
+.form-group {
+    margin-bottom: 1.5rem;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 0.5rem;
+    font-weight: 600;
+    color: var(--text-color);
+}
+
+.form-group select,
+.form-group input[type="number"],
+.form-group input[readonly] {
+    width: 100%;
+    padding: 0.75rem;
+    border: 2px solid var(--border-color);
+    border-radius: 8px;
+    font-size: 1rem;
+    transition: border-color 0.3s ease;
+}
+
+.form-group select:focus,
+.form-group input:focus {
+    outline: none;
+    border-color: var(--primary-color);
+}
+
+.form-group select:disabled,
+.form-group input:disabled {
+    background-color: #f1f5f9;
+    cursor: not-allowed;
+}
+
+/* Секція даних */
+.data-section {
+    margin-top: 2rem;
+    padding-top: 2rem;
+    border-top: 2px solid var(--border-color);
+}
+
+.data-section h3 {
+    color: var(--primary-color);
+    margin-bottom: 1.5rem;
+    text-align: center;
+}
+
+.data-section h4 {
+    margin-bottom: 1rem;
+    color: var(--text-color);
+}
+
+.data-section h4 small {
+    font-size: 0.85rem;
+    color: var(--secondary-color);
+    font-weight: normal;
+}
+
+.student-count-group {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    margin-bottom: 2rem;
+    padding: 1rem;
+    background: #f0f9ff;
+    border-radius: 8px;
+    border-left: 4px solid var(--primary-color);
+}
+
+.student-count-group label {
+    font-weight: 600;
+    font-size: 1.1rem;
+}
+
+.student-count-group input {
+    width: 100px;
+    text-align: center;
+    font-size: 1.2rem;
+    font-weight: bold;
+    border: 2px solid var(--primary-color);
+}
+
+/* Таблиця оцінок */
+.grades-table {
+    margin: 2rem 0;
+    overflow-x: auto;
+}
+
+.grades-table table {
+    width: 100%;
+    border-collapse: collapse;
+    background: white;
+    box-shadow: var(--shadow);
+    border-radius: 8px;
+    overflow: hidden;
+}
+
+.grades-table thead th {
+    padding: 0.75rem;
+    text-align: center;
+    font-weight: 600;
+    border: 1px solid var(--border-color);
+}
+
+.grades-table .high-level {
+    background-color: var(--high-level);
+    color: #155724;
+}
+
+.grades-table .sufficient-level {
+    background-color: var(--sufficient-level);
+    color: #856404;
+}
+
+.grades-table .average-level {
+    background-color: var(--average-level);
+    color: #721c24;
+}
+
+.grades-table .initial-level {
+    background-color: var(--initial-level);
+    color: #721c24;
+}
+
+.grades-table tbody td {
+    padding: 0.5rem;
+    text-align: center;
+    border: 1px solid var(--border-color);
+}
+
+.grades-table tbody input {
+    width: 60px;
+    padding: 0.5rem;
+    text-align: center;
+    border: 2px solid var(--border-color);
+    border-radius: 4px;
+    font-size: 1rem;
+}
+
+.grades-table tbody input:focus {
+    outline: none;
+    border-color: var(--primary-color);
+}
+
+.percentage-row td {
+    background-color: #f8fafc;
+    font-weight: 600;
+    color: var(--secondary-color);
+}
+
+/* Таблиця результатів */
+.results-section {
+    margin: 2rem 0;
+    padding: 1.5rem;
+    background: #f0f9ff;
+    border-radius: 8px;
+}
+
+.results-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 1rem;
+}
+
+.results-table td {
+    padding: 0.75rem;
+    border: 1px solid var(--border-color);
+    background: white;
+}
+
+.results-table td:first-child {
+    width: 40%;
+}
+
+.results-table td:nth-child(2) {
+    width: 20%;
+    text-align: center;
+    font-weight: bold;
+    font-size: 1.1rem;
+    color: var(--primary-color);
+}
+
+.results-table td:nth-child(3) {
+    width: 40%;
+    text-align: center;
+    font-weight: 600;
+    background-color: #fffbeb;
+}
+
+#learningLevelText {
+    font-size: 0.95rem;
+}
+
+/* Кнопки */
+.btn {
+    padding: 0.75rem 1.5rem;
+    border: none;
+    border-radius: 8px;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    text-decoration: none;
+    display: inline-block;
+}
+
+.btn-primary {
+    background: var(--primary-color);
+    color: white;
+}
+
+.btn-primary:hover {
+    background: #1d4ed8;
+    transform: translateY(-2px);
+    box-shadow: var(--shadow);
+}
+
+.btn-secondary {
+    background: var(--secondary-color);
+    color: white;
+}
+
+.btn-secondary:hover {
+    background: #475569;
+}
+
+.btn-success {
+    background: var(--success-color);
+    color: white;
+}
+
+.btn-success:hover {
+    background: #15803d;
+}
+
+.form-actions {
+    display: flex;
+    gap: 1rem;
+    margin-top: 2rem;
+    justify-content: center;
+}
+
+/* Повідомлення */
+.message {
+    padding: 1rem;
+    border-radius: 8px;
+    margin-top: 1rem;
+    text-align: center;
+}
+
+.message.success {
+    background: #d1fae5;
+    color: #065f46;
+    border-left: 4px solid var(--success-color);
+}
+
+.message.error {
+    background: #fee2e2;
+    color: #991b1b;
+    border-left: 4px solid var(--danger-color);
+}
+
+.message.warning {
+    background: #fff3cd;
+    color: #856404;
+    border-left: 4px solid var(--warning-color);
+}
+
+/* Footer */
+footer {
+    background: var(--text-color);
+    color: white;
+    text-align: center;
+    padding: 1.5rem;
+    margin-top: auto;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    header h1 {
+        font-size: 1.2rem;
+    }
+    
+    header h2 {
+        font-size: 0.9rem;
+    }
+    
+    header h3 {
+        font-size: 1.1rem;
+    }
+    
+    .form-actions {
+        flex-direction: column;
+    }
+    
+    .grades-table {
+        font-size: 0.85rem;
+    }
+    
+    .grades-table tbody input {
+        width: 45px;
+        padding: 0.3rem;
+        font-size: 0.9rem;
+    }
+    
+    .results-table td {
+        padding: 0.5rem;
+        font-size: 0.9rem;
+    }
+    
+    .student-count-group {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+}
+
+@media (max-width: 480px) {
+    .grades-table thead th {
+        padding: 0.4rem;
+        font-size: 0.75rem;
+    }
+    
+    .grades-table tbody input {
+        width: 35px;
+    }
+}
+
+/* Прогрес бар */
+.progress-bar {
+    position: relative;
+    width: 100%;
+    height: 40px;
+    background-color: #e2e8f0;
+    border-radius: 20px;
+    overflow: hidden;
+    box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.progress-bar-large {
+    height: 60px;
+}
+
+.progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, #16a34a, #22c55e);
+    transition: width 0.5s ease;
+    position: relative;
+}
+
+.progress-text {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    font-weight: bold;
+    font-size: 1.2rem;
+    color: var(--text-color);
+    z-index: 2;
+}
+
+.progress-bar-large .progress-text {
+    font-size: 1.5rem;
+}
+
+/* Сторінка звітів */
+.report-page {
+    max-width: 1600px;
+}
+
+.data-table table {
+    font-size: 0.9rem;
+}
+
+.data-table th {
+    background: var(--primary-color);
+    color: white;
+    font-weight: 600;
+    padding: 0.75rem 0.5rem;
+}
+
+.data-table td {
+    padding: 0.5rem;
+    text-align: center;
+}
+
+.data-table tr.total-row {
+    background: #fffbeb;
+    font-weight: bold;
+}
+
+.data-table tr.total-row td {
+    border-top: 3px solid var(--primary-color);
+}
+
+.status-filled {
+    color: #16a34a;
+    font-weight: bold;
+}
+
+.status-empty {
+    color: #dc2626;
+    font-style: italic;
+}
+
+.mini-progress {
+    display: inline-block;
+    width: 60px;
+    height: 20px;
+    background: #e2e8f0;
+    border-radius: 10px;
+    overflow: hidden;
+    position: relative;
+    vertical-align: middle;
+}
+
+.mini-progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, #16a34a, #22c55e);
+}
+
+/* Адаптивність для звітів */
+@media (max-width: 1200px) {
+    .data-table {
+        font-size: 0.8rem;
+    }
+    
+    .data-table th,
+    .data-table td {
+        padding: 0.4rem 0.2rem;
+    }
+}
+
+@media (max-width: 768px) {
+    .data-table {
+        font-size: 0.7rem;
+    }
+    
+    .progress-bar {
+        height: 30px;
+    }
+    
+    .progress-text {
+        font-size: 1rem;
+    }
+}
+
+/* Покращена форма авторизації */
+.login-form {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 2rem;
+    max-width: 600px;
+    margin: 0 auto;
+}
+
+.login-form .form-card {
+    background: var(--card-bg);
+    border-radius: 16px;
+    padding: 3rem;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+}
+
+.login-form .form-card h2 {
+    text-align: center;
+    margin-bottom: 2rem;
+    color: var(--primary-color);
+    font-size: 1.8rem;
+}
+
+.login-form .form-group {
+    margin-bottom: 2rem;
+}
+
+.login-form .form-group label {
+    display: block;
+    margin-bottom: 0.75rem;
+    font-weight: 600;
+    color: var(--text-color);
+    font-size: 1.05rem;
+}
+
+.login-form .form-group input[type="email"] {
+    width: 100%;
+    padding: 1rem 1.25rem;
+    border: 2px solid var(--border-color);
+    border-radius: 10px;
+    font-size: 1.05rem;
+    transition: all 0.3s ease;
+    background-color: #f8fafc;
+}
+
+.login-form .form-group input[type="email"]:focus {
+    outline: none;
+    border-color: var(--primary-color);
+    background-color: white;
+    box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.1);
+}
+
+.login-form .form-group input[type="email"]::placeholder {
+    color: #94a3b8;
+}
+
+.login-form .btn-primary {
+    width: 100%;
+    padding: 1rem;
+    font-size: 1.1rem;
+    border-radius: 10px;
+    margin-top: 1rem;
+}
+
+/* Info card на сторінці логіну */
+.login-form .info-card {
+    background: linear-gradient(135deg, #f0f9ff, #e0f2fe);
+    border-left: 5px solid var(--primary-color);
+    border-radius: 12px;
+    padding: 2rem;
+}
+
+.login-form .info-card h3 {
+    margin-bottom: 1.25rem;
+    color: var(--primary-color);
+    font-size: 1.3rem;
+}
+
+.login-form .info-card ul {
+    list-style: none;
+    padding: 0;
+}
+
+.login-form .info-card li {
+    padding: 0.75rem 0;
+    border-bottom: 1px solid rgba(37, 99, 235, 0.1);
+    font-size: 0.95rem;
+}
+
+.login-form .info-card li:last-child {
+    border-bottom: none;
+}
+
+.login-form .info-card strong {
+    color: var(--primary-color);
+    font-weight: 600;
+}
+
+.login-form .info-card p {
+    margin-top: 1.5rem;
+    padding-top: 1.5rem;
+    border-top: 2px solid rgba(37, 99, 235, 0.15);
+}
+
+/* Повідомлення про помилку */
+.login-form .error-message {
+    background: #fee2e2;
+    color: #991b1b;
+    padding: 1.25rem;
+    border-radius: 10px;
+    border-left: 5px solid var(--danger-color);
+    margin-bottom: 1.5rem;
+    font-size: 1rem;
+}
+
+/* Адаптивність */
+@media (max-width: 768px) {
+    .login-form .form-card {
+        padding: 2rem 1.5rem;
+    }
+    
+    .login-form .form-card h2 {
+        font-size: 1.5rem;
+    }
+    
+    .login-form .info-card {
+        padding: 1.5rem;
+    }
+}
+
+/* КОМПАКТНА ВЕРСІЯ ФОРМИ ВЧИТЕЛЯ */
+
+.compact-header {
+    padding: 1.5rem 2rem;
+}
+
+.header-wrapper {
+    max-width: 1600px;
+    margin: 0 auto;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 2rem;
+}
+
+.header-info h1 {
+    font-size: 1.4rem;
+    margin-bottom: 0.3rem;
+}
+
+.header-info h2 {
+    font-size: 0.95rem;
+    margin-bottom: 0.3rem;
+}
+
+.header-info h3 {
+    font-size: 1.1rem;
+    margin-top: 0.5rem;
+}
+
+.header-actions {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 0.5rem;
+}
+
+.user-info {
+    font-size: 0.9rem;
+    opacity: 0.95;
+}
+
+.btn-sm {
+    padding: 0.5rem 1rem;
+    font-size: 0.9rem;
+}
+
+/* Компактна форма */
+.monitoring-form-compact {
+    max-width: 1600px;
+    padding: 1.5rem 1rem;
+}
+
+.form-card-compact {
+    background: var(--card-bg);
+    border-radius: 12px;
+    padding: 2rem;
+    box-shadow: var(--shadow-lg);
+}
+
+/* Сітка вибору параметрів */
+.selection-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 1.5rem;
+    margin-bottom: 2rem;
+    padding: 1.5rem;
+    background: #f8fafc;
+    border-radius: 10px;
+}
+
+.form-group-inline {
+    display: flex;
+    flex-direction: column;
+}
+
+.form-group-inline label {
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+    font-size: 0.95rem;
+    color: var(--text-color);
+}
+
+.form-group-inline select {
+    padding: 0.75rem;
+    border: 2px solid var(--border-color);
+    border-radius: 8px;
+    font-size: 0.95rem;
+    background-color: white;
+}
+
+/* Компактна секція даних */
+.data-section-compact {
+    margin-top: 1.5rem;
+}
+
+.section-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1rem 1.5rem;
+    background: linear-gradient(135deg, var(--primary-color), #1d4ed8);
+    color: white;
+    border-radius: 10px 10px 0 0;
+    margin-bottom: 0;
+}
+
+.section-header h3 {
+    margin: 0;
+    font-size: 1.3rem;
+    color: white;
+    border: none;
+    padding: 0;
+}
+
+.student-count-inline {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    background: rgba(255, 255, 255, 0.2);
+    padding: 0.5rem 1rem;
+    border-radius: 8px;
+}
+
+.student-count-inline label {
+    margin: 0;
+    font-weight: 600;
+    font-size: 1rem;
+}
+
+.student-count-inline input {
+    width: 80px;
+    text-align: center;
+    font-size: 1.2rem;
+    font-weight: bold;
+    padding: 0.4rem;
+    border: 2px solid white;
+    background: white;
+    color: var(--primary-color);
+}
+
+/* Компактна таблиця оцінок */
+.grades-table-compact {
+    margin: 0;
+    padding: 1.5rem;
+    background: white;
+    border: 2px solid var(--primary-color);
+    border-top: none;
+}
+
+.grades-table-compact h4 {
+    margin-bottom: 1rem;
+    font-size: 1.05rem;
+    color: var(--text-color);
+}
+
+.grades-table-compact h4 small {
+    font-size: 0.85rem;
+    color: var(--secondary-color);
+    font-weight: normal;
+}
+
+.grades-table-compact table {
+    width: 100%;
+    margin-top: 1rem;
+}
+
+.grades-table-compact thead th {
+    padding: 0.6rem 0.4rem;
+    font-size: 0.9rem;
+}
+
+.grades-table-compact tbody input {
+    width: 100%;
+    padding: 0.5rem 0.3rem;
+    text-align: center;
+    font-size: 1rem;
+    font-weight: 600;
+}
+
+/* Компактні результати */
+.results-section-compact {
+    padding: 1.5rem;
+    background: #f0f9ff;
+    border: 2px solid var(--primary-color);
+    border-top: none;
+    border-radius: 0 0 10px 10px;
+}
+
+.results-section-compact h4 {
+    margin-bottom: 1rem;
+    color: var(--primary-color);
+    font-size: 1.1rem;
+}
+
+.results-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1rem;
+}
+
+.result-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.75rem 1rem;
+    background: white;
+    border-radius: 8px;
+    border: 1px solid var(--border-color);
+}
+
+.result-item.wide {
+    grid-column: span 3;
+}
+
+.result-label {
+    font-weight: 600;
+    color: var(--text-color);
+    font-size: 0.95rem;
+}
+
+.result-value {
+    font-size: 1.3rem;
+    font-weight: bold;
+    color: var(--primary-color);
+}
+
+.result-value-text {
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--success-color);
+}
+
+/* Компактні кнопки */
+.form-actions-compact {
+    display: flex;
+    gap: 1rem;
+    justify-content: center;
+    margin-top: 1.5rem;
+}
+
+.form-actions-compact .btn {
+    min-width: 140px;
+    padding: 0.75rem 1.5rem;
+    font-size: 1rem;
+}
+
+/* Адаптивність */
+@media (max-width: 1400px) {
+    .selection-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+    
+    .results-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+@media (max-width: 768px) {
+    .header-wrapper {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+    
+    .header-actions {
+        align-items: flex-start;
+        width: 100%;
+    }
+    
+    .selection-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .section-header {
+        flex-direction: column;
+        gap: 1rem;
+        align-items: flex-start;
+    }
+    
+    .results-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .result-item.wide {
+        grid-column: span 1;
+    }
+    
+    .form-actions-compact {
+        flex-direction: column;
+    }
+}
+
+/* Сторінка вибору режиму */
+.mode-card-wrapper {
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 2rem;
+}
+
+.mode-selection .mode-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 2rem;
+}
+
+.teacher-mode:hover { 
+    border-color: #2563eb; 
+    transform: translateY(-5px);
+}
+
+.class-mode:hover { 
+    border-color: #16a34a; 
+    transform: translateY(-5px);
+}
+
+.admin-mode:hover { 
+    border-color: #ea580c; 
+    transform: translateY(-5px);
+}
+
+.btn-sm {
+    padding: 0.5rem 1rem;
+    font-size: 0.9rem;
+    white-space: nowrap;
+}
