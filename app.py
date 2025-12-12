@@ -85,7 +85,7 @@ def logout():
 # Форма для вчителя
 @app.route('/teacher_form')
 def teacher_form():
-    if 'email' not in session or 'teacher' not in session.get('available_roles', []):
+    if 'email' not in session:
         return redirect(url_for('index'))
     
     school_data = db_mongo.get_school_data()
@@ -123,25 +123,27 @@ def school_report():
 @app.route('/get_classes/<year>')
 def get_classes(year):
     school_data = db_mongo.get_school_data()
+    teacher_name = session.get('name')
     
-    # Для вчителя - тільки класи де він викладає
-    if session.get('role') == 'teacher':
-        teacher_name = session.get('name')
-        teacher_classes = []
-        if teacher_name in school_data['teachers']:
-            teacher_classes = list(school_data['teachers'][teacher_name].keys())
+    # Якщо вчитель має навантаження - показати тільки його класи
+    if teacher_name and teacher_name in school_data.get('teachers', {}):
+        teacher_classes = list(school_data['teachers'][teacher_name].keys())
         return jsonify(sorted(teacher_classes))
     
-    return jsonify(list(school_data['classes'].keys()))
+    # Інакше всі класи (для адмінів)
+    return jsonify(sorted(list(school_data['classes'].keys())))
 
 @app.route('/get_teachers/<year>/<class_name>')
 def get_teachers(year, class_name):
     school_data = db_mongo.get_school_data()
+    teacher_name = session.get('name')
     
-    # Для вчителя - тільки він сам
-    if session.get('role') == 'teacher':
-        return jsonify([session.get('name')])
+    # Якщо користувач викладає в цьому класі - показати тільки його
+    if teacher_name and teacher_name in school_data.get('teachers', {}):
+        if class_name in school_data['teachers'][teacher_name]:
+            return jsonify([teacher_name])
     
+    # Інакше всі вчителі класу
     teachers_for_class = []
     for teacher, classes in school_data['teachers'].items():
         if class_name in classes:
@@ -151,7 +153,7 @@ def get_teachers(year, class_name):
 @app.route('/get_subjects/<year>/<class_name>/<teacher>')
 def get_subjects(year, class_name, teacher):
     school_data = db_mongo.get_school_data()
-    if teacher in school_data['teachers'] and class_name in school_data['teachers'][teacher]:
+    if teacher in school_data.get('teachers', {}) and class_name in school_data['teachers'][teacher]:
         return jsonify(school_data['teachers'][teacher][class_name])
     return jsonify([])
 
@@ -162,7 +164,7 @@ def get_student_count(class_name):
 
 @app.route('/save_monitoring', methods=['POST'])
 def save_monitoring():
-    if 'email' not in session or 'teacher' not in session.get('available_roles', []):
+    if 'email' not in session:
         return jsonify({'success': False, 'error': 'Немає прав доступу'})
     
     data = request.json
@@ -183,7 +185,7 @@ def get_class_report(year, class_name):
     
     # Знайти всі можливі предмети для класу
     all_subjects = {}
-    for teacher, classes in school_data['teachers'].items():
+    for teacher, classes in school_data.get('teachers', {}).items():
         if class_name in classes:
             for subject in classes[class_name]:
                 all_subjects[f"{teacher}_{subject}"] = {
@@ -250,7 +252,7 @@ def get_school_report(year):
     for class_name in school_data['classes'].keys():
         # Підрахувати предмети для класу
         class_subjects = []
-        for teacher, classes in school_data['teachers'].items():
+        for teacher, classes in school_data.get('teachers', {}).items():
             if class_name in classes:
                 for subject in classes[class_name]:
                     class_subjects.append(f"{class_name}_{teacher}_{subject}")
