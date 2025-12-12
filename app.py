@@ -1,10 +1,14 @@
 from flask import Flask, render_template, request, redirect, url_for, session, jsonify
-import json
-import os
 from datetime import datetime
+import os
+from dotenv import load_dotenv
+import db_mongo
+
+# Завантажити змінні середовища
+load_dotenv()
 
 app = Flask(__name__)
-app.secret_key = 'your-secret-key-change-in-production'
+app.secret_key = os.getenv('SECRET_KEY', 'your-secret-key-change-in-production')
 
 # Шлях до файлів даних
 DATA_DIR = 'data'
@@ -236,7 +240,7 @@ def init_data_files():
                     "7-Б": ["Географія"],
                     "9-А": ["Географія"],
                     "9-Б": ["Географія"],
-                    "10-А": ["Географія"],
+                   "10-А": ["Географія"],
                     "10-Б": ["Географія"],
                     "11-А": ["Географія"],
                     "11-Б": ["Географія"]
@@ -322,57 +326,7 @@ def init_data_files():
                 },
                 "Федорак Олена Ігорівна": {
                     "6-А": ["Фізична культура"],
-                    "7-А": ["Фізична культура"],
-                    "7-Б": ["Фізична культура"],
-                    "9-А": ["Фізична культура"],
-                    "9-Б": ["Фізична культура"],
-                    "10-Б": ["Фізична культура"]
-                },
-                "Федоришин Олена Миколаївна": {
-                    "5-А": ["Мистецтво"]
-                },
-                "Яремчук Ірина Михайлівна": {
-                    "5-А": ["Англійська мова"],
-                    "6-А": ["Англійська мова"],
-                    "6-Б": ["Англійська мова"],
-                    "9-Б": ["Англійська мова"],
-                    "10-А": ["Англійська мова"]
-                }
-            }
-        }
-        with open(SCHOOL_DATA_FILE, 'w', encoding='utf-8') as f:
-            json.dump(school_data, f, ensure_ascii=False, indent=2)
-    
-    if not os.path.exists(MONITORING_DATA_FILE):
-        with open(MONITORING_DATA_FILE, 'w', encoding='utf-8') as f:
-            json.dump({}, f, ensure_ascii=False, indent=2)
-
-def load_school_data_init():
-    try:
-        if os.path.exists(SCHOOL_DATA_FILE):
-            with open(SCHOOL_DATA_FILE, 'r', encoding='utf-8') as f:
-                return json.load(f)
-    except:
-        pass
-    return None
-
-init_data_files()
-
-def load_school_data():
-    with open(SCHOOL_DATA_FILE, 'r', encoding='utf-8') as f:
-        return json.load(f)
-
-def load_monitoring_data():
-    with open(MONITORING_DATA_FILE, 'r', encoding='utf-8') as f:
-        return json.load(f)
-
-def save_monitoring_data(data):
-    with open(MONITORING_DATA_FILE, 'w', encoding='utf-8') as f:
-        json.dump(data, f, ensure_ascii=False, indent=2)
-
-def load_users():
-    with open(USERS_FILE, 'r', encoding='utf-8') as f:
-        return json.load(f)
+                    
 
 # Головна сторінка - вибір режиму
 @app.route('/')
