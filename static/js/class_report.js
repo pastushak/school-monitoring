@@ -224,4 +224,23 @@ document.addEventListener('DOMContentLoaded', function() {
             messageDiv.style.display = 'none';
         }, 5000);
     }
+
+    // Експорт в Excel
+    const exportBtn = document.getElementById('exportExcelBtn');
+    if (exportBtn) {
+        exportBtn.addEventListener('click', function() {
+            const year = yearFilter.value;
+            const className = classFilter.value;
+            const semester = semesterFilter.value;
+            
+            if (!year || !className) {
+                showMessage('Спочатку завантажте звіт', 'warning');
+                return;
+            }
+            
+            // Завантажити Excel - кодуємо назву класу
+            window.location.href = `/export_class_report/${encodeURIComponent(year)}/${encodeURIComponent(className)}/${semester}`;
+        });
+    }
+
 });

@@ -1,8 +1,9 @@
-from flask import Flask, render_template, request, redirect, url_for, session, jsonify
+from flask import Flask, render_template, request, redirect, url_for, session, jsonify, send_file
 from datetime import datetime
 import os
 from dotenv import load_dotenv
 import db_mongo
+import export_excel
 
 # Завантажити змінні середовища
 load_dotenv()
@@ -279,6 +280,121 @@ def get_school_report(year):
         'overall_filled': filled_subjects,
         'overall_total': total_subjects
     })
+
+if __name__ == '__main__':
+    app.run(debug=True, host='0.0.0.0', port=5000)
+
+# Експорт звіту по класу в Excel
+@app.route('/export_class_report/<year>/<class_name>/<semester>')
+def export_class_report(year, class_name, semester):
+    if 'email' not in session:
+        return redirect(url_for('index'))
+    
+    school_data = db_mongo.get_school_data()
+    monitoring_data = db_mongo.get_class_monitoring_data(year, class_name)
+    
+    # Зібрати дані як у get_class_report
+    all_subjects = {}
+    for teacher, classes in school_data.get('teachers', {}).items():
+        if class_name in classes:
+            for subject in classes[class_name]:
+                all_subjects[f"{teacher}_{subject}"] = {
+                    'teacher': teacher,
+                    'subject': subject
+                }
+    
+    class_data = []
+    monitoring_dict = {}
+    for record in monitoring_data:
+        key = f"{record['teacher']}_{record['subject']}"
+        monitoring_dict[key] = record
+    
+    for key, info in all_subjects.items():
+        if key in monitoring_dict:
+            record = monitoring_dict[key]
+            class_data.append({
+                'subject': info['subject'],
+                'teacher': info['teacher'],
+                'statistics': record['statistics'],
+                'grades': record['grades'],
+                'student_count': record['student_count'],
+                'filled': True
+            })
+    
+    # Створити Excel файл
+    excel_file = export_excel.create_class_report_excel(
+        class_data, 
+        class_name, 
+        year, 
+        'I' if semester == '1' else 'II'
+    )
+    
+    filename = f"Zvit_{class_name}_{year}_{semester}_semestr.xlsx"
+    
+    return send_file(
+        excel_file,
+        mimetype='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+        as_attachment=True,
+        download_name=filename
+    )
+
+# Експорт звіту по школі в Excel
+@app.route('/export_school_report/<year>/<semester>')
+def export_school_report(year, semester):
+    if 'email' not in session or session['role'] != 'admin':
+        return redirect(url_for('index'))
+    
+    school_data = db_mongo.get_school_data()
+    all_monitoring = db_mongo.get_all_monitoring_data(year)
+    
+    monitoring_dict = {}
+    for record in all_monitoring:
+        key = f"{record['class']}_{record['teacher']}_{record['subject']}"
+        monitoring_dict[key] = record
+    
+    class_reports = {}
+    for class_name in school_data['classes'].keys():
+        class_subjects = []
+        for teacher, classes in school_data.get('teachers', {}).items():
+            if class_name in classes:
+                for subject in classes[class_name]:
+                    class_subjects.append(f"{class_name}_{teacher}_{subject}")
+        
+        class_total = len(class_subjects)
+        class_filled = sum(1 for key in class_subjects if key in monitoring_dict)
+        class_progress = (class_filled / class_total * 100) if class_total > 0 else 0
+        
+        class_reports[class_name] = {
+            'filled': class_filled,
+            'total': class_total,
+            'progress': round(class_progress, 1)
+        }
+    
+    # Створити Excel файл
+    excel_file = export_excel.create_school_report_excel(
+        class_reports,
+        year,
+        'I' if semester == '1' else 'II'
+    )
+    
+    filename = f"Zvit_shkola_{year}_{semester}_semestr.xlsx"
+    
+    return send_file(
+        excel_file,
+        mimetype='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+        as_attachment=True,
+        download_name=filename
+    )
+
+# Експорт звіту по класу в Excel
+@app.route('/export_class_report/<year>/<class_name>/<semester>')
+def export_class_report(year, class_name, semester):
+    ...
+
+# Експорт звіту по школі в Excel  
+@app.route('/export_school_report/<year>/<semester>')
+def export_school_report(year, semester):
+    ...
 
 if __name__ == '__main__':
     app.run(debug=True, host='0.0.0.0', port=5000)

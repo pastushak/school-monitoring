@@ -139,4 +139,21 @@ document.addEventListener('DOMContentLoaded', function() {
             messageDiv.style.display = 'none';
         }, 5000);
     }
+
+    // Експорт в Excel
+    const exportBtn = document.getElementById('exportSchoolExcelBtn');
+    if (exportBtn) {
+        exportBtn.addEventListener('click', function() {
+            const year = yearFilter.value;
+            const semester = semesterFilter.value;
+            
+            if (!year) {
+                showMessage('Спочатку завантажте звіт', 'warning');
+                return;
+            }
+            
+            window.location.href = `/export_school_report/${encodeURIComponent(year)}/${semester}`;
+        });
+    }
+
 });
