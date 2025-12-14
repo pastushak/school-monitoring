@@ -115,17 +115,16 @@ def create_class_report_excel(class_data, class_name, year, semester):
         row += 1
     
     # Автоширина колонок
-    for column in ws.columns:
+    for col_idx, column in enumerate(ws.columns, start=1):
         max_length = 0
-        column_letter = column[0].column_letter
         for cell in column:
             try:
-                if len(str(cell.value)) > max_length:
-                    max_length = len(cell.value)
+                if cell.value and len(str(cell.value)) > max_length:
+                    max_length = len(str(cell.value))
             except:
                 pass
         adjusted_width = min(max_length + 2, 50)
-        ws.column_dimensions[column_letter].width = adjusted_width
+        ws.column_dimensions[chr(64 + col_idx)].width = adjusted_width
     
     # Зберегти у пам'ять
     output = io.BytesIO()

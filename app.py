@@ -281,9 +281,6 @@ def get_school_report(year):
         'overall_total': total_subjects
     })
 
-if __name__ == '__main__':
-    app.run(debug=True, host='0.0.0.0', port=5000)
-
 # Експорт звіту по класу в Excel
 @app.route('/export_class_report/<year>/<class_name>/<semester>')
 def export_class_report(year, class_name, semester):
@@ -385,16 +382,6 @@ def export_school_report(year, semester):
         as_attachment=True,
         download_name=filename
     )
-
-# Експорт звіту по класу в Excel
-@app.route('/export_class_report/<year>/<class_name>/<semester>')
-def export_class_report(year, class_name, semester):
-    ...
-
-# Експорт звіту по школі в Excel  
-@app.route('/export_school_report/<year>/<semester>')
-def export_school_report(year, semester):
-    ...
 
 if __name__ == '__main__':
     app.run(debug=True, host='0.0.0.0', port=5000)
