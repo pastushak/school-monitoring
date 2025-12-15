@@ -751,91 +751,192 @@ footer {
 
 /* Компактна секція даних */
 .data-section-compact {
-    margin-top: 1.5rem;
+    background: white;
+    border-radius: 16px;
+    padding: 1.5rem;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
 }
 
 .section-header {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    padding: 1.25rem 1.5rem;
+    border-radius: 12px;
+    margin-bottom: 1.5rem;
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 1rem 1.5rem;
-    background: linear-gradient(135deg, var(--primary-color), #1d4ed8);
-    color: white;
-    border-radius: 10px 10px 0 0;
-    margin-bottom: 0;
+    box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
 }
 
 .section-header h3 {
     margin: 0;
-    font-size: 1.3rem;
-    color: white;
-    border: none;
-    padding: 0;
+    font-size: 1.25rem;
+    font-weight: 600;
 }
 
 .student-count-inline {
     display: flex;
     align-items: center;
-    gap: 1rem;
+    gap: 0.75rem;
     background: rgba(255, 255, 255, 0.2);
     padding: 0.5rem 1rem;
     border-radius: 8px;
+    backdrop-filter: blur(10px);
 }
 
 .student-count-inline label {
     margin: 0;
-    font-weight: 600;
-    font-size: 1rem;
+    font-weight: 500;
+    font-size: 0.95rem;
 }
 
 .student-count-inline input {
     width: 80px;
+    padding: 0.5rem;
+    border: 2px solid rgba(255, 255, 255, 0.3);
+    border-radius: 8px;
     text-align: center;
-    font-size: 1.2rem;
-    font-weight: bold;
-    padding: 0.4rem;
-    border: 2px solid white;
+    font-weight: 700;
+    font-size: 1.1rem;
     background: white;
-    color: var(--primary-color);
+    color: #667eea;
+    line-height: 1;
+}
+
+.student-count-inline input:read-only {
+    background: white;
+    cursor: default;
 }
 
 /* Компактна таблиця оцінок */
 .grades-table-compact {
-    margin: 0;
-    padding: 1.5rem;
     background: white;
-    border: 2px solid var(--primary-color);
-    border-top: none;
+    border-radius: 12px;
+    padding: 1.5rem;
+    margin-bottom: 1.5rem;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+    overflow-x: auto;
 }
 
 .grades-table-compact h4 {
+    color: #1e40af;
     margin-bottom: 1rem;
-    font-size: 1.05rem;
-    color: var(--text-color);
-}
-
-.grades-table-compact h4 small {
-    font-size: 0.85rem;
-    color: var(--secondary-color);
-    font-weight: normal;
+    font-size: 1.1rem;
 }
 
 .grades-table-compact table {
     width: 100%;
-    margin-top: 1rem;
+    border-collapse: separate;
+    border-spacing: 4px;
+    table-layout: fixed;
 }
 
-.grades-table-compact thead th {
-    padding: 0.6rem 0.4rem;
-    font-size: 0.9rem;
-}
-
-.grades-table-compact tbody input {
-    width: 100%;
-    padding: 0.5rem 0.3rem;
-    text-align: center;
-    font-size: 1rem;
+/* Заголовки рівнів */
+.grades-table-compact th {
+    padding: 0.875rem 0.5rem;
     font-weight: 600;
+    font-size: 0.9rem;
+    text-align: center;
+    color: white;
+    border-radius: 8px;
+}
+
+.high-level {
+    background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+}
+
+.sufficient-level {
+    background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+}
+
+.average-level {
+    background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+}
+
+.initial-level {
+    background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+}
+
+/* Заголовки оцінок */
+.grades-table-compact thead tr:nth-child(2) th {
+    background: #f8fafc;
+    color: #1e293b;
+    font-weight: 700;
+    font-size: 1.1rem;
+    padding: 0.75rem 0.25rem;
+    border-radius: 6px;
+}
+
+/* Поля вводу - більші і зручніші */
+.grades-table-compact td {
+    padding: 4px;
+}
+
+.grades-table-compact input[type="number"] {
+    width: 100%;
+    min-width: 60px;
+    padding: 1rem 0.5rem;
+    border: 2px solid #e2e8f0;
+    border-radius: 8px;
+    font-size: 1.2rem;
+    font-weight: 700;
+    text-align: center;
+    transition: all 0.2s ease;
+    background: white;
+}
+
+.grades-table-compact input[type="number"]:focus {
+    outline: none;
+    border-color: #3b82f6;
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.15);
+    transform: scale(1.05);
+}
+
+.grades-table-compact input[type="number"]:hover {
+    border-color: #93c5fd;
+    background: #f8fafc;
+}
+
+/* Рядок з відсотками - кольоровий */
+.percentage-row td {
+    padding: 0.75rem 0.5rem;
+    font-weight: 700;
+    font-size: 1rem;
+    text-align: center;
+    border-radius: 6px;
+}
+
+/* Зелений для високого */
+.percentage-row td:nth-child(1),
+.percentage-row td:nth-child(2),
+.percentage-row td:nth-child(3) {
+    background: #d1fae5;
+    color: #065f46;
+}
+
+/* Синій для достатнього */
+.percentage-row td:nth-child(4),
+.percentage-row td:nth-child(5),
+.percentage-row td:nth-child(6) {
+    background: #dbeafe;
+    color: #1e40af;
+}
+
+/* Помаранчевий для середнього */
+.percentage-row td:nth-child(7),
+.percentage-row td:nth-child(8),
+.percentage-row td:nth-child(9) {
+    background: #fed7aa;
+    color: #92400e;
+}
+
+/* Червоний для початкового */
+.percentage-row td:nth-child(10),
+.percentage-row td:nth-child(11),
+.percentage-row td:nth-child(12) {
+    background: #fecaca;
+    color: #991b1b;
 }
 
 /* Компактні результати */
@@ -982,4 +1083,126 @@ footer {
     padding: 0.5rem 1rem;
     font-size: 0.9rem;
     white-space: nowrap;
+}
+
+/* Покращені стилі для таблиці оцінок */
+.grades-table-compact table {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0;
+    margin-top: 1rem;
+}
+
+.grades-table-compact th {
+    padding: 0.75rem 0.5rem;
+    font-weight: 600;
+    font-size: 0.9rem;
+    border: 1px solid #e2e8f0;
+}
+
+/* Кольорові рівні - яскравіші */
+.high-level {
+    background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+    color: white;
+    font-weight: 600;
+}
+
+.sufficient-level {
+    background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+    color: white;
+    font-weight: 600;
+}
+
+.average-level {
+    background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+    color: white;
+    font-weight: 600;
+}
+
+.initial-level {
+    background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+    color: white;
+    font-weight: 600;
+}
+
+/* Стилізовані поля вводу */
+.grades-table-compact input[type="number"] {
+    width: 100%;
+    padding: 0.75rem 0.5rem;
+    border: 2px solid #e2e8f0;
+    border-radius: 8px;
+    font-size: 1rem;
+    font-weight: 600;
+    text-align: center;
+    transition: all 0.3s ease;
+    background: white;
+}
+
+.grades-table-compact input[type="number"]:focus {
+    outline: none;
+    border-color: #3b82f6;
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+    transform: scale(1.05);
+}
+
+.grades-table-compact input[type="number"]:hover {
+    border-color: #93c5fd;
+    background: #f8fafc;
+}
+
+.grades-table-compact td {
+    padding: 0.5rem;
+    text-align: center;
+}
+
+/* Рядок з відсотками */
+.percentage-row td {
+    padding: 0.75rem 0.5rem;
+    font-weight: 600;
+    font-size: 0.95rem;
+    color: #4b5563;
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+}
+
+/* Кольорове виділення відсотків залежно від рівня */
+.percentage-row td:nth-child(1),
+.percentage-row td:nth-child(2),
+.percentage-row td:nth-child(3) {
+    background: #d1fae5;
+    color: #065f46;
+}
+
+.percentage-row td:nth-child(4),
+.percentage-row td:nth-child(5),
+.percentage-row td:nth-child(6) {
+    background: #dbeafe;
+    color: #1e40af;
+}
+
+.percentage-row td:nth-child(7),
+.percentage-row td:nth-child(8),
+.percentage-row td:nth-child(9) {
+    background: #fed7aa;
+    color: #92400e;
+}
+
+.percentage-row td:nth-child(10),
+.percentage-row td:nth-child(11),
+.percentage-row td:nth-child(12) {
+    background: #fecaca;
+    color: #991b1b;
+}
+
+/* Заголовок секції */
+.grades-table-compact h4 {
+    color: #1e40af;
+    margin-bottom: 0.5rem;
+    font-size: 1.1rem;
+}
+
+.grades-table-compact h4 small {
+    color: #6b7280;
+    font-weight: 400;
+    font-size: 0.85rem;
 }
