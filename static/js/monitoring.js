@@ -206,7 +206,6 @@ document.addEventListener('DOMContentLoaded', function() {
         document.getElementById('avgScore').textContent = avgScore;
         
         // 2. Ступінь навченості (СН) за формулою Симонова
-        // СН = (12*n12 + 11*n11 + 10*n10 + 9*n9 + 8*n8 + 7*n7 + 6*n6 + 5*n5 + 4*n4) / (12 * N) * 100%
         let snSum = 0;
         for (let i = 4; i <= 12; i++) {
             snSum += i * grades[i];
@@ -222,12 +221,12 @@ document.addEventListener('DOMContentLoaded', function() {
         else levelText = '-';
         document.getElementById('learningLevelText').textContent = levelText;
         
-        // 3. Коефіцієнт якості знань (учні з оцінками 10-12)
+        // 3. Коефіцієнт якості знань
         const highGrades = grades[12] + grades[11] + grades[10];
         const qualityCoeff = total > 0 ? ((highGrades / total) * 100).toFixed(2) : 0;
         document.getElementById('qualityCoeff').textContent = qualityCoeff + '%';
         
-        // 4. Якість знань (учні з оцінками 7-12)
+        // 4. Якість знань
         const passedGrades = grades[12] + grades[11] + grades[10] + grades[9] + grades[8] + grades[7];
         const qualityPercent = total > 0 ? ((passedGrades / total) * 100).toFixed(2) : 0;
         document.getElementById('qualityPercent').textContent = qualityPercent + '%';
@@ -301,12 +300,55 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     });
     
-    // Очищення форми
-    form.addEventListener('reset', function() {
-        setTimeout(() => {
-            resetForm();
-        }, 10);
-    });
+    // НОВІ ОБРОБНИКИ КНОПОК
+    
+    // Кнопка "Очистити дані" - тільки оцінки
+    const clearDataBtn = document.getElementById('clearDataBtn');
+    if (clearDataBtn) {
+        clearDataBtn.addEventListener('click', function() {
+            // Очистити тільки поля оцінок
+            for (let i = 1; i <= 12; i++) {
+                const gradeInput = document.getElementById(`grade${i}`);
+                if (gradeInput) {
+                    gradeInput.value = '0';
+                }
+            }
+            
+            // Перерахувати (скине на нулі)
+            calculateStatistics();
+            
+            showMessage('Дані очищено. Фільтри залишились незмінними.', 'success');
+        });
+    }
+    
+    // Кнопка "Скинути фільтри"
+    const resetFiltersBtn = document.getElementById('resetFiltersBtn');
+    if (resetFiltersBtn) {
+        resetFiltersBtn.addEventListener('click', function() {
+            // Скинути всі фільтри
+            yearSelect.value = '';
+            classSelect.value = '';
+            classSelect.disabled = true;
+            classSelect.innerHTML = '<option value="">Спочатку оберіть навчальний рік</option>';
+            teacherSelect.value = '';
+            teacherSelect.disabled = true;
+            teacherSelect.innerHTML = '<option value="">Спочатку оберіть клас</option>';
+            subjectSelect.value = '';
+            subjectSelect.disabled = true;
+            subjectSelect.innerHTML = '<option value="">Спочатку оберіть вчителя</option>';
+            
+            // Сховати секцію даних
+            dataSection.style.display = 'none';
+            
+            // Очистити кількість учнів
+            studentCountInput.value = '';
+            
+            // Очистити повідомлення
+            messageDiv.style.display = 'none';
+            
+            showMessage('Фільтри скинуто', 'success');
+        });
+    }
     
     function resetForm() {
         classSelect.disabled = true;

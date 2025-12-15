@@ -10,7 +10,7 @@
     <div class="container">
         <header class="compact-header">
             <div class="header-wrapper">
-                <div class="header-info">
+                <div class="header-info" style="text-align: left;">
                     <h1>Коломийський ліцей "Коломийська гімназія імені Михайла Грушевського"</h1>
                     <h2>Коломийської міської ради Івано-Франківської області</h2>
                     <h3>МОНІТОРИНГ ЯКОСТІ ОСВІТИ - ВНЕСЕННЯ ДАНИХ</h3>
@@ -62,6 +62,11 @@
                                 <option value="">Оберіть вчителя</option>
                             </select>
                         </div>
+                    </div>
+                    
+                    <!-- Кнопка скидання фільтрів -->
+                    <div style="text-align: right; margin-top: 1rem;">
+                        <button type="button" id="resetFiltersBtn" class="btn btn-secondary btn-sm">🔄 Скинути фільтри</button>
                     </div>
                     
                     <!-- Дані для обрахунку -->
@@ -169,7 +174,7 @@
                         <div class="form-actions-compact">
                             <button type="button" id="calculateBtn" class="btn btn-primary">Розрахувати</button>
                             <button type="submit" class="btn btn-success">Зберегти</button>
-                            <button type="reset" class="btn btn-secondary">Очистити</button>
+                            <button type="button" id="clearDataBtn" class="btn btn-secondary">🗑️ Очистити дані</button>
                         </div>
                     </div>
                 </form>
