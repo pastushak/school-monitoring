@@ -182,18 +182,15 @@ school-monitoring/
 - Рольовий доступ (вчитель, класний керівник, адміністратор)
 - Хмарне зберігання даних з шифруванням (MongoDB Atlas)
 
-## 🚀 Deployment
+## 🚀 Deployment на Render.com
 
-### Render.com (безкоштовно)
-
-1. Створіть акаунт на [Render](https://render.com)
-2. New → Web Service
-3. Підключіть GitHub репозиторій
+1. Створіть акаунт на [Render.com](https://render.com)
+2. Підключіть GitHub репозиторій
+3. Налаштуйте Environment Variables:
+   - `MONGODB_URI` - ваш MongoDB Atlas connection string
+   - `SECRET_KEY` - випадковий секретний ключ
 4. Build Command: `pip install -r requirements.txt`
-5. Start Command: `gunicorn app:app`
-6. Додайте Environment Variables:
-   - `MONGODB_URI`
-   - `SECRET_KEY`
+5. Start Command: `gunicorn -c gunicorn_config.py app:app`
 
 ## 🤝 Автори
 
