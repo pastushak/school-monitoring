@@ -1206,3 +1206,288 @@ footer {
     font-weight: 400;
     font-size: 0.85rem;
 }
+
+/* ========================================
+   АДАПТИВНИЙ ДИЗАЙН ДЛЯ МОБІЛЬНИХ
+   ======================================== */
+
+@media screen and (max-width: 768px) {
+    /* Контейнер */
+    .container {
+        padding: 0.5rem;
+    }
+    
+    /* Заголовок */
+    header h1 {
+        font-size: 1.1rem !important;
+        line-height: 1.3;
+    }
+    
+    header h2 {
+        font-size: 0.9rem !important;
+    }
+    
+    header h3 {
+        font-size: 1rem !important;
+    }
+    
+    .header-wrapper {
+        flex-direction: column;
+        gap: 1rem;
+    }
+    
+    .header-actions {
+        width: 100%;
+        flex-direction: column;
+        gap: 0.5rem;
+    }
+    
+    .user-info {
+        font-size: 0.9rem;
+    }
+    
+    /* Форма вчителя - фільтри */
+    .selection-grid {
+        grid-template-columns: 1fr !important;
+        gap: 1rem !important;
+    }
+    
+    .form-group-inline {
+        display: flex;
+        flex-direction: column;
+    }
+    
+    .form-group-inline label {
+        margin-bottom: 0.5rem;
+        font-size: 0.95rem;
+    }
+    
+    .form-group-inline select {
+        font-size: 1rem;
+        padding: 0.75rem;
+    }
+    
+    /* Секція з даними */
+    .section-header {
+        flex-direction: column;
+        gap: 1rem;
+        padding: 1rem;
+    }
+    
+    .section-header h3 {
+        font-size: 1.1rem;
+        text-align: center;
+    }
+    
+    .student-count-inline {
+        width: 100%;
+        justify-content: center;
+    }
+    
+    /* Таблиця оцінок - горизонтальний скрол */
+    .grades-table-compact {
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+    }
+    
+    .grades-table-compact h4 {
+        font-size: 1rem;
+        text-align: center;
+    }
+    
+    .grades-table-compact table {
+        min-width: 800px;
+        font-size: 0.85rem;
+    }
+    
+    .grades-table-compact th {
+        padding: 0.5rem 0.25rem;
+        font-size: 0.8rem;
+    }
+    
+    .grades-table-compact input[type="number"] {
+        min-width: 50px;
+        padding: 0.75rem 0.25rem;
+        font-size: 1rem;
+    }
+    
+    .percentage-row td {
+        font-size: 0.85rem;
+        padding: 0.5rem 0.25rem;
+    }
+    
+    /* Результати розрахунків */
+    .results-section-compact h4 {
+        font-size: 1rem;
+        text-align: center;
+    }
+    
+    .results-grid {
+        grid-template-columns: 1fr !important;
+        gap: 0.75rem !important;
+    }
+    
+    .result-item {
+        padding: 0.75rem !important;
+    }
+    
+    .result-label {
+        font-size: 0.95rem;
+    }
+    
+    .result-value {
+        font-size: 1.1rem;
+    }
+    
+    .result-value-text {
+        font-size: 0.9rem;
+    }
+    
+    /* Кнопки */
+    .form-actions-compact {
+        flex-direction: column !important;
+        gap: 0.75rem !important;
+    }
+    
+    .form-actions-compact button {
+        width: 100% !important;
+        padding: 1rem !important;
+        font-size: 1rem !important;
+    }
+    
+    .btn-sm {
+        padding: 0.5rem 0.75rem !important;
+        font-size: 0.9rem !important;
+    }
+    
+    /* Звіти - таблиці з горизонтальним скролом */
+    .data-table {
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+    }
+    
+    .data-table table {
+        min-width: 1000px;
+        font-size: 0.85rem;
+    }
+    
+    .data-table th,
+    .data-table td {
+        padding: 0.5rem 0.25rem;
+        font-size: 0.85rem;
+    }
+    
+    /* Фільтри звітів */
+    .filter-section {
+        padding: 1rem;
+    }
+    
+    .form-row {
+        flex-direction: column !important;
+        gap: 1rem !important;
+    }
+    
+    .form-group {
+        width: 100% !important;
+    }
+    
+    .form-group select {
+        font-size: 1rem;
+        padding: 0.75rem;
+    }
+    
+    .form-actions {
+        flex-direction: column !important;
+        gap: 0.75rem !important;
+    }
+    
+    .form-actions button {
+        width: 100% !important;
+        padding: 1rem !important;
+        font-size: 1rem !important;
+    }
+    
+    /* Прогрес бари */
+    .progress-bar {
+        height: 35px;
+        font-size: 0.9rem;
+    }
+    
+    .progress-text {
+        font-size: 0.9rem;
+    }
+    
+    /* Повідомлення */
+    .message {
+        font-size: 0.95rem;
+        padding: 0.75rem;
+        margin: 1rem 0;
+    }
+    
+    /* Форма входу */
+    .login-form .form-card {
+        padding: 1.5rem;
+    }
+    
+    /* Вибір режиму */
+    .mode-grid {
+        grid-template-columns: 1fr !important;
+    }
+    
+    .mode-card {
+        padding: 1.5rem !important;
+    }
+    
+    /* Footer */
+    footer {
+        padding: 1rem;
+        font-size: 0.85rem;
+    }
+}
+
+/* Дуже маленькі екрани */
+@media screen and (max-width: 480px) {
+    header h1 {
+        font-size: 0.95rem !important;
+    }
+    
+    header h2 {
+        font-size: 0.8rem !important;
+    }
+    
+    header h3 {
+        font-size: 0.9rem !important;
+    }
+    
+    .grades-table-compact table {
+        min-width: 700px;
+        font-size: 0.75rem;
+    }
+    
+    .grades-table-compact input[type="number"] {
+        min-width: 45px;
+        font-size: 0.95rem;
+    }
+    
+    .data-table table {
+        font-size: 0.75rem;
+    }
+}
+
+/* Підказка про горизонтальний скрол */
+.scroll-hint {
+    display: none;
+    text-align: center;
+    color: #666;
+    font-size: 0.9rem;
+    padding: 0.5rem;
+    background: #f0f9ff;
+    border-radius: 4px;
+    margin-bottom: 0.5rem;
+}
+
+@media screen and (max-width: 768px) {
+    .scroll-hint {
+        display: block;
+    }
+}

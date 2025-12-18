@@ -384,4 +384,43 @@ document.addEventListener('DOMContentLoaded', function() {
             messageDiv.style.display = 'none';
         }, 5000);
     }
+
+    // Кнопка експорту в Excel для вчителя
+    const exportTeacherBtn = document.getElementById('exportTeacherBtn');
+    if (exportTeacherBtn) {
+        exportTeacherBtn.addEventListener('click', function() {
+            const year = yearSelect.value;
+            const className = classSelect.value;
+            const teacher = teacherSelect.value;
+            const subject = subjectSelect.value;
+            
+            if (!year || !className || !teacher || !subject) {
+                showMessage('Спочатку оберіть всі параметри', 'warning');
+                return;
+            }
+            
+            // Перевірка чи є збережені дані
+            const avgScore = document.getElementById('avgScore').textContent;
+            if (!avgScore || avgScore === '0') {
+                showMessage('Спочатку розрахуйте та збережіть дані', 'warning');
+                return;
+            }
+            
+            // Семестр (можна додати вибір семестру, поки що за замовчуванням 1)
+            const semester = '1';
+            
+            // Створити URL з правильним кодуванням
+            const url = '/export_teacher_report/' + 
+                encodeURIComponent(year) + '/' + 
+                encodeURIComponent(className) + '/' + 
+                encodeURIComponent(teacher) + '/' + 
+                encodeURIComponent(subject) + '/' + 
+                semester;
+            
+            console.log('Export URL:', url);  // Для відлагодження
+            
+            // Завантажити Excel
+            window.location.href = url;
+        });
+    }
 });
