@@ -116,7 +116,7 @@ main {
 
 .selection-grid {
     display: grid;
-    grid-template-columns: 1fr 1fr 1fr; /* 3 рівні колонки */
+    grid-template-columns: repeat(4, 1fr); /* 4 рівні колонки */
     gap: 1.5rem;
     margin-bottom: 2rem;
     padding: 1.5rem;
@@ -673,7 +673,7 @@ footer {
 
 @media screen and (max-width: 1400px) {
     .selection-grid {
-        grid-template-columns: repeat(2, 1fr);
+        grid-template-columns: repeat(2, 1fr); /* 2 колонки на планшетах */
     }
     
     .results-grid {
@@ -716,7 +716,7 @@ footer {
     }
     
     .selection-grid {
-        grid-template-columns: 1fr !important;
+        grid-template-columns: 1fr !important; /* 1 колонка на телефонах */
         gap: 1rem !important;
         padding: 1rem;
     }
