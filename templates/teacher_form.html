@@ -45,24 +45,20 @@
                         <div class="form-group-inline">
                             <label for="class">Клас *</label>
                             <select id="class" name="class" required disabled>
-                                <option value="">Оберіть рік</option>
-                            </select>
-                        </div>
-                        
-                        <div class="form-group-inline">
-                            <label for="teacher">Вчитель *</label>
-                            <select id="teacher" name="teacher" required disabled>
-                                <option value="">Оберіть клас</option>
+                                <option value="">Спочатку оберіть рік</option>
                             </select>
                         </div>
                         
                         <div class="form-group-inline">
                             <label for="subject">Предмет *</label>
                             <select id="subject" name="subject" required disabled>
-                                <option value="">Оберіть вчителя</option>
+                                <option value="">Спочатку оберіть клас</option>
                             </select>
                         </div>
                     </div>
+                    
+                    <!-- Прихований input для вчителя -->
+                    <input type="hidden" id="teacher" name="teacher" value="{{ teacher_name }}">
                     
                     <!-- Кнопка скидання фільтрів -->
                     <div style="text-align: right; margin-top: 1rem;">
@@ -84,7 +80,6 @@
                             <h4>Успішність за групами оцінок <small>(введіть кількість учнів)</small></h4>
                             <div class="scroll-hint">👆 Прогортайте таблицю вліво-вправо →</div>
                             
-                            <table>
                             <table>
                                 <thead>
                                     <tr>

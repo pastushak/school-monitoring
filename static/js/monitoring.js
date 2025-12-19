@@ -1,7 +1,8 @@
 document.addEventListener('DOMContentLoaded', function() {
     const yearSelect = document.getElementById('year');
     const classSelect = document.getElementById('class');
-    const teacherSelect = document.getElementById('teacher');
+    const teacherInput = document.getElementById('teacher'); // Тепер це hidden input
+    const teacherName = teacherInput ? teacherInput.value : '';
     const subjectSelect = document.getElementById('subject');
     const studentCountInput = document.getElementById('studentCount');
     const dataSection = document.getElementById('dataSection');
@@ -37,10 +38,8 @@ document.addEventListener('DOMContentLoaded', function() {
             });
             classSelect.disabled = false;
             
-            teacherSelect.disabled = true;
-            teacherSelect.innerHTML = '<option value="">Спочатку оберіть клас</option>';
             subjectSelect.disabled = true;
-            subjectSelect.innerHTML = '<option value="">Спочатку оберіть вчителя</option>';
+            subjectSelect.innerHTML = '<option value="">Спочатку оберіть клас</option>';
             dataSection.style.display = 'none';
         } catch (error) {
             console.error('Error loading classes:', error);
@@ -52,68 +51,40 @@ document.addEventListener('DOMContentLoaded', function() {
         const className = this.value;
         
         if (!className) {
-            teacherSelect.disabled = true;
-            teacherSelect.innerHTML = '<option value="">Спочатку оберіть клас</option>';
             subjectSelect.disabled = true;
+            subjectSelect.innerHTML = '<option value="">Спочатку оберіть клас</option>';
             dataSection.style.display = 'none';
             return;
         }
         
-        // Завантаження вчителів
         try {
-            const response = await fetch(`/get_teachers/${year}/${className}`);
-            const teachers = await response.json();
-            
-            teacherSelect.innerHTML = '<option value="">Оберіть вчителя</option>';
-            teachers.forEach(teacher => {
-                const option = document.createElement('option');
-                option.value = teacher;
-                option.textContent = teacher;
-                teacherSelect.appendChild(option);
-            });
-            teacherSelect.disabled = false;
-            
+            // Показати що завантажується
             subjectSelect.disabled = true;
-            subjectSelect.innerHTML = '<option value="">Спочатку оберіть вчителя</option>';
+            subjectSelect.innerHTML = '<option value="">Завантаження...</option>';
             dataSection.style.display = 'none';
             
             // Завантаження кількості учнів
             const countResponse = await fetch(`/get_student_count/${className}`);
             const count = await countResponse.json();
             studentCountInput.value = count;
-        } catch (error) {
-            console.error('Error loading teachers:', error);
-        }
-    });
-    
-    teacherSelect.addEventListener('change', async function() {
-        const year = yearSelect.value;
-        const className = classSelect.value;
-        const teacher = this.value;
-        
-        if (!teacher) {
-            subjectSelect.disabled = true;
-            subjectSelect.innerHTML = '<option value="">Спочатку оберіть вчителя</option>';
-            dataSection.style.display = 'none';
-            return;
-        }
-        
-        // Завантаження предметів
-        try {
-            const response = await fetch(`/get_subjects/${year}/${className}/${teacher}`);
-            const subjects = await response.json();
             
-            subjectSelect.innerHTML = '<option value="">Оберіть предмет</option>';
-            subjects.forEach(subject => {
-                const option = document.createElement('option');
-                option.value = subject;
-                option.textContent = subject;
-                subjectSelect.appendChild(option);
-            });
-            subjectSelect.disabled = false;
-            dataSection.style.display = 'none';
+            // Автоматично завантажити предмети для поточного вчителя
+            if (teacherName) {
+                const subjectsResponse = await fetch(`/get_subjects/${year}/${className}/${encodeURIComponent(teacherName)}`);
+                const subjects = await subjectsResponse.json();
+                
+                subjectSelect.innerHTML = '<option value="">Оберіть предмет</option>';
+                subjects.forEach(subject => {
+                    const option = document.createElement('option');
+                    option.value = subject;
+                    option.textContent = subject;
+                    subjectSelect.appendChild(option);
+                });
+                subjectSelect.disabled = false;
+            }
         } catch (error) {
             console.error('Error loading subjects:', error);
+            subjectSelect.innerHTML = '<option value="">Помилка завантаження</option>';
         }
     });
     
@@ -133,9 +104,8 @@ document.addEventListener('DOMContentLoaded', function() {
         try {
             const year = yearSelect.value;
             const className = classSelect.value;
-            const teacher = teacherSelect.value;
             
-            const response = await fetch(`/get_monitoring/${year}/${className}/${teacher}/${subject}`);
+            const response = await fetch(`/get_monitoring/${year}/${className}/${encodeURIComponent(teacherName)}/${encodeURIComponent(subject)}`);
             const data = await response.json();
             
             if (data.grades) {
@@ -245,10 +215,9 @@ document.addEventListener('DOMContentLoaded', function() {
         
         const year = yearSelect.value;
         const className = classSelect.value;
-        const teacher = teacherSelect.value;
         const subject = subjectSelect.value;
         
-        if (!year || !className || !teacher || !subject) {
+        if (!year || !className || !teacherName || !subject) {
             showMessage('Заповніть всі обов\'язкові поля', 'error');
             return;
         }
@@ -271,7 +240,7 @@ document.addEventListener('DOMContentLoaded', function() {
         const data = {
             year: year,
             class: className,
-            teacher: teacher,
+            teacher: teacherName,
             subject: subject,
             student_count: parseInt(studentCountInput.value),
             grades: grades,
@@ -300,8 +269,6 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     });
     
-    // НОВІ ОБРОБНИКИ КНОПОК
-    
     // Кнопка "Очистити дані" - тільки оцінки
     const clearDataBtn = document.getElementById('clearDataBtn');
     if (clearDataBtn) {
@@ -325,17 +292,14 @@ document.addEventListener('DOMContentLoaded', function() {
     const resetFiltersBtn = document.getElementById('resetFiltersBtn');
     if (resetFiltersBtn) {
         resetFiltersBtn.addEventListener('click', function() {
-            // Скинути всі фільтри
+            // Скинути фільтри
             yearSelect.value = '';
             classSelect.value = '';
             classSelect.disabled = true;
             classSelect.innerHTML = '<option value="">Спочатку оберіть навчальний рік</option>';
-            teacherSelect.value = '';
-            teacherSelect.disabled = true;
-            teacherSelect.innerHTML = '<option value="">Спочатку оберіть клас</option>';
             subjectSelect.value = '';
             subjectSelect.disabled = true;
-            subjectSelect.innerHTML = '<option value="">Спочатку оберіть вчителя</option>';
+            subjectSelect.innerHTML = '<option value="">Спочатку оберіть клас</option>';
             
             // Сховати секцію даних
             dataSection.style.display = 'none';
@@ -350,13 +314,49 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
     
+    // Кнопка експорту в Excel для вчителя
+    const exportTeacherBtn = document.getElementById('exportTeacherBtn');
+    if (exportTeacherBtn) {
+        exportTeacherBtn.addEventListener('click', function() {
+            const year = yearSelect.value;
+            const className = classSelect.value;
+            const subject = subjectSelect.value;
+            
+            if (!year || !className || !teacherName || !subject) {
+                showMessage('Спочатку оберіть всі параметри', 'warning');
+                return;
+            }
+            
+            // Перевірка чи є збережені дані
+            const avgScore = document.getElementById('avgScore').textContent;
+            if (!avgScore || avgScore === '0') {
+                showMessage('Спочатку розрахуйте та збережіть дані', 'warning');
+                return;
+            }
+            
+            // Семестр (можна додати вибір семестру, поки що за замовчуванням 1)
+            const semester = '1';
+            
+            // Створити URL з правильним кодуванням
+            const url = '/export_teacher_report/' + 
+                encodeURIComponent(year) + '/' + 
+                encodeURIComponent(className) + '/' + 
+                encodeURIComponent(teacherName) + '/' + 
+                encodeURIComponent(subject) + '/' + 
+                semester;
+            
+            console.log('Export URL:', url);
+            
+            // Завантажити Excel
+            window.location.href = url;
+        });
+    }
+    
     function resetForm() {
         classSelect.disabled = true;
         classSelect.innerHTML = '<option value="">Спочатку оберіть навчальний рік</option>';
-        teacherSelect.disabled = true;
-        teacherSelect.innerHTML = '<option value="">Спочатку оберіть клас</option>';
         subjectSelect.disabled = true;
-        subjectSelect.innerHTML = '<option value="">Спочатку оберіть вчителя</option>';
+        subjectSelect.innerHTML = '<option value="">Спочатку оберіть клас</option>';
         dataSection.style.display = 'none';
         studentCountInput.value = '';
         clearGrades();
@@ -383,44 +383,5 @@ document.addEventListener('DOMContentLoaded', function() {
         setTimeout(() => {
             messageDiv.style.display = 'none';
         }, 5000);
-    }
-
-    // Кнопка експорту в Excel для вчителя
-    const exportTeacherBtn = document.getElementById('exportTeacherBtn');
-    if (exportTeacherBtn) {
-        exportTeacherBtn.addEventListener('click', function() {
-            const year = yearSelect.value;
-            const className = classSelect.value;
-            const teacher = teacherSelect.value;
-            const subject = subjectSelect.value;
-            
-            if (!year || !className || !teacher || !subject) {
-                showMessage('Спочатку оберіть всі параметри', 'warning');
-                return;
-            }
-            
-            // Перевірка чи є збережені дані
-            const avgScore = document.getElementById('avgScore').textContent;
-            if (!avgScore || avgScore === '0') {
-                showMessage('Спочатку розрахуйте та збережіть дані', 'warning');
-                return;
-            }
-            
-            // Семестр (можна додати вибір семестру, поки що за замовчуванням 1)
-            const semester = '1';
-            
-            // Створити URL з правильним кодуванням
-            const url = '/export_teacher_report/' + 
-                encodeURIComponent(year) + '/' + 
-                encodeURIComponent(className) + '/' + 
-                encodeURIComponent(teacher) + '/' + 
-                encodeURIComponent(subject) + '/' + 
-                semester;
-            
-            console.log('Export URL:', url);  // Для відлагодження
-            
-            // Завантажити Excel
-            window.location.href = url;
-        });
     }
 });
