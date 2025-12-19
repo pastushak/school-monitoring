@@ -5,15 +5,127 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Внесення даних - Моніторинг якості освіти</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <style>
+        .teacher-form-wrapper {
+            min-height: 100vh;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .teacher-form-header {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            padding: 1.5rem 2rem;
+            color: white;
+        }
+        
+        .teacher-form-header .header-wrapper {
+            max-width: 1600px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 2rem;
+        }
+        
+        .teacher-form-header h1 {
+            font-size: 1.5rem;
+            margin-bottom: 0.3rem;
+        }
+        
+        .teacher-form-header h2 {
+            font-size: 1rem;
+            opacity: 0.9;
+            margin-bottom: 0.3rem;
+        }
+        
+        .teacher-form-header h3 {
+            font-size: 1.1rem;
+            margin-top: 0.5rem;
+            font-weight: 600;
+        }
+        
+        .header-actions {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-end;
+            gap: 0.5rem;
+        }
+        
+        .user-info {
+            font-size: 0.95rem;
+            opacity: 0.95;
+        }
+        
+        .teacher-form-content {
+            flex: 1;
+            max-width: 1600px;
+            margin: 2rem auto;
+            padding: 0 1rem;
+            width: 100%;
+        }
+        
+        .form-card-compact {
+            background: white;
+            border-radius: 20px;
+            padding: 2rem;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            animation: slideUp 0.5s ease;
+        }
+        
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        .teacher-form-footer {
+            background: rgba(0, 0, 0, 0.3);
+            color: white;
+            text-align: center;
+            padding: 1.5rem;
+            margin-top: auto;
+        }
+        
+        @media (max-width: 768px) {
+            .teacher-form-header .header-wrapper {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+            
+            .header-actions {
+                width: 100%;
+                align-items: flex-start;
+            }
+            
+            .teacher-form-header h1 {
+                font-size: 1.2rem;
+            }
+            
+            .teacher-form-header h2 {
+                font-size: 0.9rem;
+            }
+            
+            .form-card-compact {
+                padding: 1.5rem;
+            }
+        }
+    </style>
 </head>
 <body>
-    <div class="container">
-        <header class="compact-header">
+    <div class="teacher-form-wrapper">
+        <header class="teacher-form-header">
             <div class="header-wrapper">
-                <div class="header-info" style="text-align: left;">
+                <div class="header-info">
                     <h1>Коломийський ліцей "Коломийська гімназія імені Михайла Грушевського"</h1>
                     <h2>Коломийської міської ради Івано-Франківської області</h2>
-                    <h3>МОНІТОРИНГ ЯКОСТІ ОСВІТИ - ВНЕСЕННЯ ДАНИХ</h3>
+                    <h3>📊 МОНІТОРИНГ ЯКОСТІ ОСВІТИ - ВНЕСЕННЯ ДАНИХ</h3>
                 </div>
                 <div class="header-actions">
                     <div class="user-info">Користувач: <strong>{{ teacher_name }}</strong></div>
@@ -27,7 +139,7 @@
             </div>
         </header>
         
-        <main class="monitoring-form-compact">
+        <main class="teacher-form-content">
             <div class="form-card-compact">
                 <form id="monitoringForm">
                     <!-- Компактна сітка вибору параметрів -->
@@ -181,7 +293,7 @@
             </div>
         </main>
         
-        <footer>
+        <footer class="teacher-form-footer">
             <p>Коломийський ліцей "Коломийська гімназія імені Михайла Грушевського" © 2025</p>
         </footer>
     </div>

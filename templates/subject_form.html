@@ -5,25 +5,281 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Внесення даних - Предмети</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <style>
+        .subject-form-wrapper {
+            min-height: 100vh;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .subject-header {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            padding: 1.5rem 2rem;
+            color: white;
+        }
+        
+        .subject-header .header-content {
+            max-width: 1400px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 2rem;
+        }
+        
+        .subject-header h1 {
+            font-size: 1.8rem;
+            margin-bottom: 0.5rem;
+        }
+        
+        .subject-header .subtitle {
+            font-size: 1rem;
+            opacity: 0.9;
+        }
+        
+        .subject-content {
+            flex: 1;
+            max-width: 1400px;
+            margin: 2rem auto;
+            padding: 0 1rem;
+            width: 100%;
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 2rem;
+        }
+        
+        .form-card {
+            background: white;
+            border-radius: 20px;
+            padding: 2.5rem;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            animation: slideUp 0.5s ease;
+        }
+        
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1.5rem;
+            margin-bottom: 1.5rem;
+        }
+        
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+        
+        .form-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 600;
+            color: #1e293b;
+            font-size: 0.95rem;
+        }
+        
+        .form-group select,
+        .form-group input,
+        .form-group textarea {
+            width: 100%;
+            padding: 0.875rem;
+            border: 2px solid #e2e8f0;
+            border-radius: 12px;
+            font-size: 1rem;
+            background: white;
+            transition: all 0.3s ease;
+            font-family: inherit;
+        }
+        
+        .form-group select:focus,
+        .form-group input:focus,
+        .form-group textarea:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.1);
+        }
+        
+        .form-group textarea {
+            resize: vertical;
+            min-height: 100px;
+        }
+        
+        .form-actions {
+            display: flex;
+            gap: 1rem;
+            margin-top: 2rem;
+        }
+        
+        .form-actions .btn {
+            flex: 1;
+            padding: 1rem;
+            font-size: 1.1rem;
+            border-radius: 12px;
+            border: none;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .form-actions .btn-primary {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+        }
+        
+        .form-actions .btn-primary:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 25px rgba(102, 126, 234, 0.4);
+        }
+        
+        .form-actions .btn-secondary {
+            background: linear-gradient(135deg, #64748b, #475569);
+            color: white;
+        }
+        
+        .form-actions .btn-secondary:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 25px rgba(100, 116, 139, 0.4);
+        }
+        
+        .message {
+            padding: 1rem;
+            border-radius: 12px;
+            margin-top: 1.5rem;
+            text-align: center;
+            font-weight: 500;
+            animation: slideDown 0.3s ease;
+        }
+        
+        @keyframes slideDown {
+            from {
+                opacity: 0;
+                transform: translateY(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        .message.success {
+            background: linear-gradient(135deg, #d1fae5, #a7f3d0);
+            color: #065f46;
+            border-left: 5px solid #16a34a;
+        }
+        
+        .message.error {
+            background: linear-gradient(135deg, #fee2e2, #fecaca);
+            color: #991b1b;
+            border-left: 5px solid #dc2626;
+        }
+        
+        .info-card {
+            background: white;
+            border-radius: 20px;
+            padding: 2rem;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            animation: slideUp 0.6s ease;
+            height: fit-content;
+        }
+        
+        .info-card h3 {
+            color: #667eea;
+            margin-bottom: 1.5rem;
+            font-size: 1.5rem;
+        }
+        
+        .info-card ol {
+            padding-left: 1.5rem;
+            margin-bottom: 1.5rem;
+        }
+        
+        .info-card li {
+            margin-bottom: 0.75rem;
+            color: #475569;
+            line-height: 1.6;
+        }
+        
+        .info-card p {
+            padding: 1rem;
+            background: linear-gradient(135deg, #fef3c7, #fde68a);
+            border-radius: 10px;
+            border-left: 4px solid #f59e0b;
+            color: #92400e;
+            font-size: 0.9rem;
+            line-height: 1.5;
+        }
+        
+        .info-card strong {
+            color: #ea580c;
+        }
+        
+        .subject-footer {
+            background: rgba(0, 0, 0, 0.3);
+            color: white;
+            text-align: center;
+            padding: 1.5rem;
+            margin-top: auto;
+        }
+        
+        @media (max-width: 1200px) {
+            .subject-content {
+                grid-template-columns: 1fr;
+            }
+        }
+        
+        @media (max-width: 768px) {
+            .subject-header .header-content {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+            
+            .subject-header h1 {
+                font-size: 1.5rem;
+            }
+            
+            .form-card,
+            .info-card {
+                padding: 1.5rem;
+            }
+            
+            .form-row {
+                grid-template-columns: 1fr;
+            }
+            
+            .form-actions {
+                flex-direction: column;
+            }
+        }
+    </style>
 </head>
 <body>
-    <div class="container">
-        <header>
+    <div class="subject-form-wrapper">
+        <header class="subject-header">
             <div class="header-content">
                 <div>
-                    <h1>Внесення даних по предметах</h1>
+                    <h1>📝 Внесення даних по предметах</h1>
                     <p class="subtitle">Користувач: <strong>{{ user.name }}</strong></p>
                 </div>
                 <a href="{{ url_for('logout') }}" class="btn btn-secondary">Вийти</a>
             </div>
         </header>
         
-        <main class="data-form">
+        <main class="subject-content">
             <div class="form-card">
                 <form id="subjectDataForm">
                     <div class="form-row">
                         <div class="form-group">
-                            <label for="subject">Предмет *</label>
+                            <label for="subject">📚 Предмет *</label>
                             <select id="subject" name="subject" required>
                                 <option value="">Виберіть предмет</option>
                                 {% for subject in subjects %}
@@ -33,7 +289,7 @@
                         </div>
                         
                         <div class="form-group">
-                            <label for="class">Клас *</label>
+                            <label for="class">👥 Клас *</label>
                             <input 
                                 type="text" 
                                 id="class" 
@@ -46,7 +302,7 @@
                     
                     <div class="form-row">
                         <div class="form-group">
-                            <label for="student">Учень/учениця *</label>
+                            <label for="student">👤 Учень/учениця *</label>
                             <input 
                                 type="text" 
                                 id="student" 
@@ -57,7 +313,7 @@
                         </div>
                         
                         <div class="form-group">
-                            <label for="date">Дата</label>
+                            <label for="date">📅 Дата</label>
                             <input 
                                 type="date" 
                                 id="date" 
@@ -67,7 +323,7 @@
                     </div>
                     
                     <div class="form-group">
-                        <label for="grade">Оцінка/бал</label>
+                        <label for="grade">📊 Оцінка/бал</label>
                         <input 
                             type="number" 
                             id="grade" 
@@ -79,18 +335,18 @@
                     </div>
                     
                     <div class="form-group">
-                        <label for="attendance">Відвідуваність</label>
+                        <label for="attendance">✓ Відвідуваність</label>
                         <select id="attendance" name="attendance">
                             <option value="">Виберіть</option>
-                            <option value="present">Присутній/на</option>
-                            <option value="absent">Відсутній/на</option>
-                            <option value="late">Запізнився/лась</option>
-                            <option value="excused">Відсутній/на з поважної причини</option>
+                            <option value="present">✓ Присутній/на</option>
+                            <option value="absent">✗ Відсутній/на</option>
+                            <option value="late">⏰ Запізнився/лась</option>
+                            <option value="excused">⚠ Відсутній/на з поважної причини</option>
                         </select>
                     </div>
                     
                     <div class="form-group">
-                        <label for="notes">Примітки</label>
+                        <label for="notes">📝 Примітки</label>
                         <textarea 
                             id="notes" 
                             name="notes" 
@@ -100,8 +356,8 @@
                     </div>
                     
                     <div class="form-actions">
-                        <button type="submit" class="btn btn-primary">Зберегти запис</button>
-                        <button type="reset" class="btn btn-secondary">Очистити форму</button>
+                        <button type="submit" class="btn btn-primary">💾 Зберегти запис</button>
+                        <button type="reset" class="btn btn-secondary">🔄 Очистити форму</button>
                     </div>
                 </form>
                 
@@ -109,7 +365,7 @@
             </div>
             
             <div class="info-card">
-                <h3>Інструкція:</h3>
+                <h3>💡 Інструкція:</h3>
                 <ol>
                     <li>Виберіть предмет зі списку</li>
                     <li>Вкажіть клас (наприклад: 11-А, 10-Б)</li>
@@ -121,7 +377,7 @@
             </div>
         </main>
         
-        <footer>
+        <footer class="subject-footer">
             <p>Коломийський ліцей "Коломийська гімназія імені Михайла Грушевського" © 2025</p>
         </footer>
     </div>

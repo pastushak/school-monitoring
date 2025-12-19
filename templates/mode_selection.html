@@ -3,60 +3,270 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Вибір режиму</title>
+    <title>Вибір режиму роботи</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <style>
+        .mode-selection-page {
+            min-height: 100vh;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .mode-header {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            padding: 1.5rem 2rem;
+            color: white;
+            text-align: center;
+        }
+        
+        .mode-header h1 {
+            font-size: 1.8rem;
+            margin-bottom: 0.5rem;
+        }
+        
+        .mode-header h2 {
+            font-size: 1.2rem;
+            opacity: 0.9;
+            margin-bottom: 0.5rem;
+        }
+        
+        .mode-header h3 {
+            font-size: 1rem;
+            opacity: 0.8;
+            font-weight: normal;
+        }
+        
+        .mode-content {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 2rem;
+        }
+        
+        .mode-container {
+            max-width: 1200px;
+            width: 100%;
+        }
+        
+        .mode-greeting {
+            text-align: center;
+            color: white;
+            margin-bottom: 3rem;
+        }
+        
+        .mode-greeting h2 {
+            font-size: 2.5rem;
+            margin-bottom: 1rem;
+            text-shadow: 0 2px 10px rgba(0,0,0,0.2);
+        }
+        
+        .mode-greeting p {
+            font-size: 1.2rem;
+            opacity: 0.95;
+        }
+        
+        .mode-cards {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+            margin-top: 2rem;
+        }
+        
+        .mode-card {
+            background: white;
+            border-radius: 20px;
+            padding: 2.5rem;
+            text-align: center;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            transition: all 0.3s ease;
+            cursor: pointer;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .mode-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 5px;
+            background: linear-gradient(90deg, var(--card-color), var(--card-color-dark));
+            transform: scaleX(0);
+            transition: transform 0.3s ease;
+        }
+        
+        .mode-card:hover::before {
+            transform: scaleX(1);
+        }
+        
+        .mode-card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 15px 40px rgba(0,0,0,0.3);
+        }
+        
+        .mode-card.teacher {
+            --card-color: #2563eb;
+            --card-color-dark: #1d4ed8;
+        }
+        
+        .mode-card.class-head {
+            --card-color: #16a34a;
+            --card-color-dark: #15803d;
+        }
+        
+        .mode-card.admin {
+            --card-color: #ea580c;
+            --card-color-dark: #c2410c;
+        }
+        
+        .mode-icon {
+            font-size: 4rem;
+            margin-bottom: 1.5rem;
+            filter: drop-shadow(0 4px 6px rgba(0,0,0,0.1));
+        }
+        
+        .mode-card h3 {
+            font-size: 1.5rem;
+            color: #1e293b;
+            margin-bottom: 1rem;
+            font-weight: 700;
+        }
+        
+        .mode-card p {
+            color: #64748b;
+            font-size: 1rem;
+            line-height: 1.6;
+            margin-bottom: 2rem;
+        }
+        
+        .mode-card .btn {
+            width: 100%;
+            padding: 1rem;
+            font-size: 1.1rem;
+            border-radius: 12px;
+            text-decoration: none;
+            display: block;
+            transition: all 0.3s ease;
+        }
+        
+        .mode-card.teacher .btn {
+            background: linear-gradient(135deg, #2563eb, #1d4ed8);
+        }
+        
+        .mode-card.class-head .btn {
+            background: linear-gradient(135deg, #16a34a, #15803d);
+        }
+        
+        .mode-card.admin .btn {
+            background: linear-gradient(135deg, #ea580c, #c2410c);
+        }
+        
+        .mode-card .btn:hover {
+            transform: scale(1.05);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        }
+        
+        .logout-section {
+            text-align: center;
+            margin-top: 3rem;
+        }
+        
+        .logout-section .btn-secondary {
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            backdrop-filter: blur(10px);
+            padding: 0.75rem 2rem;
+        }
+        
+        .logout-section .btn-secondary:hover {
+            background: rgba(255, 255, 255, 0.3);
+            border-color: rgba(255, 255, 255, 0.5);
+        }
+        
+        .mode-footer {
+            background: rgba(0, 0, 0, 0.3);
+            color: white;
+            text-align: center;
+            padding: 1.5rem;
+            margin-top: auto;
+        }
+        
+        @media (max-width: 768px) {
+            .mode-greeting h2 {
+                font-size: 1.8rem;
+            }
+            
+            .mode-cards {
+                grid-template-columns: 1fr;
+                gap: 1.5rem;
+            }
+            
+            .mode-card {
+                padding: 2rem;
+            }
+            
+            .mode-icon {
+                font-size: 3rem;
+            }
+        }
+    </style>
 </head>
 <body>
-    <div class="container">
-        <header>
+    <div class="mode-selection-page">
+        <header class="mode-header">
             <h1>Коломийський ліцей "Коломийська гімназія імені Михайла Грушевського"</h1>
             <h2>Коломийської міської ради Івано-Франківської області</h2>
             <h3>Моніторинг якості освіти</h3>
         </header>
         
-        <main class="mode-selection">
-            <div class="mode-card-wrapper">
-                <h2 style="text-align: center; margin-bottom: 2rem; color: var(--primary-color);">
-                    Вітаємо, {{ user_name }}!
-                </h2>
-                <p style="text-align: center; margin-bottom: 2rem; color: var(--secondary-color);">
-                    Оберіть режим роботи:
-                </p>
+        <div class="mode-content">
+            <div class="mode-container">
+                <div class="mode-greeting">
+                    <h2>Вітаємо, {{ user_name }}! 👋</h2>
+                    <p>Оберіть режим роботи:</p>
+                </div>
                 
-                <div class="mode-grid">
-                    <!-- Завжди доступний режим вчителя -->
-                    <a href="{{ url_for('switch_mode', mode='teacher') }}" class="mode-card teacher-mode">
-                        <div class="icon">📚</div>
+                <div class="mode-cards">
+                    {% if 'teacher' in available_roles %}
+                    <div class="mode-card teacher">
+                        <div class="mode-icon">📚</div>
                         <h3>Вчитель</h3>
                         <p>Внесення даних по предметах</p>
-                    </a>
-                    
-                    <!-- Режим класного керівника -->
-                    {% if 'class_head' in available_roles %}
-                    <a href="{{ url_for('switch_mode', mode='class_head') }}" class="mode-card class-mode">
-                        <div class="icon">👥</div>
-                        <h3>Класний керівник</h3>
-                        <p>Звіт по класу {{ user_class }}</p>
-                    </a>
+                        <a href="{{ url_for('teacher_form') }}" class="btn btn-primary">Обрати режим</a>
+                    </div>
                     {% endif %}
                     
-                    <!-- Режим адміністратора -->
+                    {% if 'class_head' in available_roles %}
+                    <div class="mode-card class-head">
+                        <div class="mode-icon">👥</div>
+                        <h3>Класний керівник</h3>
+                        <p>Звіт по класу {{ class_number }}</p>
+                        <a href="{{ url_for('class_report') }}" class="btn btn-success">Обрати режим</a>
+                    </div>
+                    {% endif %}
+                    
                     {% if 'admin' in available_roles %}
-                    <a href="{{ url_for('switch_mode', mode='admin') }}" class="mode-card admin-mode">
-                        <div class="icon">🏫</div>
-                        <h3>Адміністрація</h3>
-                        <p>Звіт по школі</p>
-                    </a>
+                    <div class="mode-card admin">
+                        <div class="mode-icon">🏫</div>
+                        <h3>Адміністратор</h3>
+                        <p>Звіти по всіх класах школи</p>
+                        <a href="{{ url_for('school_report') }}" class="btn btn-warning">Обрати режим</a>
+                    </div>
                     {% endif %}
                 </div>
                 
-                <div style="text-align: center; margin-top: 2rem;">
-                    <a href="{{ url_for('logout') }}" class="btn btn-secondary">Вийти</a>
+                <div class="logout-section">
+                    <a href="{{ url_for('logout') }}" class="btn btn-secondary">Вийти з системи</a>
                 </div>
             </div>
-        </main>
+        </div>
         
-        <footer>
+        <footer class="mode-footer">
             <p>ЦПРПП Коломийської міської ради © 2024</p>
         </footer>
     </div>

@@ -5,17 +5,376 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Звіт по школі</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <style>
+        .school-report-wrapper {
+            min-height: 100vh;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .school-header {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            padding: 1.5rem 2rem;
+            color: white;
+        }
+        
+        .school-header-content {
+            max-width: 1600px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 2rem;
+        }
+        
+        .school-header h1 {
+            font-size: 1.5rem;
+            margin-bottom: 0.3rem;
+        }
+        
+        .school-header h2 {
+            font-size: 1rem;
+            opacity: 0.9;
+            margin-bottom: 0.3rem;
+        }
+        
+        .school-header h3 {
+            font-size: 1.1rem;
+            margin-top: 0.5rem;
+            font-weight: 600;
+        }
+        
+        .header-actions {
+            display: flex;
+            gap: 0.5rem;
+        }
+        
+        .school-content {
+            flex: 1;
+            max-width: 1600px;
+            margin: 2rem auto;
+            padding: 0 1rem;
+            width: 100%;
+        }
+        
+        .school-card {
+            background: white;
+            border-radius: 20px;
+            padding: 2rem;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            animation: slideUp 0.5s ease;
+        }
+        
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        .filter-section {
+            background: linear-gradient(135deg, #f8fafc 0%, #e0e7ff 100%);
+            padding: 2rem;
+            border-radius: 16px;
+            margin-bottom: 2rem;
+            border: 2px solid rgba(102, 126, 234, 0.2);
+        }
+        
+        .filter-section h4 {
+            color: #667eea;
+            margin-bottom: 1.5rem;
+            font-size: 1.3rem;
+            text-align: center;
+        }
+        
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1.5rem;
+            margin-bottom: 1.5rem;
+        }
+        
+        .form-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 600;
+            color: #1e293b;
+            font-size: 0.95rem;
+        }
+        
+        .form-group select {
+            width: 100%;
+            padding: 0.875rem;
+            border: 2px solid #e2e8f0;
+            border-radius: 12px;
+            font-size: 1rem;
+            background: white;
+            transition: all 0.3s ease;
+        }
+        
+        .form-group select:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.1);
+        }
+        
+        .form-actions {
+            text-align: center;
+        }
+        
+        .form-actions .btn {
+            padding: 1rem 3rem;
+            font-size: 1.1rem;
+            border-radius: 12px;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            border: none;
+            color: white;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .form-actions .btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 25px rgba(102, 126, 234, 0.4);
+        }
+        
+        #progressSection {
+            background: linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%);
+            padding: 2rem;
+            border-radius: 16px;
+            margin: 2rem 0;
+            border: 2px solid #3b82f6;
+        }
+        
+        #progressSection h4 {
+            color: #1e40af;
+            margin-bottom: 1rem;
+            font-size: 1.3rem;
+            text-align: center;
+            font-weight: 700;
+        }
+        
+        .progress-bar-large {
+            position: relative;
+            width: 100%;
+            height: 60px;
+            background: white;
+            border-radius: 30px;
+            overflow: hidden;
+            box-shadow: inset 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+        
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #16a34a, #22c55e);
+            transition: width 0.8s ease;
+            border-radius: 30px;
+        }
+        
+        .progress-text {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-weight: bold;
+            font-size: 1.5rem;
+            color: #1e293b;
+            z-index: 2;
+        }
+        
+        #reportTable {
+            animation: fadeIn 0.5s ease;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        
+        #reportTable h3 {
+            color: #667eea;
+            margin-bottom: 1.5rem;
+            font-size: 1.5rem;
+            text-align: center;
+        }
+        
+        .export-section {
+            display: flex;
+            justify-content: flex-end;
+            margin-bottom: 1rem;
+        }
+        
+        #exportSchoolExcelBtn {
+            background: linear-gradient(135deg, #16a34a, #15803d);
+            color: white;
+            padding: 0.875rem 2rem;
+            border-radius: 12px;
+            border: none;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        #exportSchoolExcelBtn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 20px rgba(22, 163, 74, 0.4);
+        }
+        
+        .data-table {
+            overflow-x: auto;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+        }
+        
+        .data-table table {
+            width: 100%;
+            border-collapse: collapse;
+            background: white;
+            min-width: 1400px;
+        }
+        
+        .data-table th {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            padding: 1rem 0.75rem;
+            font-weight: 600;
+            text-align: center;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            font-size: 0.95rem;
+        }
+        
+        .data-table td {
+            padding: 0.875rem 0.75rem;
+            text-align: center;
+            border: 1px solid #e2e8f0;
+            font-size: 0.9rem;
+        }
+        
+        .data-table tbody tr:hover {
+            background: #f0f9ff;
+        }
+        
+        .data-table tbody tr:nth-child(even) {
+            background: #f8fafc;
+        }
+        
+        .data-table tbody tr:nth-child(even):hover {
+            background: #e0f2fe;
+        }
+        
+        .mini-progress {
+            display: inline-block;
+            width: 80px;
+            height: 25px;
+            background: #e2e8f0;
+            border-radius: 12px;
+            overflow: hidden;
+            position: relative;
+            vertical-align: middle;
+        }
+        
+        .mini-progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #16a34a, #22c55e);
+            border-radius: 12px;
+            transition: width 0.5s ease;
+        }
+        
+        .school-footer {
+            background: rgba(0, 0, 0, 0.3);
+            color: white;
+            text-align: center;
+            padding: 1.5rem;
+            margin-top: 2rem;
+        }
+        
+        .message {
+            padding: 1rem;
+            border-radius: 12px;
+            margin-top: 1.5rem;
+            text-align: center;
+            font-weight: 500;
+        }
+        
+        .message.success {
+            background: linear-gradient(135deg, #d1fae5, #a7f3d0);
+            color: #065f46;
+            border-left: 5px solid #16a34a;
+        }
+        
+        .message.error {
+            background: linear-gradient(135deg, #fee2e2, #fecaca);
+            color: #991b1b;
+            border-left: 5px solid #dc2626;
+        }
+        
+        .message.warning {
+            background: linear-gradient(135deg, #fef3c7, #fde68a);
+            color: #92400e;
+            border-left: 5px solid #f59e0b;
+        }
+        
+        @media (max-width: 1200px) {
+            .form-row {
+                grid-template-columns: 1fr;
+            }
+        }
+        
+        @media (max-width: 768px) {
+            .school-header-content {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+            
+            .school-header h1 {
+                font-size: 1.2rem;
+            }
+            
+            .school-header h2 {
+                font-size: 0.9rem;
+            }
+            
+            .school-card {
+                padding: 1.5rem;
+            }
+            
+            .filter-section {
+                padding: 1.5rem;
+            }
+            
+            .data-table {
+                overflow-x: auto;
+                -webkit-overflow-scrolling: touch;
+            }
+            
+            .progress-bar-large {
+                height: 50px;
+            }
+            
+            .progress-text {
+                font-size: 1.2rem;
+            }
+        }
+    </style>
 </head>
 <body>
-    <div class="container">
-        <header>
-            <div style="max-width: 1400px; margin: 0 auto; display: flex; justify-content: space-between; align-items: center;">
+    <div class="school-report-wrapper">
+        <header class="school-header">
+            <div class="school-header-content">
                 <div>
                     <h1>Коломийський ліцей "Коломийська гімназія імені Михайла Грушевського"</h1>
                     <h2>Коломийської міської ради Івано-Франківської області</h2>
-                    <h3>Звіт по класах за семестр</h3>
+                    <h3>🏫 Звіт по класах за семестр</h3>
                 </div>
-                <div style="display: flex; gap: 0.5rem;">
+                <div class="header-actions">
                     {% if session.available_roles and session.available_roles|length > 1 %}
                     <a href="{{ url_for('mode_selection') }}" class="btn btn-primary btn-sm">Змінити режим</a>
                     {% endif %}
@@ -24,9 +383,10 @@
             </div>
         </header>
         
-        <main class="report-page">
-            <div class="form-card">
+        <div class="school-content">
+            <div class="school-card">
                 <div class="filter-section">
+                    <h4>⚙️ Параметри звіту</h4>
                     <div class="form-row">
                         <div class="form-group">
                             <label for="yearFilter">Навчальний рік *</label>
@@ -48,31 +408,29 @@
                     </div>
                     
                     <div class="form-actions">
-                        <button id="loadReportBtn" class="btn btn-primary">Завантажити звіт</button>
+                        <button id="loadReportBtn" class="btn btn-primary">📊 Завантажити звіт</button>
                     </div>
                 </div>
                 
                 <!-- Загальний прогрес бар -->
-                <div id="progressSection" style="display: none; margin: 2rem 0;">
-                    <h4>Загальний прогрес заповнення по школі</h4>
+                <div id="progressSection" style="display: none;">
+                    <h4>📈 Загальний прогрес заповнення по школі</h4>
                     <div class="progress-bar progress-bar-large">
                         <div class="progress-fill" id="overallProgressFill"></div>
                         <span class="progress-text" id="overallProgressText">0%</span>
                     </div>
-                    <p style="text-align: center; margin-top: 0.5rem; color: var(--secondary-color);">
+                    <p style="text-align: center; margin-top: 1rem; color: #1e40af; font-weight: 600; font-size: 1.1rem;">
                         Заповнено: <strong id="overallFilledCount">0</strong> з <strong id="overallTotalCount">0</strong> предметів по школі
                     </p>
                 </div>
                 
                 <!-- Таблиця звіту по класах -->
                 <div id="reportTable" style="display: none; margin-top: 2rem;">
-                    <h3 style="text-align: center; margin-bottom: 1rem;">
-                        Звіт по класах за <span id="reportTitle"></span>
-                    </h3>
+                    <h3>📋 Звіт по класах за <span id="reportTitle"></span></h3>
                     
                     <!-- Кнопка експорту -->
-                    <div style="text-align: right; margin-bottom: 1rem;">
-                        <button id="exportSchoolExcelBtn" class="btn btn-success">
+                    <div class="export-section">
+                        <button id="exportSchoolExcelBtn">
                             📥 Експортувати в Excel
                         </button>
                     </div>
@@ -108,9 +466,9 @@
                 
                 <div id="message" class="message" style="display: none;"></div>
             </div>
-        </main>
+        </div>
         
-        <footer>
+        <footer class="school-footer">
             <p>Коломийський ліцей "Коломийська гімназія імені Михайла Грушевського" © 2025</p>
         </footer>
     </div>

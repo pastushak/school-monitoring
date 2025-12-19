@@ -6,45 +6,218 @@
     <title>Авторизація - Моніторинг якості освіти</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
     <style>
-        .login-form {
+        .login-page {
+            min-height: 100vh;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .login-header {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            padding: 1.5rem 2rem;
+            color: white;
+            text-align: center;
+        }
+        
+        .login-header h1 {
+            font-size: 1.8rem;
+            margin-bottom: 0.5rem;
+        }
+        
+        .login-header h2 {
+            font-size: 1.2rem;
+            opacity: 0.9;
+            margin-bottom: 0.5rem;
+        }
+        
+        .login-header h3 {
+            font-size: 1rem;
+            opacity: 0.8;
+            font-weight: normal;
+        }
+        
+        .login-content {
+            flex: 1;
             display: flex;
             align-items: center;
             justify-content: center;
-            min-height: calc(100vh - 300px);
-        }
-
-        .login-form .form-card {
-            max-width: 450px;
-            width: 100%;
             padding: 2rem;
         }
-
-        .login-form .form-group {
+        
+        .login-card {
+            background: white;
+            border-radius: 20px;
+            padding: 3rem;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            max-width: 500px;
+            width: 100%;
+            animation: slideUp 0.5s ease;
+        }
+        
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        .login-card h2 {
+            text-align: center;
+            margin-bottom: 2rem;
+            color: #667eea;
+            font-size: 2rem;
+            font-weight: 700;
+        }
+        
+        .login-icon {
+            text-align: center;
+            font-size: 4rem;
             margin-bottom: 1.5rem;
+            filter: drop-shadow(0 4px 6px rgba(0,0,0,0.1));
+        }
+        
+        .error-message {
+            background: linear-gradient(135deg, #fee2e2, #fecaca);
+            color: #991b1b;
+            padding: 1rem;
+            border-radius: 12px;
+            border-left: 5px solid #dc2626;
+            margin-bottom: 1.5rem;
+            font-weight: 500;
+            animation: shake 0.5s ease;
+        }
+        
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-10px); }
+            75% { transform: translateX(10px); }
+        }
+        
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+        
+        .form-group label {
+            display: block;
+            margin-bottom: 0.75rem;
+            font-weight: 600;
+            color: #1e293b;
+            font-size: 1rem;
+        }
+        
+        .form-group input[type="email"] {
+            width: 100%;
+            padding: 1rem 1.25rem;
+            border: 2px solid #e2e8f0;
+            border-radius: 12px;
+            font-size: 1.05rem;
+            transition: all 0.3s ease;
+            background-color: #f8fafc;
+        }
+        
+        .form-group input[type="email"]:focus {
+            outline: none;
+            border-color: #667eea;
+            background-color: white;
+            box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.1);
+            transform: translateY(-2px);
+        }
+        
+        .form-group input[type="email"]::placeholder {
+            color: #94a3b8;
+        }
+        
+        .btn-login {
+            width: 100%;
+            padding: 1.25rem;
+            font-size: 1.1rem;
+            font-weight: 700;
+            border: none;
+            border-radius: 12px;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-top: 1rem;
+        }
+        
+        .btn-login:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 25px rgba(102, 126, 234, 0.4);
+        }
+        
+        .btn-login:active {
+            transform: translateY(-1px);
+        }
+        
+        .login-footer {
+            background: rgba(0, 0, 0, 0.3);
+            color: white;
+            text-align: center;
+            padding: 1.5rem;
+            margin-top: auto;
+        }
+        
+        .login-hint {
+            text-align: center;
+            margin-top: 1.5rem;
+            padding-top: 1.5rem;
+            border-top: 2px solid #e2e8f0;
+            color: #64748b;
+            font-size: 0.9rem;
+        }
+        
+        @media (max-width: 768px) {
+            .login-header h1 {
+                font-size: 1.3rem;
+            }
+            
+            .login-header h2 {
+                font-size: 1rem;
+            }
+            
+            .login-card {
+                padding: 2rem 1.5rem;
+            }
+            
+            .login-card h2 {
+                font-size: 1.5rem;
+            }
+            
+            .login-icon {
+                font-size: 3rem;
+            }
         }
     </style>
 </head>
 <body>
-    <div class="container">
-        <header>
+    <div class="login-page">
+        <header class="login-header">
             <h1>Коломийський ліцей "Коломийська гімназія імені Михайла Грушевського"</h1>
             <h2>Коломийської міської ради Івано-Франківської області</h2>
             <h3>Моніторинг якості освіти</h3>
         </header>
         
-        <main class="login-form">
-            <div class="form-card">
-                <h2 style="text-align: center; margin-bottom: 2rem; color: var(--primary-color);">Авторизація</h2>
+        <div class="login-content">
+            <div class="login-card">
+                <div class="login-icon">🔐</div>
+                <h2>Авторизація</h2>
                 
                 {% if error %}
                 <div class="error-message">
-                    {{ error }}
+                    ⚠️ {{ error }}
                 </div>
                 {% endif %}
                 
                 <form method="POST" action="{{ url_for('login') }}">
                     <div class="form-group">
-                        <label for="email">Ваша корпоративна електронна адреса *</label>
+                        <label for="email">Ваша корпоративна електронна адреса</label>
                         <input 
                             type="email" 
                             id="email" 
@@ -55,12 +228,16 @@
                         >
                     </div>
                     
-                    <button type="submit" class="btn btn-primary" style="width: 100%;">Увійти</button>
+                    <button type="submit" class="btn-login">Увійти в систему</button>
+                    
+                    <div class="login-hint">
+                        💡 Використовуйте корпоративну пошту @kolgym.if.ua
+                    </div>
                 </form>
             </div>
-        </main>
+        </div>
         
-        <footer>
+        <footer class="login-footer">
             <p>Коломийський ліцей "Коломийська гімназія імені Михайла Грушевського" © 2025</p>
         </footer>
     </div>

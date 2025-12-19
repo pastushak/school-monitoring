@@ -5,26 +5,259 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Перегляд даних - Клас</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <style>
+        .class-view-wrapper {
+            min-height: 100vh;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .class-view-header {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            padding: 1.5rem 2rem;
+            color: white;
+        }
+        
+        .class-view-header .header-content {
+            max-width: 1600px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 2rem;
+        }
+        
+        .class-view-header h1 {
+            font-size: 1.8rem;
+            margin-bottom: 0.5rem;
+        }
+        
+        .class-view-header .subtitle {
+            font-size: 1rem;
+            opacity: 0.9;
+        }
+        
+        .class-view-content {
+            flex: 1;
+            max-width: 1600px;
+            margin: 2rem auto;
+            padding: 0 1rem;
+            width: 100%;
+        }
+        
+        .view-card {
+            background: white;
+            border-radius: 20px;
+            padding: 2rem;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            margin-bottom: 2rem;
+            animation: slideUp 0.5s ease;
+        }
+        
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        .view-card h2 {
+            color: #667eea;
+            margin-bottom: 2rem;
+            font-size: 1.8rem;
+            text-align: center;
+        }
+        
+        .filter-section {
+            background: linear-gradient(135deg, #f8fafc 0%, #e0e7ff 100%);
+            padding: 2rem;
+            border-radius: 16px;
+            margin-bottom: 2rem;
+            border: 2px solid rgba(102, 126, 234, 0.2);
+        }
+        
+        .filter-section .form-group {
+            margin-bottom: 1.5rem;
+        }
+        
+        .filter-section label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 600;
+            color: #1e293b;
+            font-size: 1rem;
+        }
+        
+        .filter-section select,
+        .filter-section input {
+            width: 100%;
+            padding: 0.875rem;
+            border: 2px solid #e2e8f0;
+            border-radius: 12px;
+            font-size: 1rem;
+            background: white;
+            transition: all 0.3s ease;
+        }
+        
+        .filter-section select:focus,
+        .filter-section input:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.1);
+        }
+        
+        .filter-section .btn {
+            width: 100%;
+            padding: 1rem;
+            font-size: 1.1rem;
+            border-radius: 12px;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            border: none;
+            color: white;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .filter-section .btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 25px rgba(102, 126, 234, 0.4);
+        }
+        
+        .data-table {
+            overflow-x: auto;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+        }
+        
+        .data-table table {
+            width: 100%;
+            border-collapse: collapse;
+            background: white;
+            min-width: 1000px;
+        }
+        
+        .data-table th {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            padding: 1rem 0.75rem;
+            font-weight: 600;
+            text-align: center;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            font-size: 0.95rem;
+        }
+        
+        .data-table td {
+            padding: 0.875rem 0.75rem;
+            text-align: center;
+            border: 1px solid #e2e8f0;
+            font-size: 0.9rem;
+        }
+        
+        .data-table tbody tr:hover {
+            background: #f0f9ff;
+        }
+        
+        .data-table tbody tr:nth-child(even) {
+            background: #f8fafc;
+        }
+        
+        .data-table tbody tr:nth-child(even):hover {
+            background: #e0f2fe;
+        }
+        
+        .no-data {
+            text-align: center;
+            padding: 4rem 2rem;
+            color: #64748b;
+        }
+        
+        .no-data p {
+            font-size: 1.5rem;
+            margin: 0;
+        }
+        
+        .stats-card {
+            background: white;
+            border-radius: 20px;
+            padding: 2rem;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            animation: slideUp 0.6s ease;
+        }
+        
+        .stats-card h3 {
+            color: #667eea;
+            margin-bottom: 1.5rem;
+            font-size: 1.5rem;
+            text-align: center;
+        }
+        
+        #statistics {
+            padding: 1rem;
+            background: linear-gradient(135deg, #f0f9ff 0%, #e0e7ff 100%);
+            border-radius: 12px;
+            border: 2px solid rgba(102, 126, 234, 0.2);
+        }
+        
+        .class-view-footer {
+            background: rgba(0, 0, 0, 0.3);
+            color: white;
+            text-align: center;
+            padding: 1.5rem;
+            margin-top: auto;
+        }
+        
+        @media (max-width: 768px) {
+            .class-view-header .header-content {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+            
+            .class-view-header h1 {
+                font-size: 1.5rem;
+            }
+            
+            .view-card,
+            .stats-card {
+                padding: 1.5rem;
+            }
+            
+            .filter-section {
+                padding: 1.5rem;
+            }
+            
+            .data-table {
+                overflow-x: auto;
+                -webkit-overflow-scrolling: touch;
+            }
+        }
+    </style>
 </head>
 <body>
-    <div class="container">
-        <header>
+    <div class="class-view-wrapper">
+        <header class="class-view-header">
             <div class="header-content">
                 <div>
-                    <h1>Перегляд даних класу</h1>
+                    <h1>📊 Перегляд даних класу</h1>
                     <p class="subtitle">Користувач: <strong>{{ user.name }}</strong> | Клас: <strong>{{ user.get('class', 'Не вказано') }}</strong></p>
                 </div>
                 <a href="{{ url_for('logout') }}" class="btn btn-secondary">Вийти</a>
             </div>
         </header>
         
-        <main class="data-view">
+        <main class="class-view-content">
             <div class="view-card">
-                <h2>Дані по класу {{ user.get('class', '') }}</h2>
+                <h2>📚 Дані по класу {{ user.get('class', '') }}</h2>
                 
                 <div class="filter-section">
                     <div class="form-group">
-                        <label for="subjectFilter">Фільтр по предмету:</label>
+                        <label for="subjectFilter">🔍 Фільтр по предмету:</label>
                         <select id="subjectFilter">
                             <option value="">Всі предмети</option>
                             {% for subject, data in subjects_data.items() %}
@@ -34,11 +267,11 @@
                     </div>
                     
                     <div class="form-group">
-                        <label for="studentFilter">Фільтр по учню:</label>
+                        <label for="studentFilter">👤 Фільтр по учню:</label>
                         <input type="text" id="studentFilter" placeholder="Прізвище учня">
                     </div>
                     
-                    <button onclick="applyFilters()" class="btn btn-primary">Застосувати фільтри</button>
+                    <button onclick="applyFilters()" class="btn btn-primary">✓ Застосувати фільтри</button>
                 </div>
                 
                 <div id="dataTable" class="data-table">
@@ -96,14 +329,14 @@
             </div>
             
             <div class="stats-card">
-                <h3>Статистика</h3>
+                <h3>📈 Статистика</h3>
                 <div id="statistics">
                     <p>Завантаження статистики...</p>
                 </div>
             </div>
         </main>
         
-        <footer>
+        <footer class="class-view-footer">
             <p>Коломийський ліцей "Коломийська гімназія імені Михайла Грушевського" © 2025</p>
         </footer>
     </div>
