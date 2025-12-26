@@ -1,4 +1,13 @@
 document.addEventListener('DOMContentLoaded', function() {
+    // Список предметів що можуть мати поділ на групи
+    const DIVISIBLE_SUBJECTS = [
+        'Англійська мова',
+        'Інформатика',
+        'Німецька мова',
+        'Технології',
+        'Українська мова',
+        'Захист України'
+    ];
     const yearSelect = document.getElementById('year');
     const classSelect = document.getElementById('class');
     const teacherInput = document.getElementById('teacher'); // Тепер це hidden input
@@ -99,6 +108,16 @@ document.addEventListener('DOMContentLoaded', function() {
         // Показати форму для введення даних
         dataSection.style.display = 'block';
         clearGrades();
+
+        // ✅ ДОДАТИ ЦЕ: Показати/сховати підказку про поділ
+        const divisionHint = document.getElementById('divisionHint');
+        if (divisionHint) {
+            if (DIVISIBLE_SUBJECTS.includes(subject)) {
+                divisionHint.style.display = 'block';
+            } else {
+                divisionHint.style.display = 'none';
+            }
+        }
         
         // Спроба завантажити збережені дані
         try {
@@ -221,6 +240,12 @@ document.addEventListener('DOMContentLoaded', function() {
             showMessage('Заповніть всі обов\'язкові поля', 'error');
             return;
         }
+
+        const studentCount = parseInt(studentCountInput.value);
+        if (!studentCount || studentCount < 1 || studentCount > 50) {
+            showMessage('❌ Вкажіть коректну кількість учнів (1-50)', 'error');
+            return;
+        }
         
         // Зібрати дані оцінок
         const grades = {};
@@ -334,8 +359,9 @@ document.addEventListener('DOMContentLoaded', function() {
                 return;
             }
             
-            // Семестр (можна додати вибір семестру, поки що за замовчуванням 1)
-            const semester = '1';
+            // ✅ ОНОВЛЕНО: Отримати вибраний семестр
+            const semesterSelect = document.getElementById('semester');
+            const semester = semesterSelect ? semesterSelect.value : '1';
             
             // Створити URL з правильним кодуванням
             const url = '/export_teacher_report/' + 
