@@ -5,12 +5,6 @@ from dotenv import load_dotenv
 import db_mongo
 import export_excel
 
-# Завантажити змінні середовища
-load_dotenv()
-
-app = Flask(__name__)
-app.secret_key = os.getenv('SECRET_KEY', 'your-secret-key-change-in-production')
-
 def sync_school_data_on_startup():
     """Синхронізувати school_data.json з MongoDB при старті"""
     import json
@@ -38,6 +32,12 @@ def sync_school_data_on_startup():
         
     except Exception as e:
         print(f"✗ ПОМИЛКА синхронізації: {e}")
+
+# Завантажити змінні середовища
+load_dotenv()
+
+app = Flask(__name__)
+app.secret_key = os.getenv('SECRET_KEY', 'your-secret-key-change-in-production')
 
 # Викликати при старті застосунку
 sync_school_data_on_startup()
