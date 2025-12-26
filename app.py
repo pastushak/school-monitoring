@@ -5,6 +5,7 @@ from dotenv import load_dotenv
 import db_mongo
 import export_excel
 
+# Автоматична синхронізація school_data при старті
 def sync_school_data_on_startup():
     """Синхронізувати school_data.json з MongoDB при старті"""
     import json
@@ -32,6 +33,9 @@ def sync_school_data_on_startup():
         
     except Exception as e:
         print(f"✗ ПОМИЛКА синхронізації: {e}")
+
+# Викликати при старті
+sync_school_data_on_startup()
 
 # Завантажити змінні середовища
 load_dotenv()
