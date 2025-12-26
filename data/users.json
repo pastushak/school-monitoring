@@ -11,7 +11,7 @@
   },
   "fedoryshyna_olena@kolgym.if.ua": {
     "role": "admin",
-    "name": "Федоришин Олена Миколаївна",
+    "name": "Федоришина Олена Миколаївна",
     "class": null
   },
   "sembratovych_lyubov@kolgym.if.ua": {
@@ -162,6 +162,16 @@
   "fedorak_olena@kolgym.if.ua": {
     "role": "teacher",
     "name": "Федорак Олена Ігорівна",
+    "class": null
+  },
+  "nadraga_svyatoslav@kolgym.if.ua": {
+    "role": "teacher",
+    "name": "Надрага Святослав Іванович",
+    "class": null
+  },
+  "siletskyy_andrian@kolgym.if.ua": {
+    "role": "teacher",
+    "name": "Сілецький Андріан Володимирович",
     "class": null
   }
 }
