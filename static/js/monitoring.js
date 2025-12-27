@@ -108,7 +108,7 @@ document.addEventListener('DOMContentLoaded', function() {
         // Показати форму для введення даних
         dataSection.style.display = 'block';
         clearGrades();
-
+        
         // ✅ ДОДАТИ ЦЕ: Показати/сховати підказку про поділ
         const divisionHint = document.getElementById('divisionHint');
         if (divisionHint) {
@@ -123,8 +123,10 @@ document.addEventListener('DOMContentLoaded', function() {
         try {
             const year = yearSelect.value;
             const className = classSelect.value;
+            const semesterSelect = document.getElementById('semester');
+            const semester = semesterSelect ? semesterSelect.value : '1';
             
-            const response = await fetch(`/get_monitoring/${year}/${className}/${encodeURIComponent(teacherName)}/${encodeURIComponent(subject)}`);
+            const response = await fetch(`/get_monitoring/${year}/${className}/${encodeURIComponent(teacherName)}/${encodeURIComponent(subject)}/${semester}`);
             const data = await response.json();
             
             if (data.grades) {
@@ -132,6 +134,12 @@ document.addEventListener('DOMContentLoaded', function() {
                 for (let i = 1; i <= 12; i++) {
                     document.getElementById('grade' + i).value = data.grades['grade' + i] || 0;
                 }
+                
+                // ✅ ДОДАТИ ЦЕ: Завантажити збережену кількість учнів
+                if (data.student_count) {
+                    studentCountInput.value = data.student_count;
+                }
+                
                 calculateStatistics();
             }
         } catch (error) {
