@@ -126,6 +126,37 @@
             .form-card-compact {
                 padding: 1.5rem;
             }
+
+            /* Стилі для н/а колонки */
+            .na-level {
+                background: #f3f4f6 !important;
+                color: #6b7280;
+                font-weight: 600;
+                border-left: 3px solid #9ca3af !important;
+            }
+            
+            .na-cell {
+                background: #fafafa;
+                border-left: 3px solid #d1d5db !important;
+            }
+            
+            .na-cell input {
+                border-color: #d1d5db;
+                background: white;
+            }
+            
+            .na-cell input:focus {
+                border-color: #9ca3af;
+                background: #fefefe;
+            }
+            
+            @media (max-width: 768px) {
+                .na-level small {
+                    display: block;
+                    font-size: 0.7rem;
+                }
+            }
+
         }
     </style>
 </head>
@@ -220,13 +251,14 @@
                             <h4>Успішність за групами оцінок <small>(введіть кількість учнів)</small></h4>
                             <div class="scroll-hint">👆 Прогортайте таблицю вліво-вправо →</div>
                             
-                            <table>
+<table>
                                 <thead>
                                     <tr>
                                         <th colspan="3" class="high-level">високий рівень</th>
                                         <th colspan="3" class="sufficient-level">достатній рівень</th>
                                         <th colspan="3" class="average-level">середній рівень</th>
                                         <th colspan="3" class="initial-level">початковий рівень</th>
+                                        <th rowspan="2" class="na-level">н/а<br><small>(не атест.)</small></th>
                                     </tr>
                                     <tr>
                                         <th>"12"</th>
@@ -257,6 +289,7 @@
                                         <td><input type="number" id="grade3" min="0" value="0"></td>
                                         <td><input type="number" id="grade2" min="0" value="0"></td>
                                         <td><input type="number" id="grade1" min="0" value="0"></td>
+                                        <td class="na-cell"><input type="number" id="gradeNA" min="0" value="0"></td>
                                     </tr>
                                     <tr class="percentage-row">
                                         <td id="percent12">0%</td>
@@ -271,6 +304,7 @@
                                         <td id="percent3">0%</td>
                                         <td id="percent2">0%</td>
                                         <td id="percent1">0%</td>
+                                        <td id="percentNA" class="na-cell">0%</td>
                                     </tr>
                                 </tbody>
                             </table>

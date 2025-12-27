@@ -24,6 +24,11 @@ document.addEventListener('DOMContentLoaded', function() {
     for (let i = 12; i >= 1; i--) {
         gradeInputs.push(document.getElementById('grade' + i));
     }
+    // ✅ ДОДАТИ н/а
+    const gradeNA = document.getElementById('gradeNA');
+    if (gradeNA) {
+        gradeInputs.push(gradeNA);
+    }
     
     // Каскадні випадаючі списки
     yearSelect.addEventListener('change', async function() {
@@ -135,7 +140,12 @@ document.addEventListener('DOMContentLoaded', function() {
                     document.getElementById('grade' + i).value = data.grades['grade' + i] || 0;
                 }
                 
-                // ✅ ДОДАТИ ЦЕ: Завантажити збережену кількість учнів
+                // ✅ ДОДАТИ н/а
+                if (data.grades.gradeNA !== undefined) {
+                    document.getElementById('gradeNA').value = data.grades.gradeNA || 0;
+                }
+                
+                // Завантажити збережену кількість учнів
                 if (data.student_count) {
                     studentCountInput.value = data.student_count;
                 }
@@ -169,9 +179,13 @@ document.addEventListener('DOMContentLoaded', function() {
             const percent = ((count / total) * 100).toFixed(2);
             document.getElementById('percent' + i).textContent = percent + '%';
         }
+
+        // ✅ ДОДАТИ н/а
+        const naCount = parseInt(document.getElementById('gradeNA').value) || 0;
+        const naPercent = ((naCount / total) * 100).toFixed(2);
+        document.getElementById('percentNA').textContent = naPercent + '%';
     }
     
-    // Розрахунок всіх показників
     function calculateStatistics() {
         const total = parseInt(studentCountInput.value) || 0;
         if (total === 0) {
@@ -188,13 +202,16 @@ document.addEventListener('DOMContentLoaded', function() {
             inputTotal += count;
         }
         
-        // Перевірка
-        if (inputTotal > total) {
-            showMessage('Увага! Сума введених оцінок перевищує кількість учнів у класі', 'error');
+        // ✅ ДОДАТИ н/а
+        const naCount = parseInt(document.getElementById('gradeNA').value) || 0;
+        
+        // Перевірка: оцінені + н/а не повинні перевищувати загальну кількість
+        if (inputTotal + naCount > total) {
+            showMessage('Увага! Сума оцінок та н/а перевищує кількість учнів у класі', 'error');
             return;
         }
         
-        // 1. Середній бал успішності
+        // 1. Середній бал (тільки з оцінених)
         let sumGrades = 0;
         for (let i = 1; i <= 12; i++) {
             sumGrades += i * grades[i];
@@ -202,7 +219,7 @@ document.addEventListener('DOMContentLoaded', function() {
         const avgScore = inputTotal > 0 ? (sumGrades / inputTotal).toFixed(2) : 0;
         document.getElementById('avgScore').textContent = avgScore;
         
-        // 2. Ступінь навченості (СН) за формулою Симонова
+        // 2. Ступінь навченості (від загальної кількості учнів)
         let snSum = 0;
         for (let i = 4; i <= 12; i++) {
             snSum += i * grades[i];
@@ -218,18 +235,20 @@ document.addEventListener('DOMContentLoaded', function() {
         else levelText = '-';
         document.getElementById('learningLevelText').textContent = levelText;
         
-        // 3. Коефіцієнт якості знань
+        // 3. Коефіцієнт якості знань (від загальної кількості)
         const highGrades = grades[12] + grades[11] + grades[10];
         const qualityCoeff = total > 0 ? ((highGrades / total) * 100).toFixed(2) : 0;
         document.getElementById('qualityCoeff').textContent = qualityCoeff + '%';
         
-        // 4. Якість знань
+        // 4. Якість знань (від загальної кількості)
         const passedGrades = grades[12] + grades[11] + grades[10] + grades[9] + grades[8] + grades[7];
         const qualityPercent = total > 0 ? ((passedGrades / total) * 100).toFixed(2) : 0;
         document.getElementById('qualityPercent').textContent = qualityPercent + '%';
         
-        // 5. Коефіцієнт результативності знань
-        const resultCoeff = total > 0 ? ((inputTotal / total) * 100).toFixed(2) : 0;
+        // 5. Коефіцієнт результативності (від тих хто міг бути оцінений)
+        // ✅ ВИПРАВЛЕНО: враховуємо н/а
+        const couldBeGraded = total - naCount; // Мінус н/а
+        const resultCoeff = couldBeGraded > 0 ? ((inputTotal / couldBeGraded) * 100).toFixed(2) : 0;
         document.getElementById('resultCoeff').textContent = resultCoeff + '%';
         
         calculatePercentages();
@@ -260,6 +279,8 @@ document.addEventListener('DOMContentLoaded', function() {
         for (let i = 1; i <= 12; i++) {
             grades['grade' + i] = parseInt(document.getElementById('grade' + i).value) || 0;
         }
+        // ✅ ДОДАТИ н/а
+        grades['gradeNA'] = parseInt(document.getElementById('gradeNA').value) || 0;
         
         // Зібрати статистику
         const statistics = {
@@ -401,6 +422,10 @@ document.addEventListener('DOMContentLoaded', function() {
             document.getElementById('grade' + i).value = 0;
             document.getElementById('percent' + i).textContent = '0%';
         }
+        // ✅ ДОДАТИ н/а
+        document.getElementById('gradeNA').value = 0;
+        document.getElementById('percentNA').textContent = '0%';
+        
         document.getElementById('avgScore').textContent = '0';
         document.getElementById('learningLevel').textContent = '0%';
         document.getElementById('learningLevelText').textContent = '-';
