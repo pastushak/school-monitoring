@@ -208,9 +208,9 @@ def save_monitoring():
     
     return jsonify({'success': True})
 
-@app.route('/get_monitoring/<year>/<class_name>/<teacher>/<subject>')
-def get_monitoring(year, class_name, teacher, subject):
-    data = db_mongo.get_monitoring_data(year, class_name, teacher, subject)
+@app.route('/get_monitoring/<year>/<class_name>/<teacher>/<subject>/<semester>')
+def get_monitoring(year, class_name, teacher, subject, semester):
+    data = db_mongo.get_monitoring_data(year, class_name, teacher, subject, semester)
     return jsonify(data if data else {})
 
 # Звіт по класу - дані

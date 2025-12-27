@@ -105,14 +105,19 @@ def get_user_by_email(email):
     return users_collection.find_one({"email": email})
 
 def save_monitoring_data(data):
-    """Зберегти дані моніторингу"""
+    """Зберегти дані моніторингу з урахуванням семестру"""
     data['updated_at'] = datetime.now()
+    
+    # Перетворити semester на int якщо це строка
+    if 'semester' in data:
+        data['semester'] = int(data['semester'])
     
     query = {
         'year': data['year'],
         'class': data['class'],
         'teacher': data['teacher'],
-        'subject': data['subject']
+        'subject': data['subject'],
+        'semester': data.get('semester', 1)  # За замовчуванням 1
     }
     
     existing = monitoring_collection.find_one(query)
@@ -123,32 +128,45 @@ def save_monitoring_data(data):
         data['created_at'] = datetime.now()
         monitoring_collection.insert_one(data)
 
-def get_monitoring_data(year, class_name, teacher, subject):
-    """Отримати дані моніторингу"""
+def get_monitoring_data(year, class_name, teacher, subject, semester):
+    """Отримати дані моніторингу з урахуванням семестру"""
     result = monitoring_collection.find_one({
         'year': year,
         'class': class_name,
         'teacher': teacher,
-        'subject': subject
+        'subject': subject,
+        'semester': int(semester)
     })
     if result:
         result.pop('_id', None)
     return result
 
-def get_class_monitoring_data(year, class_name):
-    """Отримати всі дані по класу"""
-    cursor = monitoring_collection.find({
+def get_class_monitoring_data(year, class_name, semester=None):
+    """Отримати всі дані по класу з урахуванням семестру"""
+    query = {
         'year': year,
         'class': class_name
-    })
+    }
+    
+    # Якщо вказано семестр - фільтрувати
+    if semester is not None:
+        query['semester'] = int(semester)
+    
+    cursor = monitoring_collection.find(query)
     results = list(cursor)
     for r in results:
         r.pop('_id', None)
     return results
 
-def get_all_monitoring_data(year):
-    """Отримати всі дані по школі"""
-    cursor = monitoring_collection.find({'year': year})
+def get_all_monitoring_data(year, semester=None):
+    """Отримати всі дані по школі з урахуванням семестру"""
+    query = {'year': year}
+    
+    # Якщо вказано семестр - фільтрувати
+    if semester is not None:
+        query['semester'] = int(semester)
+    
+    cursor = monitoring_collection.find(query)
     results = list(cursor)
     for r in results:
         r.pop('_id', None)
