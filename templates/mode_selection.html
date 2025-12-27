@@ -195,6 +195,159 @@
             padding: 1.5rem;
             margin-top: auto;
         }
+
+        /* Модальне вікно */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 9999;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.7);
+            backdrop-filter: blur(5px);
+            justify-content: center;
+            align-items: center;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+        
+        .modal.show {
+            opacity: 1;
+        }
+        
+        .modal-content {
+            background: white;
+            border-radius: 24px;
+            width: 90%;
+            max-width: 600px;
+            max-height: 80vh;
+            overflow: hidden;
+            box-shadow: 0 25px 80px rgba(0, 0, 0, 0.4);
+            animation: modalSlideUp 0.4s ease;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        @keyframes modalSlideUp {
+            from {
+                transform: translateY(50px);
+                opacity: 0;
+            }
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+        
+        .modal-header {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            padding: 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .modal-header h2 {
+            margin: 0;
+            font-size: 1.5rem;
+        }
+        
+        .version-badge {
+            background: rgba(255, 255, 255, 0.2);
+            padding: 0.5rem 1rem;
+            border-radius: 12px;
+            font-size: 0.9rem;
+            font-weight: 600;
+            backdrop-filter: blur(10px);
+        }
+        
+        .modal-body {
+            padding: 2rem;
+            overflow-y: auto;
+            flex: 1;
+        }
+        
+        .changelog-section {
+            margin-bottom: 1.5rem;
+        }
+        
+        .changelog-section:last-child {
+            margin-bottom: 0;
+        }
+        
+        .changelog-section h3 {
+            color: #667eea;
+            font-size: 1.1rem;
+            margin-bottom: 0.75rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .changelog-section ul {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+        
+        .changelog-section li {
+            padding: 0.5rem 0;
+            padding-left: 1.5rem;
+            position: relative;
+            color: #4b5563;
+            line-height: 1.6;
+        }
+        
+        .changelog-section li:before {
+            content: "•";
+            position: absolute;
+            left: 0.5rem;
+            color: #667eea;
+            font-weight: bold;
+        }
+        
+        .modal-footer {
+            padding: 1.5rem 2rem;
+            background: #f9fafb;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-top: 1px solid #e5e7eb;
+        }
+        
+        .modal-footer small {
+            color: #9ca3af;
+        }
+        
+        @media (max-width: 768px) {
+            .modal-content {
+                width: 95%;
+                max-height: 90vh;
+            }
+            
+            .modal-header {
+                padding: 1.5rem;
+                flex-direction: column;
+                gap: 0.75rem;
+                align-items: flex-start;
+            }
+            
+            .modal-header h2 {
+                font-size: 1.25rem;
+            }
+            
+            .modal-body {
+                padding: 1.5rem;
+            }
+            
+            .modal-footer {
+                flex-direction: column;
+                gap: 0.75rem;
+            }
+        }
         
         @media (max-width: 768px) {
             .mode-greeting h2 {
@@ -266,12 +419,96 @@
             </div>
         </div>
         
-        <footer class="mode-footer">
+        <footer>
             <p>Коломийський ліцей "Коломийська гімназія імені Михайла Грушевського" © 2025</p>
             <p style="margin-top: 0.5rem; font-size: 0.9rem; opacity: 0.85;">
-                    💻 Розроблено <strong>Центром професійного розвитку педагогічних працівників<br>Коломийської міської ради</strong>
+                💻 Розроблено <strong>Центром професійного розвитку педагогічних працівників<br>Коломийської міської ради</strong>
+            </p>
+            <p style="margin-top: 0.25rem; font-size: 0.75rem; opacity: 0.7;">
+                v1.2.0 | Оновлено: 27.12.2024
             </p>
         </footer>
     </div>
+    <!-- Модальне вікно "Що нового" -->
+    {% if show_changelog %}
+    <div id="changelogModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>🎉 Що нового в системі?</h2>
+                <span class="version-badge">v{{ app_version }}</span>
+            </div>
+            
+            <div class="modal-body">
+                <div class="changelog-section">
+                    <h3>✅ Додано</h3>
+                    <ul>
+                        <li>Вибір семестру (I/II) у формі вчителя</li>
+                        <li>Редагування кількості учнів для груп з поділом</li>
+                        <li>Підказка для предметів що діляться на групи</li>
+                        <li>Автоматична синхронізація даних з MongoDB</li>
+                        <li>Інформація про розробника у футері</li>
+                    </ul>
+                </div>
+                
+                <div class="changelog-section">
+                    <h3>🐛 Виправлено</h3>
+                    <ul>
+                        <li>Відновлення кількості учнів після оновлення</li>
+                        <li>Виправлено роботу з семестрами</li>
+                        <li>Оновлено дані вчителів та предметів</li>
+                    </ul>
+                </div>
+                
+                <div class="changelog-section">
+                    <h3>🎨 Дизайн</h3>
+                    <ul>
+                        <li>Градієнтний дизайн на всіх сторінках</li>
+                        <li>Анімації та плавні переходи</li>
+                        <li>Адаптивний мобільний дизайн</li>
+                    </ul>
+                </div>
+            </div>
+            
+            <div class="modal-footer">
+                <small>Оновлено: {{ APP_UPDATE_DATE }}</small>
+                <button id="closeChangelogBtn" class="btn btn-primary">Зрозуміло ✓</button>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        // Показати модальне вікно
+        const modal = document.getElementById('changelogModal');
+        const closeBtn = document.getElementById('closeChangelogBtn');
+        
+        // Показати модалку з анімацією
+        setTimeout(() => {
+            modal.style.display = 'flex';
+            setTimeout(() => {
+                modal.classList.add('show');
+            }, 10);
+        }, 500);
+        
+        // Закрити модалку
+        closeBtn.addEventListener('click', async function() {
+            modal.classList.remove('show');
+            setTimeout(() => {
+                modal.style.display = 'none';
+            }, 300);
+            
+            // Позначити що користувач бачив changelog
+            await fetch('/mark_changelog_seen');
+        });
+        
+        // Закрити при кліку поза вікном
+        modal.addEventListener('click', function(e) {
+            if (e.target === modal) {
+                closeBtn.click();
+            }
+        });
+    </script>
+    {% endif %}
+
+</body>
 </body>
 </html>

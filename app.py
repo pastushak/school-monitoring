@@ -5,6 +5,10 @@ from dotenv import load_dotenv
 import db_mongo
 import export_excel
 
+# Версія додатку
+APP_VERSION = "1.2.0"
+APP_UPDATE_DATE = "27.12.2024"
+
 # Автоматична синхронізація school_data при старті
 def sync_school_data_on_startup():
     """Синхронізувати school_data.json з MongoDB при старті"""
@@ -90,10 +94,23 @@ def mode_selection():
         return redirect(url_for('index'))
     
     available_roles = session.get('available_roles', ['teacher'])
+
+    # Перевірити чи користувач бачив changelog для цієї версії
+    show_changelog = session.get('last_seen_version') != APP_VERSION
+
     return render_template('mode_selection.html', 
                          available_roles=available_roles,
                          user_name=session['name'],
-                         user_class=session.get('class'))
+                         user_class=session.get('class'),
+                         show_changelog=show_changelog,
+                         app_version=APP_VERSION)
+
+@app.route('/mark_changelog_seen')
+def mark_changelog_seen():
+    """Позначити що користувач бачив changelog"""
+    if 'email' in session:
+        session['last_seen_version'] = APP_VERSION
+    return jsonify({'success': True})
 
 # Перемикання режиму
 @app.route('/switch_mode/<mode>')
