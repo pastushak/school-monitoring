@@ -116,6 +116,24 @@
             -webkit-appearance: none;
             margin: 0;
         }
+
+        /* Центрування поля "Кількість учнів" */
+        #studentCount {
+            text-align: center;
+            font-size: 1.1rem;
+            font-weight: 600;
+        }
+        
+        /* Приховати стрілочки для поля "Кількість учнів" */
+        #studentCount::-webkit-outer-spin-button,
+        #studentCount::-webkit-inner-spin-button {
+            -webkit-appearance: none;
+            margin: 0;
+        }
+        
+        #studentCount {
+            -moz-appearance: textfield;
+        }
         
         .grades-table-compact table input[type="number"] {
             -moz-appearance: textfield;
