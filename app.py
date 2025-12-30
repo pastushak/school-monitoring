@@ -48,9 +48,6 @@ load_dotenv()
 app = Flask(__name__)
 app.secret_key = os.getenv('SECRET_KEY', 'your-secret-key-change-in-production')
 
-# Викликати при старті застосунку
-sync_school_data_on_startup()
-
 # Головна сторінка - вибір режиму
 @app.route('/')
 def index():

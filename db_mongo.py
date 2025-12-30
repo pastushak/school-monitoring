@@ -58,7 +58,7 @@ def init_mongodb():
         {"email": "matiichuk_mariia@kolgym.if.ua", "role": "teacher", "name": "Матійчук Марія Михайлівна", "class": None},
         {"email": "matkovska_lyubov@kolgym.if.ua", "role": "teacher", "name": "Матковська Любов Михайлівна", "class": None},
         {"email": "nosurak_ivan@kolgym.if.ua", "role": "teacher", "name": "Носурак Іван Васильович", "class": None},
-        {"email": "nosurak_ivan@kolgym.if.ua", "role": "teacher", "name": "Ткачук Оксана Євгенівна", "class": None},
+        {"email": "tkachuk_oksana@kolgym.if.ua", "role": "teacher", "name": "Ткачук Оксана Євгенівна", "class": None},
         {"email": "pastushak_roman@kolgym.if.ua", "role": "superadmin", "name": "Пастушак Роман Васильович", "class": None},
         {"email": "pashko_tetyana@kolgym.if.ua", "role": "teacher", "name": "Пашко Тетяна Миколаївна", "class": None},
         {"email": "fedorak_olena@kolgym.if.ua", "role": "teacher", "name": "Федорак Олена Ігорівна", "class": None},
