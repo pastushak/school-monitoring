@@ -1,0 +1,369 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ teacher_name }} - Детальна статистика</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <style>
+        .superadmin-wrapper {
+            min-height: 100vh;
+            background: linear-gradient(135deg, #1e3a8a 0%, #7c3aed 100%);
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .superadmin-header {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            padding: 1.5rem 2rem;
+            color: white;
+        }
+        
+        .superadmin-header .header-content {
+            max-width: 1600px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 2rem;
+        }
+        
+        .superadmin-header h1 {
+            font-size: 1.8rem;
+            margin-bottom: 0.5rem;
+        }
+        
+        .superadmin-content {
+            flex: 1;
+            max-width: 1600px;
+            margin: 2rem auto;
+            padding: 0 1rem;
+            width: 100%;
+        }
+        
+        .teacher-info-card {
+            background: white;
+            border-radius: 20px;
+            padding: 2rem;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            margin-bottom: 2rem;
+            animation: slideUp 0.5s ease;
+        }
+        
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        .teacher-header {
+            display: flex;
+            align-items: center;
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+        
+        .teacher-avatar {
+            font-size: 4rem;
+            filter: drop-shadow(0 4px 6px rgba(0,0,0,0.1));
+        }
+        
+        .teacher-name-section h2 {
+            color: #7c3aed;
+            font-size: 2rem;
+            margin-bottom: 0.5rem;
+        }
+        
+        .teacher-meta {
+            color: #64748b;
+            font-size: 1rem;
+        }
+        
+        .stats-summary {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+        
+        .stat-box {
+            background: linear-gradient(135deg, #f8fafc 0%, #e0e7ff 100%);
+            padding: 1.5rem;
+            border-radius: 12px;
+            text-align: center;
+            border: 2px solid #e0e7ff;
+        }
+        
+        .stat-label {
+            font-size: 0.9rem;
+            color: #64748b;
+            margin-bottom: 0.5rem;
+        }
+        
+        .stat-value {
+            font-size: 2rem;
+            font-weight: 700;
+            color: #7c3aed;
+        }
+        
+        .progress-section {
+            margin-bottom: 2rem;
+        }
+        
+        .progress-label {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 0.75rem;
+            font-size: 1.1rem;
+            color: #1e293b;
+            font-weight: 600;
+        }
+        
+        .progress-bar {
+            height: 40px;
+            background: #e2e8f0;
+            border-radius: 20px;
+            overflow: hidden;
+            position: relative;
+            box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+        
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #16a34a, #22c55e);
+            transition: width 0.8s ease;
+            border-radius: 20px;
+        }
+        
+        .progress-text {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-weight: bold;
+            font-size: 1.1rem;
+            color: #1e293b;
+        }
+        
+        .subjects-card {
+            background: white;
+            border-radius: 20px;
+            padding: 2rem;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            animation: slideUp 0.6s ease;
+        }
+        
+        .subjects-card h3 {
+            color: #7c3aed;
+            font-size: 1.5rem;
+            margin-bottom: 1.5rem;
+        }
+        
+        .class-section {
+            margin-bottom: 2rem;
+        }
+        
+        .class-title {
+            background: linear-gradient(135deg, #7c3aed, #6d28d9);
+            color: white;
+            padding: 1rem 1.5rem;
+            border-radius: 12px;
+            font-size: 1.3rem;
+            font-weight: 700;
+            margin-bottom: 1rem;
+        }
+        
+        .subjects-table {
+            overflow-x: auto;
+            border-radius: 12px;
+        }
+        
+        .subjects-table table {
+            width: 100%;
+            border-collapse: collapse;
+            background: white;
+        }
+        
+        .subjects-table th {
+            background: linear-gradient(135deg, #f8fafc, #e0e7ff);
+            color: #1e293b;
+            padding: 1rem 0.75rem;
+            font-weight: 600;
+            text-align: center;
+            border: 1px solid #e0e7ff;
+            font-size: 0.95rem;
+        }
+        
+        .subjects-table td {
+            padding: 0.875rem 0.75rem;
+            text-align: center;
+            border: 1px solid #e2e8f0;
+            font-size: 0.9rem;
+        }
+        
+        .subjects-table tbody tr:hover {
+            background: #f0f9ff;
+        }
+        
+        .status-filled {
+            color: #16a34a;
+            font-weight: 600;
+        }
+        
+        .status-empty {
+            color: #dc2626;
+            font-style: italic;
+        }
+        
+        .superadmin-footer {
+            background: rgba(0, 0, 0, 0.3);
+            color: white;
+            text-align: center;
+            padding: 1.5rem;
+            margin-top: auto;
+        }
+        
+        @media (max-width: 768px) {
+            .superadmin-header .header-content {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+            
+            .teacher-header {
+                flex-direction: column;
+                text-align: center;
+            }
+            
+            .stats-summary {
+                grid-template-columns: 1fr;
+            }
+            
+            .subjects-table {
+                overflow-x: auto;
+                -webkit-overflow-scrolling: touch;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="superadmin-wrapper">
+        <header class="superadmin-header">
+            <div class="header-content">
+                <div>
+                    <h1>👨‍🏫 Детальна статистика вчителя</h1>
+                    <p class="subtitle">Повна інформація про внесені дані</p>
+                </div>
+                <div style="display: flex; gap: 0.5rem;">
+                    <a href="{{ url_for('superadmin_teachers') }}" class="btn btn-primary btn-sm">← Назад</a>
+                    <a href="{{ url_for('logout') }}" class="btn btn-secondary btn-sm">Вийти</a>
+                </div>
+            </div>
+        </header>
+        
+        <main class="superadmin-content">
+            <div class="teacher-info-card">
+                <div class="teacher-header">
+                    <div class="teacher-avatar">👨‍🏫</div>
+                    <div class="teacher-name-section">
+                        <h2>{{ teacher_name }}</h2>
+                        <p class="teacher-meta">📚 Викладає у {{ teacher_data | length }} класах</p>
+                    </div>
+                </div>
+                
+                <div class="stats-summary">
+                    <div class="stat-box">
+                        <div class="stat-label">Заповнено предметів</div>
+                        <div class="stat-value">{{ filled_subjects }}</div>
+                    </div>
+                    <div class="stat-box">
+                        <div class="stat-label">Всього предметів</div>
+                        <div class="stat-value">{{ total_subjects }}</div>
+                    </div>
+                    <div class="stat-box">
+                        <div class="stat-label">Класів</div>
+                        <div class="stat-value">{{ teacher_data | length }}</div>
+                    </div>
+                </div>
+                
+                <div class="progress-section">
+                    <div class="progress-label">
+                        <span>Загальний прогрес:</span>
+                        <span><strong>{{ progress }}%</strong></span>
+                    </div>
+                    <div class="progress-bar">
+                        <div class="progress-fill" style="width: {{ progress }}%"></div>
+                        <span class="progress-text">{{ progress }}%</span>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="subjects-card">
+                <h3>📋 Предмети по класах</h3>
+                
+                {% for class_name, subjects in teacher_data.items() | sort %}
+                <div class="class-section">
+                    <div class="class-title">Клас {{ class_name }}</div>
+                    
+                    <div class="subjects-table">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Предмет</th>
+                                    <th>Статус</th>
+                                    <th>Учнів</th>
+                                    <th>СБ</th>
+                                    <th>СН</th>
+                                    <th>КЯЗ</th>
+                                    <th>ЯЗ</th>
+                                    <th>КР</th>
+                                    <th>Семестр</th>
+                                    <th>Оновлено</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for subject_name, subject_data in subjects.items() %}
+                                <tr>
+                                    <td style="text-align: left; font-weight: 600;">{{ subject_name }}</td>
+                                    <td>
+                                        {% if subject_data.filled %}
+                                        <span class="status-filled">✓ Заповнено</span>
+                                        {% else %}
+                                        <span class="status-empty">✗ Не заповнено</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>{{ subject_data.student_count if subject_data.filled else '-' }}</td>
+                                    <td>{{ subject_data.statistics.avgScore if subject_data.filled else '-' }}</td>
+                                    <td>{{ subject_data.statistics.learningLevel if subject_data.filled else '-' }}</td>
+                                    <td>{{ subject_data.statistics.qualityCoeff if subject_data.filled else '-' }}</td>
+                                    <td>{{ subject_data.statistics.qualityPercent if subject_data.filled else '-' }}</td>
+                                    <td>{{ subject_data.statistics.resultCoeff if subject_data.filled else '-' }}</td>
+                                    <td>{{ 'I' if subject_data.semester == 1 else 'II' if subject_data.filled else '-' }}</td>
+                                    <td>{{ subject_data.updated_at.strftime('%d.%m.%Y %H:%M') if subject_data.updated_at else '-' }}</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </main>
+        
+        <footer class="superadmin-footer">
+            <p>Коломийський ліцей "Коломийська гімназія імені Михайла Грушевського" © 2025</p>
+            <p style="margin-top: 0.5rem; font-size: 0.9rem; opacity: 0.85;">
+                💻 Розроблено <strong>Центром професійного розвитку педагогічних працівників<br>Коломийської міської ради</strong>
+            </p>
+            <p style="margin-top: 0.25rem; font-size: 0.75rem; opacity: 0.7;">
+                v1.3.0 | Оновлено: 30.12.2024
+            </p>
+        </footer>
+    </div>
+</body>
+</html>

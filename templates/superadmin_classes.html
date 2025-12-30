@@ -1,0 +1,311 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Перегляд по класах - Суперадмін</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <style>
+        .superadmin-wrapper {
+            min-height: 100vh;
+            background: linear-gradient(135deg, #1e3a8a 0%, #7c3aed 100%);
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .superadmin-header {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            padding: 1.5rem 2rem;
+            color: white;
+        }
+        
+        .superadmin-header .header-content {
+            max-width: 1600px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 2rem;
+        }
+        
+        .superadmin-header h1 {
+            font-size: 1.8rem;
+            margin-bottom: 0.5rem;
+        }
+        
+        .superadmin-content {
+            flex: 1;
+            max-width: 1600px;
+            margin: 2rem auto;
+            padding: 0 1rem;
+            width: 100%;
+        }
+        
+        .classes-card {
+            background: white;
+            border-radius: 20px;
+            padding: 2rem;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            animation: slideUp 0.5s ease;
+        }
+        
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        .classes-card h2 {
+            color: #7c3aed;
+            margin-bottom: 2rem;
+            font-size: 1.8rem;
+            text-align: center;
+        }
+        
+        .classes-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+            gap: 1.5rem;
+        }
+        
+        .class-item {
+            background: linear-gradient(135deg, #f8fafc 0%, #e0e7ff 100%);
+            border-radius: 16px;
+            padding: 1.5rem;
+            border: 2px solid #e0e7ff;
+            transition: all 0.3s ease;
+        }
+        
+        .class-item:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px rgba(124, 58, 237, 0.2);
+            border-color: #7c3aed;
+        }
+        
+        .class-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
+        
+        .class-name {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #1e293b;
+        }
+        
+        .student-count {
+            background: #7c3aed;
+            color: white;
+            padding: 0.5rem 1rem;
+            border-radius: 8px;
+            font-size: 0.9rem;
+            font-weight: 600;
+        }
+        
+        .class-stats {
+            margin-bottom: 1rem;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 0.75rem;
+        }
+        
+        .stat-box {
+            background: white;
+            padding: 0.75rem;
+            border-radius: 8px;
+            text-align: center;
+        }
+        
+        .stat-label {
+            font-size: 0.85rem;
+            color: #64748b;
+            margin-bottom: 0.25rem;
+        }
+        
+        .stat-value {
+            font-size: 1.3rem;
+            font-weight: 700;
+            color: #7c3aed;
+        }
+        
+        .progress-section {
+            margin-bottom: 1rem;
+        }
+        
+        .progress-label {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 0.5rem;
+            font-size: 0.9rem;
+            color: #475569;
+        }
+        
+        .progress-bar {
+            height: 30px;
+            background: white;
+            border-radius: 15px;
+            overflow: hidden;
+            position: relative;
+            box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+        
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #16a34a, #22c55e);
+            transition: width 0.5s ease;
+            border-radius: 15px;
+        }
+        
+        .progress-text {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-weight: bold;
+            font-size: 0.9rem;
+            color: #1e293b;
+        }
+        
+        .class-actions {
+            display: flex;
+            gap: 0.5rem;
+        }
+        
+        .btn-view {
+            flex: 1;
+            background: linear-gradient(135deg, #7c3aed, #6d28d9);
+            color: white;
+            padding: 0.75rem;
+            border-radius: 8px;
+            text-align: center;
+            text-decoration: none;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            border: none;
+            cursor: pointer;
+        }
+        
+        .btn-view:hover {
+            transform: scale(1.05);
+            box-shadow: 0 5px 15px rgba(124, 58, 237, 0.4);
+        }
+        
+        .back-btn {
+            display: inline-block;
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            padding: 0.75rem 1.5rem;
+            border-radius: 8px;
+            text-decoration: none;
+            margin-bottom: 1rem;
+            transition: all 0.3s ease;
+        }
+        
+        .back-btn:hover {
+            background: rgba(255, 255, 255, 0.3);
+        }
+        
+        .superadmin-footer {
+            background: rgba(0, 0, 0, 0.3);
+            color: white;
+            text-align: center;
+            padding: 1.5rem;
+            margin-top: auto;
+        }
+        
+        @media (max-width: 768px) {
+            .superadmin-header .header-content {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+            
+            .classes-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .class-stats {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="superadmin-wrapper">
+        <header class="superadmin-header">
+            <div class="header-content">
+                <div>
+                    <h1>🎓 Перегляд по класах</h1>
+                    <p class="subtitle">Статистика заповнення для кожного класу</p>
+                </div>
+                <div style="display: flex; gap: 0.5rem;">
+                    <a href="{{ url_for('superadmin_dashboard') }}" class="btn btn-primary btn-sm">← Назад</a>
+                    <a href="{{ url_for('logout') }}" class="btn btn-secondary btn-sm">Вийти</a>
+                </div>
+            </div>
+        </header>
+        
+        <main class="superadmin-content">
+            <div class="classes-card">
+                <h2>📊 Всі класи ліцею</h2>
+                
+                <div class="classes-grid">
+                    {% for class_name, stats in classes_stats.items() | sort %}
+                    <div class="class-item">
+                        <div class="class-header">
+                            <span class="class-name">{{ class_name }}</span>
+                            <span class="student-count">👥 {{ stats.student_count }} учнів</span>
+                        </div>
+                        
+                        <div class="class-stats">
+                            <div class="stat-box">
+                                <div class="stat-label">Заповнено</div>
+                                <div class="stat-value">{{ stats.filled }}</div>
+                            </div>
+                            <div class="stat-box">
+                                <div class="stat-label">Всього</div>
+                                <div class="stat-value">{{ stats.total }}</div>
+                            </div>
+                        </div>
+                        
+                        <div class="progress-section">
+                            <div class="progress-label">
+                                <span>Прогрес заповнення:</span>
+                                <span><strong>{{ stats.progress }}%</strong></span>
+                            </div>
+                            <div class="progress-bar">
+                                <div class="progress-fill" style="width: {{ stats.progress }}%"></div>
+                                <span class="progress-text">{{ stats.progress }}%</span>
+                            </div>
+                        </div>
+                        
+                        <div class="class-actions">
+                            <a href="{{ url_for('class_report') }}?class={{ class_name }}" class="btn-view">
+                                📋 Переглянути звіт
+                            </a>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </main>
+        
+        <footer class="superadmin-footer">
+            <p>Коломийський ліцей "Коломийська гімназія імені Михайла Грушевського" © 2025</p>
+            <p style="margin-top: 0.5rem; font-size: 0.9rem; opacity: 0.85;">
+                💻 Розроблено <strong>Центром професійного розвитку педагогічних працівників<br>Коломийської міської ради</strong>
+            </p>
+            <p style="margin-top: 0.25rem; font-size: 0.75rem; opacity: 0.7;">
+                v1.3.0 | Оновлено: 30.12.2024
+            </p>
+        </footer>
+    </div>
+</body>
+</html>

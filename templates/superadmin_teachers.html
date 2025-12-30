@@ -1,0 +1,353 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Перегляд по вчителях - Суперадмін</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <style>
+        .superadmin-wrapper {
+            min-height: 100vh;
+            background: linear-gradient(135deg, #1e3a8a 0%, #7c3aed 100%);
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .superadmin-header {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            padding: 1.5rem 2rem;
+            color: white;
+        }
+        
+        .superadmin-header .header-content {
+            max-width: 1600px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 2rem;
+        }
+        
+        .superadmin-header h1 {
+            font-size: 1.8rem;
+            margin-bottom: 0.5rem;
+        }
+        
+        .superadmin-content {
+            flex: 1;
+            max-width: 1600px;
+            margin: 2rem auto;
+            padding: 0 1rem;
+            width: 100%;
+        }
+        
+        .teachers-card {
+            background: white;
+            border-radius: 20px;
+            padding: 2rem;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            animation: slideUp 0.5s ease;
+        }
+        
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        .teachers-card h2 {
+            color: #7c3aed;
+            margin-bottom: 2rem;
+            font-size: 1.8rem;
+            text-align: center;
+        }
+        
+        .search-box {
+            margin-bottom: 2rem;
+            padding: 1.5rem;
+            background: linear-gradient(135deg, #f8fafc 0%, #e0e7ff 100%);
+            border-radius: 12px;
+        }
+        
+        .search-box input {
+            width: 100%;
+            padding: 1rem;
+            border: 2px solid #e0e7ff;
+            border-radius: 8px;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+        }
+        
+        .search-box input:focus {
+            outline: none;
+            border-color: #7c3aed;
+            box-shadow: 0 0 0 4px rgba(124, 58, 237, 0.1);
+        }
+        
+        .teachers-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(400px, 1fr));
+            gap: 1.5rem;
+        }
+        
+        .teacher-item {
+            background: linear-gradient(135deg, #f8fafc 0%, #e0e7ff 100%);
+            border-radius: 16px;
+            padding: 1.5rem;
+            border: 2px solid #e0e7ff;
+            transition: all 0.3s ease;
+        }
+        
+        .teacher-item:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px rgba(124, 58, 237, 0.2);
+            border-color: #7c3aed;
+        }
+        
+        .teacher-header {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            margin-bottom: 1rem;
+        }
+        
+        .teacher-avatar {
+            font-size: 3rem;
+            filter: drop-shadow(0 2px 4px rgba(0,0,0,0.1));
+        }
+        
+        .teacher-info {
+            flex: 1;
+        }
+        
+        .teacher-name {
+            font-size: 1.2rem;
+            font-weight: 700;
+            color: #1e293b;
+            margin-bottom: 0.25rem;
+        }
+        
+        .teacher-classes {
+            font-size: 0.85rem;
+            color: #64748b;
+        }
+        
+        .teacher-stats {
+            margin-bottom: 1rem;
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 0.75rem;
+        }
+        
+        .stat-box {
+            background: white;
+            padding: 0.75rem;
+            border-radius: 8px;
+            text-align: center;
+        }
+        
+        .stat-label {
+            font-size: 0.75rem;
+            color: #64748b;
+            margin-bottom: 0.25rem;
+        }
+        
+        .stat-value {
+            font-size: 1.2rem;
+            font-weight: 700;
+            color: #7c3aed;
+        }
+        
+        .progress-section {
+            margin-bottom: 1rem;
+        }
+        
+        .progress-label {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 0.5rem;
+            font-size: 0.9rem;
+            color: #475569;
+        }
+        
+        .progress-bar {
+            height: 30px;
+            background: white;
+            border-radius: 15px;
+            overflow: hidden;
+            position: relative;
+            box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+        
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #16a34a, #22c55e);
+            transition: width 0.5s ease;
+            border-radius: 15px;
+        }
+        
+        .progress-text {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-weight: bold;
+            font-size: 0.9rem;
+            color: #1e293b;
+        }
+        
+        .teacher-actions {
+            display: flex;
+            gap: 0.5rem;
+        }
+        
+        .btn-view {
+            flex: 1;
+            background: linear-gradient(135deg, #7c3aed, #6d28d9);
+            color: white;
+            padding: 0.75rem;
+            border-radius: 8px;
+            text-align: center;
+            text-decoration: none;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            border: none;
+            cursor: pointer;
+            font-size: 0.9rem;
+        }
+        
+        .btn-view:hover {
+            transform: scale(1.05);
+            box-shadow: 0 5px 15px rgba(124, 58, 237, 0.4);
+        }
+        
+        .superadmin-footer {
+            background: rgba(0, 0, 0, 0.3);
+            color: white;
+            text-align: center;
+            padding: 1.5rem;
+            margin-top: auto;
+        }
+        
+        @media (max-width: 768px) {
+            .superadmin-header .header-content {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+            
+            .teachers-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .teacher-stats {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="superadmin-wrapper">
+        <header class="superadmin-header">
+            <div class="header-content">
+                <div>
+                    <h1>👨‍🏫 Перегляд по вчителях</h1>
+                    <p class="subtitle">Активність та статистика для кожного вчителя</p>
+                </div>
+                <div style="display: flex; gap: 0.5rem;">
+                    <a href="{{ url_for('superadmin_dashboard') }}" class="btn btn-primary btn-sm">← Назад</a>
+                    <a href="{{ url_for('logout') }}" class="btn btn-secondary btn-sm">Вийти</a>
+                </div>
+            </div>
+        </header>
+        
+        <main class="superadmin-content">
+            <div class="teachers-card">
+                <h2>👥 Всі вчителі ліцею</h2>
+                
+                <div class="search-box">
+                    <input type="text" id="teacherSearch" placeholder="🔍 Пошук вчителя за прізвищем...">
+                </div>
+                
+                <div class="teachers-grid" id="teachersGrid">
+                    {% for teacher_name, stats in teachers_stats.items() | sort %}
+                    <div class="teacher-item" data-teacher="{{ teacher_name }}">
+                        <div class="teacher-header">
+                            <div class="teacher-avatar">👨‍🏫</div>
+                            <div class="teacher-info">
+                                <div class="teacher-name">{{ teacher_name }}</div>
+                                <div class="teacher-classes">📚 {{ stats.classes | length }} класів: {{ stats.classes | join(', ') }}</div>
+                            </div>
+                        </div>
+                        
+                        <div class="teacher-stats">
+                            <div class="stat-box">
+                                <div class="stat-label">Заповнено</div>
+                                <div class="stat-value">{{ stats.filled }}</div>
+                            </div>
+                            <div class="stat-box">
+                                <div class="stat-label">Всього</div>
+                                <div class="stat-value">{{ stats.total }}</div>
+                            </div>
+                            <div class="stat-box">
+                                <div class="stat-label">Класів</div>
+                                <div class="stat-value">{{ stats.classes | length }}</div>
+                            </div>
+                        </div>
+                        
+                        <div class="progress-section">
+                            <div class="progress-label">
+                                <span>Активність:</span>
+                                <span><strong>{{ stats.progress }}%</strong></span>
+                            </div>
+                            <div class="progress-bar">
+                                <div class="progress-fill" style="width: {{ stats.progress }}%"></div>
+                                <span class="progress-text">{{ stats.progress }}%</span>
+                            </div>
+                        </div>
+                        
+                        <div class="teacher-actions">
+                            <a href="{{ url_for('superadmin_teacher_detail', teacher_name=teacher_name) }}" class="btn-view">
+                                📊 Детальна статистика
+                            </a>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </main>
+        
+        <footer class="superadmin-footer">
+            <p>Коломийський ліцей "Коломийська гімназія імені Михайла Грушевського" © 2025</p>
+            <p style="margin-top: 0.5rem; font-size: 0.9rem; opacity: 0.85;">
+                💻 Розроблено <strong>Центром професійного розвитку педагогічних працівників<br>Коломийської міської ради</strong>
+            </p>
+            <p style="margin-top: 0.25rem; font-size: 0.75rem; opacity: 0.7;">
+                v1.3.0 | Оновлено: 30.12.2024
+            </p>
+        </footer>
+    </div>
+    
+    <script>
+        // Пошук вчителів
+        document.getElementById('teacherSearch').addEventListener('input', function(e) {
+            const searchTerm = e.target.value.toLowerCase();
+            const teacherItems = document.querySelectorAll('.teacher-item');
+            
+            teacherItems.forEach(item => {
+                const teacherName = item.getAttribute('data-teacher').toLowerCase();
+                if (teacherName.includes(searchTerm)) {
+                    item.style.display = 'block';
+                } else {
+                    item.style.display = 'none';
+                }
+            });
+        });
+    </script>
+</body>
+</html>

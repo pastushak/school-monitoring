@@ -107,6 +107,57 @@
             color: #7c3aed;
             margin: 0;
         }
+
+        .navigation-cards {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+        
+        .nav-card {
+            background: white;
+            border-radius: 16px;
+            padding: 2rem;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            display: flex;
+            align-items: center;
+            gap: 1.5rem;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            color: inherit;
+            animation: slideUp 0.5s ease;
+            border: 2px solid transparent;
+        }
+        
+        .nav-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 40px rgba(124, 58, 237, 0.3);
+            border-color: #7c3aed;
+        }
+        
+        .nav-icon {
+            font-size: 3rem;
+            filter: drop-shadow(0 4px 6px rgba(0,0,0,0.1));
+        }
+        
+        .nav-content h3 {
+            color: #7c3aed;
+            font-size: 1.3rem;
+            margin-bottom: 0.5rem;
+        }
+        
+        .nav-content p {
+            color: #64748b;
+            font-size: 0.95rem;
+            margin: 0;
+        }
+        
+        @media (max-width: 768px) {
+            .navigation-cards {
+                grid-template-columns: 1fr;
+            }
+        }
         
         .activity-card {
             background: white;
@@ -248,6 +299,24 @@
                 </div>
             </div>
             
+            <div class="navigation-cards">
+                <a href="{{ url_for('superadmin_classes') }}" class="nav-card">
+                    <div class="nav-icon">🎓</div>
+                    <div class="nav-content">
+                        <h3>Перегляд по класах</h3>
+                        <p>Статистика та прогрес заповнення для кожного класу</p>
+                    </div>
+                </a>
+                
+                <a href="{{ url_for('superadmin_teachers') }}" class="nav-card">
+                    <div class="nav-icon">👨‍🏫</div>
+                    <div class="nav-content">
+                        <h3>Перегляд по вчителях</h3>
+                        <p>Активність та статистика для кожного вчителя</p>
+                    </div>
+                </a>
+            </div>
+
             <div class="activity-card">
                 <h2>📊 Останні 20 оновлень</h2>
                 
