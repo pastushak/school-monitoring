@@ -13,6 +13,7 @@ APP_UPDATE_DATE = "27.12.2024"
 def sync_school_data_on_startup():
     """Синхронізувати school_data.json з MongoDB при старті"""
     import json
+    from db_mongo import db  # ✅ ВАЖЛИВО!
     
     print("=" * 60)
     print("СИНХРОНІЗАЦІЯ school_data.json → MongoDB")
