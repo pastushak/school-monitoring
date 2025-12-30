@@ -74,11 +74,15 @@ def login():
             available_roles.append('class_head')
         elif user['role'] == 'admin':
             available_roles.append('admin')
+        elif user['role'] == 'superadmin':
+            available_roles = ['teacher', 'class_head', 'admin', 'superadmin']
         
         session['available_roles'] = available_roles
         
         # Перенаправлення
-        if len(available_roles) > 1:
+        if user['role'] == 'superadmin':
+            return redirect(url_for('mode_selection'))  # ✅ Суперадмін завжди йде на вибір режиму
+        elif len(available_roles) > 1:
             return redirect(url_for('mode_selection'))
         else:
             return redirect(url_for('teacher_form'))
@@ -124,6 +128,8 @@ def switch_mode(mode):
         return redirect(url_for('class_report'))
     elif mode == 'admin' and 'admin' in available_roles:
         return redirect(url_for('school_report'))
+    elif mode == 'superadmin' and 'superadmin' in available_roles:  # ✅ ДОДАТИ ЦЕЙ БЛОК
+        return redirect(url_for('superadmin_dashboard'))
     
     return redirect(url_for('mode_selection'))
 
@@ -443,6 +449,31 @@ def export_teacher_report(year, class_name, teacher, subject, semester):
         as_attachment=True,
         download_name=filename
     )
+
+# Панель суперадміна
+@app.route('/superadmin_dashboard')
+def superadmin_dashboard():
+    if 'email' not in session or session['role'] != 'superadmin':
+        return redirect(url_for('index'))
+    
+    school_data = db_mongo.get_school_data()
+    
+    # Статистика
+    total_users = db_mongo.users_collection.count_documents({})
+    total_records = db_mongo.monitoring_collection.count_documents({})
+    total_classes = len(school_data.get('classes', {}))
+    total_teachers = len(school_data.get('teachers', {}))
+    
+    # Останні 20 записів
+    recent_activity = list(db_mongo.monitoring_collection.find().sort('updated_at', -1).limit(20))
+    
+    return render_template('superadmin_dashboard.html',
+                         total_users=total_users,
+                         total_records=total_records,
+                         total_classes=total_classes,
+                         total_teachers=total_teachers,
+                         recent_activity=recent_activity,
+                         user_name=session['name'])
 
 if __name__ == '__main__':
     app.run(debug=True, host='0.0.0.0', port=5000)

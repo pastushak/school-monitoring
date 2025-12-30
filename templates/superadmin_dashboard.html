@@ -1,0 +1,302 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Панель суперадміністратора</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <style>
+        .superadmin-wrapper {
+            min-height: 100vh;
+            background: linear-gradient(135deg, #1e3a8a 0%, #7c3aed 100%);
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .superadmin-header {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            padding: 1.5rem 2rem;
+            color: white;
+        }
+        
+        .superadmin-header .header-content {
+            max-width: 1600px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 2rem;
+        }
+        
+        .superadmin-header h1 {
+            font-size: 1.8rem;
+            margin-bottom: 0.5rem;
+        }
+        
+        .superadmin-header .subtitle {
+            font-size: 1rem;
+            opacity: 0.9;
+        }
+        
+        .superadmin-content {
+            flex: 1;
+            max-width: 1600px;
+            margin: 2rem auto;
+            padding: 0 1rem;
+            width: 100%;
+        }
+        
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+        
+        .stat-card {
+            background: white;
+            border-radius: 16px;
+            padding: 2rem;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            display: flex;
+            align-items: center;
+            gap: 1.5rem;
+            transition: all 0.3s ease;
+            animation: slideUp 0.5s ease;
+        }
+        
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        .stat-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.3);
+        }
+        
+        .stat-card:nth-child(1) { animation-delay: 0.1s; }
+        .stat-card:nth-child(2) { animation-delay: 0.2s; }
+        .stat-card:nth-child(3) { animation-delay: 0.3s; }
+        .stat-card:nth-child(4) { animation-delay: 0.4s; }
+        
+        .stat-icon {
+            font-size: 3rem;
+            filter: drop-shadow(0 4px 6px rgba(0,0,0,0.1));
+        }
+        
+        .stat-content h3 {
+            color: #64748b;
+            font-size: 0.95rem;
+            margin-bottom: 0.5rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        
+        .stat-number {
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: #7c3aed;
+            margin: 0;
+        }
+        
+        .activity-card {
+            background: white;
+            border-radius: 20px;
+            padding: 2rem;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            animation: fadeIn 0.6s ease;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        
+        .activity-card h2 {
+            color: #7c3aed;
+            margin-bottom: 1.5rem;
+            font-size: 1.8rem;
+            text-align: center;
+        }
+        
+        .activity-table {
+            overflow-x: auto;
+            border-radius: 12px;
+        }
+        
+        .activity-table table {
+            width: 100%;
+            border-collapse: collapse;
+            background: white;
+            min-width: 800px;
+        }
+        
+        .activity-table th {
+            background: linear-gradient(135deg, #7c3aed, #6d28d9);
+            color: white;
+            padding: 1rem 0.75rem;
+            font-weight: 600;
+            text-align: center;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            font-size: 0.95rem;
+        }
+        
+        .activity-table td {
+            padding: 0.875rem 0.75rem;
+            text-align: center;
+            border: 1px solid #e2e8f0;
+            font-size: 0.9rem;
+        }
+        
+        .activity-table tbody tr:hover {
+            background: #f0f9ff;
+        }
+        
+        .activity-table tbody tr:nth-child(even) {
+            background: #f8fafc;
+        }
+        
+        .activity-table tbody tr:nth-child(even):hover {
+            background: #e0f2fe;
+        }
+        
+        .superadmin-footer {
+            background: rgba(0, 0, 0, 0.3);
+            color: white;
+            text-align: center;
+            padding: 1.5rem;
+            margin-top: auto;
+        }
+        
+        @media (max-width: 768px) {
+            .superadmin-header .header-content {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+            
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .activity-card {
+                padding: 1.5rem;
+            }
+            
+            .activity-table {
+                overflow-x: auto;
+                -webkit-overflow-scrolling: touch;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="superadmin-wrapper">
+        <header class="superadmin-header">
+            <div class="header-content">
+                <div>
+                    <h1>👑 Панель суперадміністратора</h1>
+                    <p class="subtitle">Користувач: <strong>{{ user_name }}</strong></p>
+                </div>
+                <div style="display: flex; gap: 0.5rem;">
+                    <a href="{{ url_for('mode_selection') }}" class="btn btn-primary btn-sm">Змінити режим</a>
+                    <a href="{{ url_for('logout') }}" class="btn btn-secondary btn-sm">Вийти</a>
+                </div>
+            </div>
+        </header>
+        
+        <main class="superadmin-content">
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-icon">👥</div>
+                    <div class="stat-content">
+                        <h3>Користувачі</h3>
+                        <p class="stat-number">{{ total_users }}</p>
+                    </div>
+                </div>
+                
+                <div class="stat-card">
+                    <div class="stat-icon">📝</div>
+                    <div class="stat-content">
+                        <h3>Записи</h3>
+                        <p class="stat-number">{{ total_records }}</p>
+                    </div>
+                </div>
+                
+                <div class="stat-card">
+                    <div class="stat-icon">🎓</div>
+                    <div class="stat-content">
+                        <h3>Класи</h3>
+                        <p class="stat-number">{{ total_classes }}</p>
+                    </div>
+                </div>
+                
+                <div class="stat-card">
+                    <div class="stat-icon">👨‍🏫</div>
+                    <div class="stat-content">
+                        <h3>Вчителі</h3>
+                        <p class="stat-number">{{ total_teachers }}</p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="activity-card">
+                <h2>📊 Останні 20 оновлень</h2>
+                
+                <div class="activity-table">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Дата/час</th>
+                                <th>Рік</th>
+                                <th>Клас</th>
+                                <th>Предмет</th>
+                                <th>Вчитель</th>
+                                <th>Семестр</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% if recent_activity %}
+                                {% for record in recent_activity %}
+                                <tr>
+                                    <td>{{ record.updated_at.strftime('%d.%m.%Y %H:%M') if record.updated_at else '-' }}</td>
+                                    <td>{{ record.year }}</td>
+                                    <td><strong>{{ record.class }}</strong></td>
+                                    <td>{{ record.subject }}</td>
+                                    <td>{{ record.teacher }}</td>
+                                    <td>{{ 'I' if record.get('semester', 1) == 1 else 'II' }}</td>
+                                </tr>
+                                {% endfor %}
+                            {% else %}
+                            <tr>
+                                <td colspan="6" style="text-align: center; padding: 2rem; color: #64748b;">
+                                    Немає записів у системі
+                                </td>
+                            </tr>
+                            {% endif %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </main>
+        
+        <footer class="superadmin-footer">
+            <p>Коломийський ліцей "Коломийська гімназія імені Михайла Грушевського" © 2025</p>
+            <p style="margin-top: 0.5rem; font-size: 0.9rem; opacity: 0.85;">
+                💻 Розроблено <strong>Центром професійного розвитку педагогічних працівників<br>Коломийської міської ради</strong>
+            </p>
+            <p style="margin-top: 0.25rem; font-size: 0.75rem; opacity: 0.7;">
+                v1.3.0 | Оновлено: 30.12.2024
+            </p>
+        </footer>
+    </div>
+</body>
+</html>

@@ -122,6 +122,11 @@
             --card-color: #ea580c;
             --card-color-dark: #c2410c;
         }
+
+        .mode-card.superadmin {
+            --card-color: #7c3aed;
+            --card-color-dark: #6d28d9;
+        }
         
         .mode-icon {
             font-size: 4rem;
@@ -163,6 +168,10 @@
         
         .mode-card.admin .btn {
             background: linear-gradient(135deg, #ea580c, #c2410c);
+        }
+        
+        .mode-card.superadmin .btn {
+            background: linear-gradient(135deg, #7c3aed, #6d28d9);
         }
         
         .mode-card .btn:hover {
@@ -411,6 +420,16 @@
                         <a href="{{ url_for('school_report') }}" class="btn btn-warning">Обрати режим</a>
                     </div>
                     {% endif %}
+
+                    {% if 'superadmin' in available_roles %}
+                    <div class="mode-card superadmin">
+                        <div class="mode-icon">👑</div>
+                        <h3>Суперадмін</h3>
+                        <p>Повний контроль системи</p>
+                        <a href="{{ url_for('superadmin_dashboard') }}" class="btn">Обрати режим</a>
+                    </div>
+                    {% endif %}
+
                 </div>
                 
                 <div class="logout-section">
