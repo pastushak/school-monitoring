@@ -3,6 +3,15 @@ from openpyxl.styles import Font, PatternFill, Alignment, Border, Side
 from datetime import datetime
 import io
 
+def format_name(full_name):
+    """Перетворити 'Прізвище Ім'я По-батькові' на 'Ім'я ПРІЗВИЩЕ'"""
+    parts = full_name.split()
+    if len(parts) >= 2:
+        surname = parts[0].upper()  # Прізвище великими літерами
+        first_name = parts[1]  # Ім'я
+        return f"{first_name} {surname}"
+    return full_name  # Якщо формат незрозумілий, повернути як є
+
 def create_teacher_report_excel(data, year, class_name, teacher, subject, semester):
     """Створити Excel звіт для вчителя"""
     
@@ -10,20 +19,22 @@ def create_teacher_report_excel(data, year, class_name, teacher, subject, semest
     ws = wb.active
     ws.title = f"{class_name}_{subject[:20]}"
     
-    # Заголовок
-    ws.merge_cells('A1:M1')
+    # Заголовок - об'єднати до N колонки
+    ws.merge_cells('A1:N1')
     title_cell = ws['A1']
     title_cell.value = f'Коломийський ліцей "Коломийська гімназія імені Михайла Грушевського"'
     title_cell.font = Font(size=14, bold=True)
     title_cell.alignment = Alignment(horizontal='center', vertical='center')
     
-    ws.merge_cells('A2:M2')
+    ws.merge_cells('A2:N2')
     subtitle_cell = ws['A2']
-    subtitle_cell.value = f'Звіт вчителя за {semester} семестр {year} н.р.'
+    # Визначити правильний семестр на основі переданого значення
+    semester_display = 'I' if str(semester) == '1' or semester == 1 else 'II'
+    subtitle_cell.value = f'Звіт вчителя за {semester_display} семестр {year} н.р.'
     subtitle_cell.font = Font(size=12, bold=True)
     subtitle_cell.alignment = Alignment(horizontal='center')
     
-    ws.merge_cells('A3:M3')
+    ws.merge_cells('A3:N3')
     info_cell = ws['A3']
     info_cell.value = f'Клас: {class_name} | Вчитель: {teacher} | Предмет: {subject}'
     info_cell.font = Font(size=11)
@@ -44,13 +55,20 @@ def create_teacher_report_excel(data, year, class_name, teacher, subject, semest
             bottom=Side(style='thin')
         )
     
-    # Дані (тут можна додати список учнів, якщо є)
-    row = 6
+    # Дані оцінок
+    row = 5
     student_count = data.get('student_count', 0)
     grades = data.get('grades', {})
     
-    # Показати розподіл оцінок
-    ws.cell(row=row, column=1, value='Кількість учнів:').font = Font(bold=True)
+    # Заголовок для кількості учнів класу (в рядку 5, колонка A)
+    ws.cell(row=row, column=1, value='Кількість учнів класу').font = Font(bold=True)
+    ws.cell(row=row, column=1).alignment = Alignment(horizontal='left')
+    
+    row += 1  # Переходимо на рядок 6
+    
+    # Показати кількість учнів та розподіл оцінок (рядок 6)
+    ws.cell(row=row, column=1, value=student_count).font = Font(bold=True, size=12)
+    ws.cell(row=row, column=1).alignment = Alignment(horizontal='center')
     
     not_assessed = student_count
     for i in range(1, 13):
@@ -81,19 +99,43 @@ def create_teacher_report_excel(data, year, class_name, teacher, subject, semest
         ws.cell(row=row, column=2, value=value).font = Font(size=11, color='0000FF')
         row += 1
     
-    # Підпис директора
-    row += 2
-    ws.merge_cells(f'A{row}:M{row}')
-    ws.cell(row=row, column=1, value='Директор                          /підпис/              Володимир ТКАЧУК')
-    ws.cell(row=row, column=1).alignment = Alignment(horizontal='left')
-    row += 1
-    ws.merge_cells(f'A{row}:M{row}')
-    ws.cell(row=row, column=1, value='                  МП')
-    ws.cell(row=row, column=1).alignment = Alignment(horizontal='left')
+    # Місце для підписів
+    row += 3
+    
+    # Підпис директора - спочатка значення, потім об'єднання
+    ws.cell(row=row, column=1, value='Директор')
+    ws.cell(row=row, column=6, value='________________')
+    ws.cell(row=row, column=10, value='Володимир ТКАЧУК')
+    
+    ws.merge_cells(f'A{row}:E{row}')
+    ws.merge_cells(f'F{row}:I{row}')
+    ws.merge_cells(f'J{row}:N{row}')
+    
+    ws['A'+str(row)].alignment = Alignment(horizontal='right')
+    ws['A'+str(row)].font = Font(size=11)
+    ws['F'+str(row)].alignment = Alignment(horizontal='center')
+    ws['J'+str(row)].alignment = Alignment(horizontal='left')
+    ws['J'+str(row)].font = Font(size=11)
+    
+    # Підпис вчителя
+    row += 3  # Більше відступу після директора
+    ws.cell(row=row, column=1, value='Вчитель')
+    ws.cell(row=row, column=6, value='________________')
+    ws.cell(row=row, column=10, value=format_name(teacher))
+    
+    ws.merge_cells(f'A{row}:E{row}')
+    ws.merge_cells(f'F{row}:I{row}')
+    ws.merge_cells(f'J{row}:N{row}')
+    
+    ws['A'+str(row)].alignment = Alignment(horizontal='right')
+    ws['A'+str(row)].font = Font(size=11)
+    ws['F'+str(row)].alignment = Alignment(horizontal='center')
+    ws['J'+str(row)].alignment = Alignment(horizontal='left')
+    ws['J'+str(row)].font = Font(size=11)
     
     # Автоширина
-    column_widths = {'A': 25, 'B': 8, 'C': 8, 'D': 8, 'E': 8, 'F': 8, 'G': 8, 
-                     'H': 8, 'I': 8, 'J': 8, 'K': 8, 'L': 8, 'M': 8}
+    column_widths = {'A': 35, 'B': 8, 'C': 8, 'D': 8, 'E': 8, 'F': 8, 'G': 8, 
+                     'H': 8, 'I': 8, 'J': 8, 'K': 8, 'L': 8, 'M': 8, 'N': 8}
     for col, width in column_widths.items():
         ws.column_dimensions[col].width = width
     

@@ -423,12 +423,14 @@ def export_teacher_report(year, class_name, teacher, subject, semester):
     if 'email' not in session:
         return redirect(url_for('index'))
     
-    # Отримати дані моніторингу
-    monitoring_data = db_mongo.get_monitoring_data(year, class_name, teacher, subject)
+    # Використати semester з URL (вже є в параметрах)
+    semester = int(semester)
+    monitoring_data = db_mongo.get_monitoring_data(year, class_name, teacher, subject, semester)
     
     if not monitoring_data:
         return "Дані не знайдено", 404
     
+    # Створити Excel файл
     # Створити Excel файл
     excel_file = export_excel.create_teacher_report_excel(
         monitoring_data,
@@ -436,7 +438,7 @@ def export_teacher_report(year, class_name, teacher, subject, semester):
         class_name,
         teacher,
         subject,
-        'I' if semester == '1' else 'II'
+        semester  # ✅ Передати число (1 або 2)
     )
     
     # Безпечне ім'я файлу
