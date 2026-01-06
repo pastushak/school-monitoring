@@ -348,7 +348,10 @@ def create_school_report_excel(school_data, all_monitoring, year, semester):
             }
         
         class_stats[class_name]['subjects'].append(record)
-        class_stats[class_name]['total_students'] = record['student_count']
+        # ✅ ВИПРАВЛЕНО: Беремо максимальне значення (повний клас, а не групу)
+        current_count = record['student_count']
+        if current_count > class_stats[class_name]['total_students']:
+            class_stats[class_name]['total_students'] = current_count
     
     # Дані по класах
     row = 5
@@ -389,6 +392,12 @@ def create_school_report_excel(school_data, all_monitoring, year, semester):
         
         for subject in subjects:
             grades = subject['grades']
+            # ✅ ВИПРАВЛЕНО: Використовуємо кількість учнів для ЦЬОГО предмету
+            subject_student_count = subject['student_count']
+            
+            # ✅ ДОДАНО: Захист відділення на нуль
+            if subject_student_count == 0:
+                continue
             
             # Рівні
             g3 = int(grades.get('grade3', 0))
@@ -412,13 +421,15 @@ def create_school_report_excel(school_data, all_monitoring, year, semester):
             high = g12 + g11 + g10
             
             total_graded = initial + average + sufficient + high
-            not_assessed = student_count - total_graded
+            # ✅ ВИПРАВЛЕНО: Захист від від'ємних значень
+            not_assessed = max(0, subject_student_count - total_graded)
             
-            total_not_assessed += (not_assessed / student_count * 100)
-            total_initial += (initial / student_count * 100)
-            total_average += (average / student_count * 100)
-            total_sufficient += (sufficient / student_count * 100)
-            total_high += (high / student_count * 100)
+            # ✅ ВИПРАВЛЕНО: Рахуємо відсотки від кількості учнів ЦЬОГО предмету
+            total_not_assessed += (not_assessed / subject_student_count * 100)
+            total_initial += (initial / subject_student_count * 100)
+            total_average += (average / subject_student_count * 100)
+            total_sufficient += (sufficient / subject_student_count * 100)
+            total_high += (high / subject_student_count * 100)
             
             # Статистика
             stats = subject['statistics']
@@ -429,6 +440,10 @@ def create_school_report_excel(school_data, all_monitoring, year, semester):
             sum_result_coeff += float(stats.get('resultCoeff', '0%').replace('%', ''))
         
         num_subjects = len(subjects)
+        
+        # ✅ ДОДАНО: Захист відділення на нуль
+        if num_subjects == 0:
+            continue
         
         avg_not_assessed = total_not_assessed / num_subjects
         avg_initial = total_initial / num_subjects
