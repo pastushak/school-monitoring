@@ -726,5 +726,57 @@ def superadmin_teacher_detail(teacher_name):
                          progress=round(progress, 1),
                          user_name=session['name'])
 
+@app.route('/analytics')
+@role_required(['superadmin', 'admin'])
+def analytics():
+    """Сторінка аналітики для адміністрації"""
+    academic_years = get_academic_years()
+    return render_template('analytics.html', 
+                         academic_years=academic_years,
+                         user_name=session.get('name'))
+
+
+@app.route('/api/analytics/class-comparison/<year>/<semester>')
+@role_required(['superadmin', 'admin'])
+def api_class_comparison(year, semester):
+    """API: Порівняння класів"""
+    data = db_mongo.get_class_comparison(year, int(semester))
+    return jsonify(data)
+
+
+@app.route('/api/analytics/level-distribution/<year>/<semester>')
+@role_required(['superadmin', 'admin'])
+def api_level_distribution(year, semester):
+    """API: Розподіл по рівнях"""
+    class_name = request.args.get('class', None)
+    data = db_mongo.get_level_distribution(year, int(semester), class_name)
+    return jsonify(data)
+
+
+@app.route('/api/analytics/subject-analysis/<year>/<semester>')
+@role_required(['superadmin', 'admin'])
+def api_subject_analysis(year, semester):
+    """API: Аналіз по предметах"""
+    data = db_mongo.get_subject_analysis(year, int(semester))
+    return jsonify(data)
+
+
+@app.route('/api/analytics/semester-comparison/<year>')
+@role_required(['superadmin', 'admin'])
+def api_semester_comparison(year):
+    """API: Порівняння семестрів"""
+    class_name = request.args.get('class', None)
+    data = db_mongo.get_semester_comparison(year, class_name)
+    return jsonify(data)
+
+
+@app.route('/api/analytics/top-bottom/<year>/<semester>')
+@role_required(['superadmin', 'admin'])
+def api_top_bottom(year, semester):
+    """API: Топ та аутсайдери"""
+    limit = request.args.get('limit', 5, type=int)
+    data = db_mongo.get_top_bottom_classes(year, int(semester), limit)
+    return jsonify(data)
+
 if __name__ == '__main__':
     app.run(debug=True, host='0.0.0.0', port=5000)

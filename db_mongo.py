@@ -180,6 +180,191 @@ def get_school_data():
         result.pop('_id', None)
     return result
 
+def get_analytics_data(year, semester=None, class_name=None):
+    """Отримати дані для аналітики з фільтрами"""
+    query = {'year': year}
+    
+    if semester:
+        query['semester'] = int(semester)
+    
+    if class_name:
+        query['class'] = class_name
+    
+    data = list(monitoring_collection.find(query))
+    
+    # Перетворити ObjectId в string для JSON
+    for item in data:
+        item['_id'] = str(item['_id'])
+    
+    return data
+
+
+def get_class_comparison(year, semester):
+    """Порівняння класів за середнім балом"""
+    data = get_analytics_data(year, semester)
+    
+    class_stats = {}
+    for record in data:
+        class_name = record['class']
+        if class_name not in class_stats:
+            class_stats[class_name] = {
+                'subjects': [],
+                'avg_scores': [],
+                'quality_coeffs': [],
+                'result_coeffs': []
+            }
+        
+        stats = record.get('statistics', {})
+        class_stats[class_name]['subjects'].append(record['subject'])
+        class_stats[class_name]['avg_scores'].append(float(stats.get('avgScore', 0)))
+        class_stats[class_name]['quality_coeffs'].append(
+            float(stats.get('qualityCoeff', '0%').replace('%', ''))
+        )
+        class_stats[class_name]['result_coeffs'].append(
+            float(stats.get('resultCoeff', '0%').replace('%', ''))
+        )
+    
+    # Розрахувати середні
+    result = []
+    for class_name, data in sorted(class_stats.items()):
+        if data['avg_scores']:
+            result.append({
+                'class': class_name,
+                'avg_score': round(sum(data['avg_scores']) / len(data['avg_scores']), 2),
+                'avg_quality': round(sum(data['quality_coeffs']) / len(data['quality_coeffs']), 2),
+                'avg_result': round(sum(data['result_coeffs']) / len(data['result_coeffs']), 2),
+                'subjects_count': len(data['subjects'])
+            })
+    
+    return result
+
+
+def get_level_distribution(year, semester, class_name=None):
+    """Розподіл учнів по рівнях навченості"""
+    data = get_analytics_data(year, semester, class_name)
+    
+    total_high = 0
+    total_sufficient = 0
+    total_average = 0
+    total_initial = 0
+    total_students = 0
+    
+    for record in data:
+        grades = record.get('grades', {})
+        student_count = record.get('student_count', 0)
+        
+        # Високий рівень (10-12)
+        high = (int(grades.get('grade12', 0)) + 
+                int(grades.get('grade11', 0)) + 
+                int(grades.get('grade10', 0)))
+        
+        # Достатній рівень (7-9)
+        sufficient = (int(grades.get('grade9', 0)) + 
+                     int(grades.get('grade8', 0)) + 
+                     int(grades.get('grade7', 0)))
+        
+        # Середній рівень (4-6)
+        average = (int(grades.get('grade6', 0)) + 
+                  int(grades.get('grade5', 0)) + 
+                  int(grades.get('grade4', 0)))
+        
+        # Початковий рівень (1-3)
+        initial = (int(grades.get('grade3', 0)) + 
+                  int(grades.get('grade2', 0)) + 
+                  int(grades.get('grade1', 0)))
+        
+        total_high += high
+        total_sufficient += sufficient
+        total_average += average
+        total_initial += initial
+        total_students += student_count
+    
+    return {
+        'high': total_high,
+        'sufficient': total_sufficient,
+        'average': total_average,
+        'initial': total_initial,
+        'high_percent': round(total_high / total_students * 100, 2) if total_students > 0 else 0,
+        'sufficient_percent': round(total_sufficient / total_students * 100, 2) if total_students > 0 else 0,
+        'average_percent': round(total_average / total_students * 100, 2) if total_students > 0 else 0,
+        'initial_percent': round(total_initial / total_students * 100, 2) if total_students > 0 else 0
+    }
+
+
+def get_subject_analysis(year, semester):
+    """Аналіз по предметах"""
+    data = get_analytics_data(year, semester)
+    
+    subject_stats = {}
+    for record in data:
+        subject = record['subject']
+        if subject not in subject_stats:
+            subject_stats[subject] = {
+                'avg_scores': [],
+                'quality_coeffs': [],
+                'classes': []
+            }
+        
+        stats = record.get('statistics', {})
+        subject_stats[subject]['avg_scores'].append(float(stats.get('avgScore', 0)))
+        subject_stats[subject]['quality_coeffs'].append(
+            float(stats.get('qualityCoeff', '0%').replace('%', ''))
+        )
+        subject_stats[subject]['classes'].append(record['class'])
+    
+    result = []
+    for subject, data in sorted(subject_stats.items()):
+        if data['avg_scores']:
+            result.append({
+                'subject': subject,
+                'avg_score': round(sum(data['avg_scores']) / len(data['avg_scores']), 2),
+                'avg_quality': round(sum(data['quality_coeffs']) / len(data['quality_coeffs']), 2),
+                'classes_count': len(data['classes'])
+            })
+    
+    # Сортувати по середньому балу
+    result.sort(key=lambda x: x['avg_score'], reverse=True)
+    
+    return result
+
+
+def get_semester_comparison(year, class_name=None):
+    """Порівняння семестрів"""
+    semester1_data = get_analytics_data(year, 1, class_name)
+    semester2_data = get_analytics_data(year, 2, class_name)
+    
+    def calculate_average(data):
+        if not data:
+            return 0
+        scores = [float(record.get('statistics', {}).get('avgScore', 0)) for record in data]
+        return round(sum(scores) / len(scores), 2) if scores else 0
+    
+    return {
+        'semester1': {
+            'avg_score': calculate_average(semester1_data),
+            'records_count': len(semester1_data)
+        },
+        'semester2': {
+            'avg_score': calculate_average(semester2_data),
+            'records_count': len(semester2_data)
+        }
+    }
+
+
+def get_top_bottom_classes(year, semester, limit=5):
+    """Топ та аутсайдери"""
+    comparison = get_class_comparison(year, semester)
+    
+    if not comparison:
+        return {'top': [], 'bottom': []}
+    
+    sorted_by_score = sorted(comparison, key=lambda x: x['avg_score'], reverse=True)
+    
+    return {
+        'top': sorted_by_score[:limit],
+        'bottom': sorted_by_score[-limit:][::-1]  # Реверс щоб показати найгірші
+    }
+
 if __name__ == "__main__":
     print("Підключення до MongoDB...")
     print("✓ MongoDB підключено успішно!\n")

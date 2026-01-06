@@ -1,0 +1,501 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Візуалізація даних - Моніторинг якості освіти</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <style>
+        /* Wrapper */
+        .analytics-wrapper {
+            min-height: 100vh;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            display: flex;
+            flex-direction: column;
+        }
+        
+        /* Header */
+        .analytics-header {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            padding: 1.5rem 2rem;
+            color: white;
+        }
+        
+        .analytics-header .header-wrapper {
+            max-width: 1800px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 2rem;
+        }
+        
+        .analytics-header h1 {
+            font-size: 1.8rem;
+            margin-bottom: 0.3rem;
+        }
+        
+        .header-actions {
+            display: flex;
+            gap: 0.5rem;
+            align-items: center;
+        }
+        
+        .user-info {
+            font-size: 0.95rem;
+            opacity: 0.95;
+            margin-right: 1rem;
+        }
+        
+        /* Content */
+        .analytics-content {
+            flex: 1;
+            max-width: 1800px;
+            margin: 2rem auto;
+            padding: 0 1rem;
+            width: 100%;
+        }
+        
+        /* Filters Card */
+        .filters-card {
+            background: white;
+            border-radius: 20px;
+            padding: 2rem;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+            margin-bottom: 2rem;
+            animation: slideUp 0.5s ease;
+        }
+        
+        .filters-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.5rem;
+            align-items: end;
+        }
+        
+        .filter-group {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+        
+        .filter-group label {
+            font-weight: 600;
+            color: #333;
+            font-size: 0.95rem;
+        }
+        
+        .filter-group select {
+            padding: 0.75rem;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 1rem;
+            transition: all 0.3s;
+        }
+        
+        .filter-group select:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+        
+        .filter-actions {
+            display: flex;
+            gap: 1rem;
+        }
+        
+        /* Charts Grid */
+        .charts-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(500px, 1fr));
+            gap: 2rem;
+            margin-bottom: 2rem;
+        }
+        
+        .chart-card {
+            background: white;
+            border-radius: 20px;
+            padding: 2rem;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+            animation: slideUp 0.5s ease;
+            position: relative;
+        }
+        
+        .chart-card.full-width {
+            grid-column: 1 / -1;
+        }
+        
+        .chart-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+        }
+        
+        .chart-title {
+            font-size: 1.3rem;
+            font-weight: 700;
+            color: #333;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .chart-icon {
+            font-size: 1.5rem;
+        }
+        
+        .chart-export {
+            background: #667eea;
+            color: white;
+            border: none;
+            padding: 0.5rem 1rem;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            transition: all 0.3s;
+        }
+        
+        .chart-export:hover {
+            background: #5568d3;
+            transform: translateY(-2px);
+        }
+        
+        .chart-container {
+            position: relative;
+            height: 400px;
+        }
+        
+        .chart-container.small {
+            height: 300px;
+        }
+        
+        /* Stats Cards */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+            margin-bottom: 2rem;
+        }
+        
+        .stat-card {
+            background: white;
+            border-radius: 20px;
+            padding: 2rem;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+            animation: slideUp 0.5s ease;
+        }
+        
+        .stat-header {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: #666;
+            margin-bottom: 1rem;
+        }
+        
+        .stat-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+        
+        .stat-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0.75rem 0;
+            border-bottom: 1px solid #f0f0f0;
+        }
+        
+        .stat-item:last-child {
+            border-bottom: none;
+        }
+        
+        .stat-name {
+            font-weight: 500;
+            color: #333;
+        }
+        
+        .stat-value {
+            font-weight: 700;
+            font-size: 1.1rem;
+            color: #667eea;
+        }
+        
+        .stat-badge {
+            display: inline-block;
+            padding: 0.25rem 0.75rem;
+            border-radius: 12px;
+            font-size: 0.85rem;
+            font-weight: 600;
+        }
+        
+        .badge-success {
+            background: #d4edda;
+            color: #155724;
+        }
+        
+        .badge-warning {
+            background: #fff3cd;
+            color: #856404;
+        }
+        
+        .badge-danger {
+            background: #f8d7da;
+            color: #721c24;
+        }
+        
+        /* Loading */
+        .loading {
+            text-align: center;
+            padding: 3rem;
+            color: #666;
+        }
+        
+        .loading-spinner {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #667eea;
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 1rem;
+        }
+        
+        /* Animations */
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        /* Responsive */
+        @media (max-width: 768px) {
+            .analytics-header h1 {
+                font-size: 1.3rem;
+            }
+            
+            .charts-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .filters-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .chart-container {
+                height: 300px;
+            }
+        }
+        
+        /* Footer */
+        footer {
+            background: rgba(0, 0, 0, 0.3);
+            color: white;
+            text-align: center;
+            padding: 1.5rem;
+            margin-top: auto;
+        }
+    </style>
+</head>
+<body>
+    <div class="analytics-wrapper">
+        <header class="analytics-header">
+            <div class="header-wrapper">
+                <div>
+                    <h1>📊 ВІЗУАЛІЗАЦІЯ ДАНИХ</h1>
+                    <p style="margin: 0; opacity: 0.9;">Коломийський ліцей "Коломийська гімназія імені Михайла Грушевського"</p>
+                </div>
+                <div class="header-actions">
+                    <div class="user-info">Користувач: <strong>{{ user_name }}</strong></div>
+                    <a href="{{ url_for('superadmin_dashboard') }}" class="btn btn-secondary btn-sm">← Назад</a>
+                    <a href="{{ url_for('logout') }}" class="btn btn-secondary btn-sm">Вийти</a>
+                </div>
+            </div>
+        </header>
+        
+        <main class="analytics-content">
+            <!-- Filters -->
+            <div class="filters-card">
+                <div class="filters-grid">
+                    <div class="filter-group">
+                        <label for="yearFilter">📅 Навчальний рік:</label>
+                        <select id="yearFilter">
+                            <option value="">Оберіть рік</option>
+                            {% for year in academic_years %}
+                            <option value="{{ year }}">{{ year }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    
+                    <div class="filter-group">
+                        <label for="semesterFilter">📚 Семестр:</label>
+                        <select id="semesterFilter">
+                            <option value="1">I семестр</option>
+                            <option value="2">II семестр</option>
+                        </select>
+                    </div>
+                    
+                    <div class="filter-group">
+                        <label for="classFilter">🎓 Клас (опціонально):</label>
+                        <select id="classFilter">
+                            <option value="">Всі класи</option>
+                        </select>
+                    </div>
+                    
+                    <div class="filter-actions">
+                        <button id="applyFilters" class="btn btn-primary">🔍 Застосувати</button>
+                        <button id="resetFilters" class="btn btn-secondary">🔄 Скинути</button>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Loading -->
+            <div id="loadingIndicator" class="loading" style="display: none;">
+                <div class="loading-spinner"></div>
+                <p>Завантаження даних...</p>
+            </div>
+            
+            <!-- Charts Grid -->
+            <div id="chartsContainer" style="display: none;">
+                <!-- Row 1: Comparison Charts -->
+                <div class="charts-grid">
+                    <div class="chart-card">
+                        <div class="chart-header">
+                            <h3 class="chart-title">
+                                <span class="chart-icon">📊</span>
+                                Середній бал по класах
+                            </h3>
+                            <button class="chart-export" onclick="exportChart('classComparisonChart')">💾 Експорт</button>
+                        </div>
+                        <div class="chart-container">
+                            <canvas id="classComparisonChart"></canvas>
+                        </div>
+                    </div>
+                    
+                    <div class="chart-card">
+                        <div class="chart-header">
+                            <h3 class="chart-title">
+                                <span class="chart-icon">🥧</span>
+                                Розподіл по рівнях
+                            </h3>
+                            <button class="chart-export" onclick="exportChart('levelDistributionChart')">💾 Експорт</button>
+                        </div>
+                        <div class="chart-container">
+                            <canvas id="levelDistributionChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Row 2: Subject & Quality -->
+                <div class="charts-grid">
+                    <div class="chart-card">
+                        <div class="chart-header">
+                            <h3 class="chart-title">
+                                <span class="chart-icon">📚</span>
+                                Аналіз по предметах
+                            </h3>
+                            <button class="chart-export" onclick="exportChart('subjectAnalysisChart')">💾 Експорт</button>
+                        </div>
+                        <div class="chart-container">
+                            <canvas id="subjectAnalysisChart"></canvas>
+                        </div>
+                    </div>
+                    
+                    <div class="chart-card">
+                        <div class="chart-header">
+                            <h3 class="chart-title">
+                                <span class="chart-icon">💯</span>
+                                КЯЗ та КР по класах
+                            </h3>
+                            <button class="chart-export" onclick="exportChart('qualityChart')">💾 Експорт</button>
+                        </div>
+                        <div class="chart-container">
+                            <canvas id="qualityChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Row 3: Semester Comparison -->
+                <div class="charts-grid">
+                    <div class="chart-card full-width">
+                        <div class="chart-header">
+                            <h3 class="chart-title">
+                                <span class="chart-icon">📈</span>
+                                Порівняння семестрів (середній бал)
+                            </h3>
+                            <button class="chart-export" onclick="exportChart('semesterComparisonChart')">💾 Експорт</button>
+                        </div>
+                        <div class="chart-container small">
+                            <canvas id="semesterComparisonChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Row 4: Top & Bottom -->
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-header">🏆 Топ-5 класів за середнім балом</div>
+                        <ul class="stat-list" id="topClassesList">
+                            <li class="stat-item">
+                                <span class="stat-name">Завантаження...</span>
+                            </li>
+                        </ul>
+                    </div>
+                    
+                    <div class="stat-card">
+                        <div class="stat-header">⚠️ Класи, що потребують уваги</div>
+                        <ul class="stat-list" id="bottomClassesList">
+                            <li class="stat-item">
+                                <span class="stat-name">Завантаження...</span>
+                            </li>
+                        </ul>
+                    </div>
+                    
+                    <div class="stat-card">
+                        <div class="stat-header">📊 Загальна статистика</div>
+                        <ul class="stat-list" id="overallStatsList">
+                            <li class="stat-item">
+                                <span class="stat-name">Середній бал по ліцею:</span>
+                                <span class="stat-value" id="overallAvgScore">-</span>
+                            </li>
+                            <li class="stat-item">
+                                <span class="stat-name">Середній КЯЗ:</span>
+                                <span class="stat-value" id="overallQuality">-</span>
+                            </li>
+                            <li class="stat-item">
+                                <span class="stat-name">Середній КР:</span>
+                                <span class="stat-value" id="overallResult">-</span>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </main>
+        
+        <footer>
+            <p>Коломийський ліцей "Коломийська гімназія імені Михайла Грушевського" © 2025</p>
+            <p style="margin-top: 0.5rem; font-size: 0.9rem; opacity: 0.85;">
+                💻 Розроблено <strong>Центром професійного розвитку педагогічних працівників Коломийської міської ради</strong>
+            </p>
+            <p style="margin-top: 0.25rem; font-size: 0.75rem; opacity: 0.7;">
+                v1.4.0 | Оновлено: 07.01.2025
+            </p>
+        </footer>
+    </div>
+    
+    <script src="{{ url_for('static', filename='js/analytics.js') }}"></script>
+</body>
+</html>
