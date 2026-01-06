@@ -138,6 +138,17 @@
         .grades-table-compact table input[type="number"] {
             -moz-appearance: textfield;
         }
+
+        /* ✅ ДОДАТИ: Приховати стрілочки для поля звільнених */
+        #peExemptedCount::-webkit-outer-spin-button,
+        #peExemptedCount::-webkit-inner-spin-button {
+            -webkit-appearance: none;
+            margin: 0;
+        }
+
+        #peExemptedCount {
+            -moz-appearance: textfield;
+        }
         
         /* Стилі для колонки н/а */
         .na-level {
