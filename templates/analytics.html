@@ -171,6 +171,33 @@
         .chart-container.small {
             height: 300px;
         }
+
+        /* ✅ ДОДАТИ: Стиль для графіка з прокручуванням */
+        .chart-container.scrollable {
+            overflow-y: auto;
+            overflow-x: hidden;
+            max-height: 600px;
+            padding-right: 10px;
+        }
+
+        /* Стилізація scrollbar */
+        .chart-container.scrollable::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        .chart-container.scrollable::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 10px;
+        }
+
+        .chart-container.scrollable::-webkit-scrollbar-thumb {
+            background: #667eea;
+            border-radius: 10px;
+        }
+
+        .chart-container.scrollable::-webkit-scrollbar-thumb:hover {
+            background: #5568d3;
+        }
         
         /* Stats Cards */
         .stats-grid {
@@ -409,8 +436,11 @@
                             </h3>
                             <button class="chart-export" onclick="exportChart('subjectAnalysisChart')">💾 Експорт</button>
                         </div>
-                        <div class="chart-container">
-                            <canvas id="subjectAnalysisChart"></canvas>
+                        <!-- ✅ НОВИЙ: Wrapper з фіксованою висотою та прокручуванням -->
+                        <div style="max-height: 600px; overflow-y: auto; overflow-x: hidden; padding-right: 10px;">
+                            <div id="subjectAnalysisContainer" style="position: relative; width: 100%;">
+                                <canvas id="subjectAnalysisChart"></canvas>
+                            </div>
                         </div>
                     </div>
                     

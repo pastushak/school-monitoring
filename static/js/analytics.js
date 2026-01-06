@@ -206,6 +206,7 @@ async function loadLevelDistribution() {
         charts.levelDistribution.destroy();
     }
     
+    // ✅ ОНОВЛЕНО: Тепер data містить відсотки, а не абсолютні числа
     charts.levelDistribution = new Chart(ctx, {
         type: 'doughnut',
         data: {
@@ -250,9 +251,8 @@ async function loadLevelDistribution() {
                         label: function(context) {
                             const label = context.label || '';
                             const value = context.parsed || 0;
-                            const total = context.dataset.data.reduce((a, b) => a + b, 0);
-                            const percentage = ((value / total) * 100).toFixed(1);
-                            return `${label}: ${value} учнів (${percentage}%)`;
+                            // ✅ ОНОВЛЕНО: Показуємо відсотки
+                            return `${label}: ${value.toFixed(1)}%`;
                         }
                     }
                 }
@@ -271,22 +271,28 @@ async function loadSubjectAnalysis() {
         return;
     }
     
-    // Взяти топ-15 предметів
-    const topSubjects = data.slice(0, 15);
-    
-    const ctx = document.getElementById('subjectAnalysisChart').getContext('2d');
+    const allSubjects = data;
+    const canvas = document.getElementById('subjectAnalysisChart');
+    const container = document.getElementById('subjectAnalysisContainer');
+    const ctx = canvas.getContext('2d');
     
     if (charts.subjectAnalysis) {
         charts.subjectAnalysis.destroy();
     }
     
+    // ✅ Встановити висоту canvas
+    const itemHeight = 35;
+    const totalHeight = allSubjects.length * itemHeight;
+    canvas.style.height = `${totalHeight}px`;
+    container.style.height = `${totalHeight}px`;
+    
     charts.subjectAnalysis = new Chart(ctx, {
         type: 'bar',
         data: {
-            labels: topSubjects.map(item => item.subject),
+            labels: allSubjects.map(item => item.subject),
             datasets: [{
                 label: 'Середній бал',
-                data: topSubjects.map(item => item.avg_score),
+                data: allSubjects.map(item => item.avg_score),
                 backgroundColor: 'rgba(156, 39, 176, 0.8)',
                 borderColor: 'rgba(156, 39, 176, 1)',
                 borderWidth: 2,
@@ -298,13 +304,18 @@ async function loadSubjectAnalysis() {
             responsive: true,
             maintainAspectRatio: false,
             plugins: {
-                legend: {
-                    display: false
-                },
+                legend: { display: false },
                 tooltip: {
                     callbacks: {
+                        title: function(context) {
+                            return allSubjects[context[0].dataIndex].subject;
+                        },
                         label: function(context) {
-                            return `Середній бал: ${context.parsed.x.toFixed(2)}`;
+                            const item = allSubjects[context.dataIndex];
+                            return [
+                                `Середній бал: ${item.avg_score.toFixed(2)}`,
+                                `Класи: ${item.classes.join(', ')}`
+                            ];
                         }
                     }
                 }
@@ -313,14 +324,11 @@ async function loadSubjectAnalysis() {
                 x: {
                     beginAtZero: true,
                     max: 12,
-                    grid: {
-                        color: 'rgba(0, 0, 0, 0.05)'
-                    }
+                    grid: { color: 'rgba(0, 0, 0, 0.05)' }
                 },
                 y: {
-                    grid: {
-                        display: false
-                    }
+                    grid: { display: false },
+                    ticks: { font: { size: 11 } }
                 }
             }
         }
@@ -420,6 +428,30 @@ async function loadSemesterComparison() {
         charts.semesterComparison.destroy();
     }
     
+    // ✅ ДОДАТИ: Перевірка чи є дані для обох семестрів
+    const hasSemester1 = data.semester1.records_count > 0;
+    const hasSemester2 = data.semester2.records_count > 0;
+    
+    if (!hasSemester1 || !hasSemester2) {
+        // ✅ ПОКАЗАТИ ПОВІДОМЛЕННЯ замість графіка
+        const chartContainer = ctx.canvas.parentElement;
+        chartContainer.innerHTML = `
+            <div style="display: flex; align-items: center; justify-content: center; height: 100%; flex-direction: column; color: #64748b;">
+                <div style="font-size: 4rem; margin-bottom: 1rem;">📊</div>
+                <h3 style="margin: 0; color: #1e293b;">Відсутні дані для порівняння</h3>
+                <p style="margin: 0.5rem 0 0 0; font-size: 0.95rem;">
+                    Для порівняння семестрів потрібні дані з обох семестрів
+                </p>
+                <p style="margin: 0.5rem 0 0 0; font-size: 0.9rem; opacity: 0.7;">
+                    I семестр: ${hasSemester1 ? '✓ Є дані' : '✗ Немає даних'} | 
+                    II семестр: ${hasSemester2 ? '✓ Є дані' : '✗ Немає даних'}
+                </p>
+            </div>
+        `;
+        return;
+    }
+    
+    // ✅ Якщо є дані - показати графік
     charts.semesterComparison = new Chart(ctx, {
         type: 'bar',
         data: {
