@@ -48,6 +48,36 @@ load_dotenv()
 app = Flask(__name__)
 app.secret_key = os.getenv('SECRET_KEY', 'your-secret-key-change-in-production')
 
+# Завантажити змінні середовища
+load_dotenv()
+
+app = Flask(__name__)
+app.secret_key = os.getenv('SECRET_KEY', 'your-secret-key-change-in-production')
+
+# ✅ ДОДАТИ: Декоратор для перевірки ролей
+from functools import wraps
+
+def role_required(roles):
+    """Декоратор для перевірки ролей користувача"""
+    def decorator(f):
+        @wraps(f)
+        def decorated_function(*args, **kwargs):
+            if 'email' not in session:
+                return redirect(url_for('login'))
+            
+            user_role = session.get('role')
+            if user_role not in roles:
+                return redirect(url_for('mode_selection'))
+            
+            return f(*args, **kwargs)
+        return decorated_function
+    return decorator
+
+def get_academic_years():
+    """Отримати список навчальних років"""
+    school_data = db_mongo.get_school_data()
+    return school_data.get('academic_years', [])
+
 # Головна сторінка - вибір режиму
 @app.route('/')
 def index():
