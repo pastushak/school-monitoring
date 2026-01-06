@@ -287,6 +287,38 @@
                             <br>
                             Переконайтесь, що ви вказали кількість учнів <strong>саме у вашій групі</strong>, а не загальну кількість по класу.
                         </div>
+
+                        <!-- ✅ НОВЕ: Поле для звільнених від фізкультури -->
+                        <div id="peExemptedSection" style="display: none; margin: 1rem 0; padding: 1.5rem; background: linear-gradient(135deg, #dbeafe, #bfdbfe); border-left: 5px solid #3b82f6; border-radius: 12px; animation: slideDown 0.3s ease;">
+                            <div style="display: flex; align-items: center; gap: 1rem; margin-bottom: 1rem; flex-wrap: wrap;">
+                                <label style="flex: 1; min-width: 250px; font-weight: 600; color: #1e40af; font-size: 1rem;">
+                                    🏥 Звільнені від занять (за медпоказаннями):
+                                </label>
+                                <input 
+                                    type="number" 
+                                    id="peExemptedCount" 
+                                    min="0" 
+                                    max="20" 
+                                    value="0"
+                                    style="width: 100px; padding: 0.75rem; border: 2px solid #3b82f6; border-radius: 8px; text-align: center; font-size: 1.1rem; font-weight: 600;"
+                                >
+                            </div>
+                            
+                            <div style="background: white; padding: 1rem; border-radius: 8px; font-size: 0.9rem; color: #1e40af;">
+                                <strong>💡 Як заповнювати:</strong>
+                                <br>
+                                <strong>1.</strong> У полі "Кількість учнів" залишається <strong>загальна кількість</strong> учнів у класі (наприклад, 30)
+                                <br>
+                                <strong>2.</strong> У цьому полі вкажіть <strong>скільки звільнених</strong> (наприклад, 2)
+                                <br>
+                                <strong>3.</strong> Система автоматично відніме звільнених і розраховуватиме показники для тих, хто займається
+                                <br><br>
+                                <em style="color: #2563eb;">
+                                    <strong>Приклад:</strong> Клас 30 учнів → Звільнені 2 → Оцінки вносите для 28 учнів → 
+                                    Система рахуватиме: СБ з 28, КР = 28/28 = 100%
+                                </em>
+                            </div>
+                        </div>
                         
                         <!-- Таблиця оцінок -->
                         <div class="grades-table-compact">

@@ -18,6 +18,9 @@ document.addEventListener('DOMContentLoaded', function() {
     const calculateBtn = document.getElementById('calculateBtn');
     const form = document.getElementById('monitoringForm');
     const messageDiv = document.getElementById('message');
+    const peExemptedSection = document.getElementById('peExemptedSection');
+    const peExemptedCount = document.getElementById('peExemptedCount');
+    let originalStudentCount = 0; // Зберігати оригінальну кількість
     
     // Масив для зберігання полів оцінок
     const gradeInputs = [];
@@ -68,6 +71,7 @@ document.addEventListener('DOMContentLoaded', function() {
             subjectSelect.disabled = true;
             subjectSelect.innerHTML = '<option value="">Спочатку оберіть клас</option>';
             dataSection.style.display = 'none';
+            peExemptedSection.style.display = 'none';  // ✅ ДОДАТИ
             return;
         }
         
@@ -76,11 +80,14 @@ document.addEventListener('DOMContentLoaded', function() {
             subjectSelect.disabled = true;
             subjectSelect.innerHTML = '<option value="">Завантаження...</option>';
             dataSection.style.display = 'none';
+            peExemptedSection.style.display = 'none';  // ✅ ДОДАТИ
             
             // Завантаження кількості учнів
             const countResponse = await fetch(`/get_student_count/${className}`);
             const count = await countResponse.json();
             studentCountInput.value = count;
+            originalStudentCount = count;  // ✅ ДОДАТИ
+            peExemptedCount.value = 0;     // ✅ ДОДАТИ
             
             // Автоматично завантажити предмети для поточного вчителя
             if (teacherName) {
@@ -106,10 +113,23 @@ document.addEventListener('DOMContentLoaded', function() {
         const subject = this.value;
         
         if (!subject) {
+            peExemptedSection.style.display = 'none';  // ✅ ДОДАТИ
             dataSection.style.display = 'none';
             return;
         }
         
+        // ✅ ДОДАТИ: Показати поле для фізкультури
+        if (subject === 'Фізична культура') {
+            peExemptedSection.style.display = 'block';
+        } else {
+            peExemptedSection.style.display = 'none';
+            peExemptedCount.value = 0;
+        }
+        
+        // Показати форму для введення даних
+        dataSection.style.display = 'block';
+        clearGrades();
+
         // Показати форму для введення даних
         dataSection.style.display = 'block';
         clearGrades();
@@ -149,11 +169,43 @@ document.addEventListener('DOMContentLoaded', function() {
                 if (data.student_count) {
                     studentCountInput.value = data.student_count;
                 }
+
+                // ✅ ДОДАТИ ЦЕ:
+                if (subject === 'Фізична культура' && data.pe_exempted_count !== undefined) {
+                    peExemptedCount.value = data.pe_exempted_count;
+                    originalStudentCount = data.student_count + data.pe_exempted_count;
+                }
                 
                 calculateStatistics();
             }
         } catch (error) {
             console.error('Error loading saved data:', error);
+        }
+    });
+
+    // ✅ ДОДАТИ ЦІЛКОМ НОВИЙ ОБРОБНИК:
+    // Автопідрахунок при зміні звільнених
+    peExemptedCount.addEventListener('input', function() {
+        const subject = subjectSelect.value;
+        
+        if (subject !== 'Фізична культура') {
+            return;
+        }
+        
+        if (!originalStudentCount || originalStudentCount === 0) {
+            originalStudentCount = parseInt(studentCount.value) || 0;
+        }
+        
+        const exempted = parseInt(this.value) || 0;
+        const active = originalStudentCount - exempted;
+        
+        if (active > 0) {
+            studentCount.value = active;
+            showMessage(`✓ Оновлено: ${originalStudentCount} - ${exempted} = ${active} учнів`, 'success');
+        } else {
+            showMessage('❌ Кількість звільнених не може перевищувати загальну кількість учнів', 'error');
+            this.value = Math.max(0, originalStudentCount - 1);
+            studentCount.value = 1;
         }
     });
     
@@ -300,6 +352,11 @@ document.addEventListener('DOMContentLoaded', function() {
             grades: grades,
             statistics: statistics
         };
+
+        // ✅ ДОДАТИ ЦЕ:
+        if (subject === 'Фізична культура') {
+            data.pe_exempted_count = parseInt(peExemptedCount.value) || 0;
+        }
         
         try {
             const response = await fetch('/save_monitoring', {
@@ -422,9 +479,13 @@ document.addEventListener('DOMContentLoaded', function() {
             document.getElementById('grade' + i).value = 0;
             document.getElementById('percent' + i).textContent = '0%';
         }
-        // ✅ ДОДАТИ н/а
+        // ✅ Очистити н/а
         document.getElementById('gradeNA').value = 0;
         document.getElementById('percentNA').textContent = '0%';
+        
+        // ✅ ДОДАТИ: Очистити дані про звільнених
+        peExemptedCount.value = 0;
+        originalStudentCount = 0;
         
         document.getElementById('avgScore').textContent = '0';
         document.getElementById('learningLevel').textContent = '0%';

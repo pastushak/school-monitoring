@@ -40,11 +40,26 @@ def create_teacher_report_excel(data, year, class_name, teacher, subject, semest
     info_cell.font = Font(size=11)
     info_cell.alignment = Alignment(horizontal='center')
     
+    # ✅ ДОДАТИ: Інформація про звільнених для фізкультури
+    current_row = 4
+    if subject == 'Фізична культура' and data.get('pe_exempted_count', 0) > 0:
+        ws.merge_cells(f'A{current_row}:N{current_row}')
+        info_exempted = ws[f'A{current_row}']
+        total_students = data['student_count'] + data['pe_exempted_count']
+        info_exempted.value = f'ℹ️ Всього учнів у класі: {total_students} | Звільнені від занять: {data["pe_exempted_count"]} | Підлягають оцінюванню: {data["student_count"]}'
+        info_exempted.font = Font(size=10, italic=True, color='0066CC')
+        info_exempted.alignment = Alignment(horizontal='center')
+        current_row += 1
+    
+    # ✅ ЗАМІНИТИ фіксовані номери рядків на current_row
     # Заголовки колонок
     headers = ['Учні', 'н/а', '1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '11', '12']
     
+    current_row += 1  # Відступ перед таблицею
+    header_row = current_row
+    
     for col, header in enumerate(headers, start=1):
-        cell = ws.cell(row=5, column=col, value=header)
+        cell = ws.cell(row=header_row, column=col, value=header)
         cell.font = Font(bold=True, color='FFFFFF')
         cell.fill = PatternFill(start_color='4472C4', end_color='4472C4', fill_type='solid')
         cell.alignment = Alignment(horizontal='center', vertical='center')
@@ -56,35 +71,34 @@ def create_teacher_report_excel(data, year, class_name, teacher, subject, semest
         )
     
     # Дані оцінок
-    row = 5
     student_count = data.get('student_count', 0)
     grades = data.get('grades', {})
     
-    # Заголовок для кількості учнів класу (в рядку 5, колонка A)
-    ws.cell(row=row, column=1, value='Кількість учнів класу').font = Font(bold=True)
-    ws.cell(row=row, column=1).alignment = Alignment(horizontal='left')
+    # Заголовок для кількості учнів класу
+    ws.cell(row=header_row, column=1, value='Кількість учнів класу').font = Font(bold=True)
+    ws.cell(row=header_row, column=1).alignment = Alignment(horizontal='left')
     
-    row += 1  # Переходимо на рядок 6
+    current_row = header_row + 1  # Переходимо на наступний рядок
     
-    # Показати кількість учнів та розподіл оцінок (рядок 6)
-    ws.cell(row=row, column=1, value=student_count).font = Font(bold=True, size=12)
-    ws.cell(row=row, column=1).alignment = Alignment(horizontal='center')
+    # Показати кількість учнів та розподіл оцінок
+    ws.cell(row=current_row, column=1, value=student_count).font = Font(bold=True, size=12)
+    ws.cell(row=current_row, column=1).alignment = Alignment(horizontal='center')
     
     not_assessed = student_count
     for i in range(1, 13):
         grade_count = int(grades.get(f'grade{i}', 0))
         not_assessed -= grade_count
-        ws.cell(row=row, column=i+2, value=grade_count).alignment = Alignment(horizontal='center')
+        ws.cell(row=current_row, column=i+2, value=grade_count).alignment = Alignment(horizontal='center')
     
-    ws.cell(row=row, column=2, value=not_assessed).alignment = Alignment(horizontal='center')
+    ws.cell(row=current_row, column=2, value=not_assessed).alignment = Alignment(horizontal='center')
     
     # Статистика
     stats = data.get('statistics', {})
-    row += 2
+    current_row += 2
     
-    ws.merge_cells(f'A{row}:D{row}')
-    ws.cell(row=row, column=1, value='СТАТИСТИЧНІ ПОКАЗНИКИ').font = Font(bold=True, size=11)
-    row += 1
+    ws.merge_cells(f'A{current_row}:D{current_row}')
+    ws.cell(row=current_row, column=1, value='СТАТИСТИЧНІ ПОКАЗНИКИ').font = Font(bold=True, size=11)
+    current_row += 1
     
     stats_data = [
         ('Середній бал (СБ):', stats.get('avgScore', '0')),
@@ -95,43 +109,43 @@ def create_teacher_report_excel(data, year, class_name, teacher, subject, semest
     ]
     
     for label, value in stats_data:
-        ws.cell(row=row, column=1, value=label).font = Font(bold=True)
-        ws.cell(row=row, column=2, value=value).font = Font(size=11, color='0000FF')
-        row += 1
+        ws.cell(row=current_row, column=1, value=label).font = Font(bold=True)
+        ws.cell(row=current_row, column=2, value=value).font = Font(size=11, color='0000FF')
+        current_row += 1
     
     # Місце для підписів
-    row += 3
+    current_row += 3
     
-    # Підпис директора - спочатка значення, потім об'єднання
-    ws.cell(row=row, column=1, value='Директор')
-    ws.cell(row=row, column=6, value='________________')
-    ws.cell(row=row, column=10, value='Володимир ТКАЧУК')
+    # Підпис директора - спочатку значення, потім об'єднання
+    ws.cell(row=current_row, column=1, value='Директор')
+    ws.cell(row=current_row, column=6, value='________________')
+    ws.cell(row=current_row, column=10, value='Володимир ТКАЧУК')
     
-    ws.merge_cells(f'A{row}:E{row}')
-    ws.merge_cells(f'F{row}:I{row}')
-    ws.merge_cells(f'J{row}:N{row}')
+    ws.merge_cells(f'A{current_row}:E{current_row}')
+    ws.merge_cells(f'F{current_row}:I{current_row}')
+    ws.merge_cells(f'J{current_row}:N{current_row}')
     
-    ws['A'+str(row)].alignment = Alignment(horizontal='right')
-    ws['A'+str(row)].font = Font(size=11)
-    ws['F'+str(row)].alignment = Alignment(horizontal='center')
-    ws['J'+str(row)].alignment = Alignment(horizontal='left')
-    ws['J'+str(row)].font = Font(size=11)
+    ws[f'A{current_row}'].alignment = Alignment(horizontal='right')
+    ws[f'A{current_row}'].font = Font(size=11)
+    ws[f'F{current_row}'].alignment = Alignment(horizontal='center')
+    ws[f'J{current_row}'].alignment = Alignment(horizontal='left')
+    ws[f'J{current_row}'].font = Font(size=11)
     
     # Підпис вчителя
-    row += 3  # Більше відступу після директора
-    ws.cell(row=row, column=1, value='Вчитель')
-    ws.cell(row=row, column=6, value='________________')
-    ws.cell(row=row, column=10, value=format_name(teacher))
+    current_row += 3  # Більше відступу після директора
+    ws.cell(row=current_row, column=1, value='Вчитель')
+    ws.cell(row=current_row, column=6, value='________________')
+    ws.cell(row=current_row, column=10, value=format_name(teacher))
     
-    ws.merge_cells(f'A{row}:E{row}')
-    ws.merge_cells(f'F{row}:I{row}')
-    ws.merge_cells(f'J{row}:N{row}')
+    ws.merge_cells(f'A{current_row}:E{current_row}')
+    ws.merge_cells(f'F{current_row}:I{current_row}')
+    ws.merge_cells(f'J{current_row}:N{current_row}')
     
-    ws['A'+str(row)].alignment = Alignment(horizontal='right')
-    ws['A'+str(row)].font = Font(size=11)
-    ws['F'+str(row)].alignment = Alignment(horizontal='center')
-    ws['J'+str(row)].alignment = Alignment(horizontal='left')
-    ws['J'+str(row)].font = Font(size=11)
+    ws[f'A{current_row}'].alignment = Alignment(horizontal='right')
+    ws[f'A{current_row}'].font = Font(size=11)
+    ws[f'F{current_row}'].alignment = Alignment(horizontal='center')
+    ws[f'J{current_row}'].alignment = Alignment(horizontal='left')
+    ws[f'J{current_row}'].font = Font(size=11)
     
     # Автоширина
     column_widths = {'A': 35, 'B': 8, 'C': 8, 'D': 8, 'E': 8, 'F': 8, 'G': 8, 
@@ -153,20 +167,20 @@ def create_class_report_excel(class_data, class_name, year, semester):
     ws.title = f"{class_name}"
     
     # Заголовок
-    ws.merge_cells('A1:M1')
+    ws.merge_cells('A1:N1')  # ✅ ЗМІНЕНО: A1:M1 → A1:N1 (додали колонку)
     title_cell = ws['A1']
     title_cell.value = f'Коломийський ліцей "Коломийська гімназія імені Михайла Грушевського"'
     title_cell.font = Font(size=14, bold=True)
     title_cell.alignment = Alignment(horizontal='center', vertical='center')
     
-    ws.merge_cells('A2:M2')
+    ws.merge_cells('A2:N2')  # ✅ ЗМІНЕНО: A2:M2 → A2:N2
     subtitle_cell = ws['A2']
     subtitle_cell.value = f'Попредметний звіт за {semester} семестр {year} н.р. ({class_name})'
     subtitle_cell.font = Font(size=12, bold=True)
     subtitle_cell.alignment = Alignment(horizontal='center')
     
-    # Заголовки колонок
-    headers = ['№', 'Предмет', 'н/а (%)', 'початковий', 'середній', 'достатній', 
+    # ✅ ЗМІНЕНО: Заголовки колонок - додано "Звільн."
+    headers = ['№', 'Предмет', 'Звільн.', 'н/а (%)', 'початковий', 'середній', 'достатній', 
                'високий', 'СБ', 'СН(%)', 'СН', 'КЯЗ', 'ЯЗ', 'КР']
     
     for col, header in enumerate(headers, start=1):
@@ -228,9 +242,16 @@ def create_class_report_excel(class_data, class_name, year, semester):
         else:
             sn_text = 'середній ступінь навченості'
         
+        # ✅ ДОДАТИ: Інформація про звільнених
+        exempted_display = '-'
+        if item.get('subject') == 'Фізична культура' and item.get('pe_exempted_count', 0) > 0:
+            exempted_display = str(item['pe_exempted_count'])
+        
+        # ✅ ЗМІНЕНО: Додано exempted_display у row_data
         row_data = [
             idx,
             item['subject'],
+            exempted_display,  # ✅ НОВА КОЛОНКА
             not_assessed_pct,
             initial_pct,
             average_pct,
@@ -246,7 +267,8 @@ def create_class_report_excel(class_data, class_name, year, semester):
         
         for col, value in enumerate(row_data, start=1):
             cell = ws.cell(row=row, column=col, value=value)
-            cell.alignment = Alignment(horizontal='center' if col > 2 else 'left', vertical='center')
+            # ✅ ЗМІНЕНО: col > 3 замість col > 2 (зсув через нову колонку)
+            cell.alignment = Alignment(horizontal='center' if col > 3 else 'center', vertical='center')
             cell.border = Border(
                 left=Side(style='thin'),
                 right=Side(style='thin'),
@@ -258,17 +280,17 @@ def create_class_report_excel(class_data, class_name, year, semester):
     
     # Підпис директора
     row += 2
-    ws.merge_cells(f'A{row}:M{row}')
+    ws.merge_cells(f'A{row}:N{row}')  # ✅ ЗМІНЕНО: M → N
     ws.cell(row=row, column=1, value='Директор                          /підпис/              Володимир ТКАЧУК')
     ws.cell(row=row, column=1).alignment = Alignment(horizontal='left')
     row += 1
-    ws.merge_cells(f'A{row}:M{row}')
+    ws.merge_cells(f'A{row}:N{row}')  # ✅ ЗМІНЕНО: M → N
     ws.cell(row=row, column=1, value='                  МП')
     ws.cell(row=row, column=1).alignment = Alignment(horizontal='left')
     
-    # Автоширина колонок
-    column_widths = {'A': 5, 'B': 30, 'C': 10, 'D': 12, 'E': 12, 'F': 12, 'G': 12,
-                     'H': 8, 'I': 10, 'J': 30, 'K': 8, 'L': 8, 'M': 8}
+    # ✅ ЗМІНЕНО: Автоширина колонок - додано колонку C
+    column_widths = {'A': 5, 'B': 30, 'C': 8, 'D': 10, 'E': 12, 'F': 12, 'G': 12, 'H': 12,
+                     'I': 8, 'J': 10, 'K': 30, 'L': 8, 'M': 8, 'N': 8}
     for col, width in column_widths.items():
         ws.column_dimensions[col].width = width
     

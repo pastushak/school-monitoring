@@ -225,6 +225,14 @@ def save_monitoring():
         return jsonify({'success': False, 'error': 'Немає прав доступу'})
     
     data = request.json
+    
+    # ✅ ДОДАТИ: Підтримка звільнених для фізкультури
+    if data.get('subject') == 'Фізична культура':
+        data['pe_exempted_count'] = data.get('pe_exempted_count', 0)
+    else:
+        # Для інших предметів - видалити поле якщо воно є
+        data.pop('pe_exempted_count', None)
+    
     db_mongo.save_monitoring_data(data)
     
     return jsonify({'success': True})
