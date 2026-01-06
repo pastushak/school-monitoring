@@ -306,27 +306,112 @@ def get_school_report(year):
     filled_subjects = 0
     class_reports = {}
     
-    for class_name in school_data['classes'].keys():
+    for class_name in sorted(school_data['classes'].keys()):
+        student_count = school_data['classes'][class_name]
+        
         # Підрахувати предмети для класу
         class_subjects = []
+        class_records = []
+        
         for teacher, classes in school_data.get('teachers', {}).items():
             if class_name in classes:
                 for subject in classes[class_name]:
-                    class_subjects.append(f"{class_name}_{teacher}_{subject}")
+                    key = f"{class_name}_{teacher}_{subject}"
+                    class_subjects.append(key)
+                    if key in monitoring_dict:
+                        class_records.append(monitoring_dict[key])
         
         class_total = len(class_subjects)
-        class_filled = sum(1 for key in class_subjects if key in monitoring_dict)
+        class_filled = len(class_records)
         
         total_subjects += class_total
         filled_subjects += class_filled
         
         class_progress = (class_filled / class_total * 100) if class_total > 0 else 0
         
-        class_reports[class_name] = {
-            'filled': class_filled,
-            'total': class_total,
-            'progress': round(class_progress, 1)
-        }
+        # Розрахувати середні показники для класу
+        if class_records:
+            # Ініціалізація сум
+            total_not_assessed_pct = 0
+            total_initial_pct = 0
+            total_average_pct = 0
+            total_sufficient_pct = 0
+            total_high_pct = 0
+            sum_avg_score = 0
+            sum_learning_level = 0
+            sum_quality_coeff = 0
+            sum_quality_percent = 0
+            sum_result_coeff = 0
+            
+            for record in class_records:
+                grades = record['grades']
+                rec_student_count = record['student_count']
+                
+                # Рівні
+                g1 = int(grades.get('grade1', 0))
+                g2 = int(grades.get('grade2', 0))
+                g3 = int(grades.get('grade3', 0))
+                initial = g1 + g2 + g3
+                
+                g4 = int(grades.get('grade4', 0))
+                g5 = int(grades.get('grade5', 0))
+                g6 = int(grades.get('grade6', 0))
+                average = g4 + g5 + g6
+                
+                g7 = int(grades.get('grade7', 0))
+                g8 = int(grades.get('grade8', 0))
+                g9 = int(grades.get('grade9', 0))
+                sufficient = g7 + g8 + g9
+                
+                g10 = int(grades.get('grade10', 0))
+                g11 = int(grades.get('grade11', 0))
+                g12 = int(grades.get('grade12', 0))
+                high = g10 + g11 + g12
+                
+                total_graded = initial + average + sufficient + high
+                not_assessed = rec_student_count - total_graded
+                
+                # Відсотки
+                total_not_assessed_pct += (not_assessed / rec_student_count * 100) if rec_student_count > 0 else 0
+                total_initial_pct += (initial / rec_student_count * 100) if rec_student_count > 0 else 0
+                total_average_pct += (average / rec_student_count * 100) if rec_student_count > 0 else 0
+                total_sufficient_pct += (sufficient / rec_student_count * 100) if rec_student_count > 0 else 0
+                total_high_pct += (high / rec_student_count * 100) if rec_student_count > 0 else 0
+                
+                # Статистика
+                stats = record['statistics']
+                sum_avg_score += float(stats.get('avgScore', 0))
+                sum_learning_level += float(stats.get('learningLevel', '0%').replace('%', ''))
+                sum_quality_coeff += float(stats.get('qualityCoeff', '0%').replace('%', ''))
+                sum_quality_percent += float(stats.get('qualityPercent', '0%').replace('%', ''))
+                sum_result_coeff += float(stats.get('resultCoeff', '0%').replace('%', ''))
+            
+            num_records = len(class_records)
+            
+            class_reports[class_name] = {
+                'filled': class_filled,
+                'total': class_total,
+                'progress': round(class_progress, 1),
+                'statistics': {
+                    'not_assessed': round(total_not_assessed_pct / num_records, 2),
+                    'initial': round(total_initial_pct / num_records, 2),
+                    'average': round(total_average_pct / num_records, 2),
+                    'sufficient': round(total_sufficient_pct / num_records, 2),
+                    'high': round(total_high_pct / num_records, 2),
+                    'avg_score': round(sum_avg_score / num_records, 2),
+                    'learning_level': round(sum_learning_level / num_records, 2),
+                    'quality_coeff': round(sum_quality_coeff / num_records, 2),
+                    'quality_percent': round(sum_quality_percent / num_records, 2),
+                    'result_coeff': round(sum_result_coeff / num_records, 2)
+                }
+            }
+        else:
+            class_reports[class_name] = {
+                'filled': class_filled,
+                'total': class_total,
+                'progress': round(class_progress, 1),
+                'statistics': None
+            }
     
     overall_progress = (filled_subjects / total_subjects * 100) if total_subjects > 0 else 0
     

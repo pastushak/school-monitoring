@@ -34,11 +34,11 @@
     "name": "Філоненко Ірина Миколаївна",
     "class": "6-А"
   },
-  "kryvyuk_liliya@kolgym.if.ua": {
+  "boichuk_maryana@kolgym.if.ua": {
     "role": "class_head",
-    "name": "Кривюк Лілія Михайлівна",
+    "name": "Бойчук Мар'яна Юріївна",
     "class": "6-Б"
-  },
+  }, 
   "tytyk_svitlana@kolgym.if.ua": {
     "role": "class_head",
     "name": "Титик Світлана Григорівна",
@@ -94,11 +94,6 @@
     "name": "Бойцан Лариса Василівна",
     "class": null
   },
-  "boichuk_maryana@kolgym.if.ua": {
-    "role": "teacher",
-    "name": "Бойчук Мар'яна Юріївна",
-    "class": null
-  },
   "vankovych_khrystyna@kolgym.if.ua": {
     "role": "teacher",
     "name": "Ванькович Христина Степанівна",
@@ -122,6 +117,11 @@
   "koltsiuk_valeriy@kolgym.if.ua": {
     "role": "teacher",
     "name": "Кольцюк Валерій Дмитрович",
+    "class": null
+  },
+  "kryvyuk_liliya@kolgym.if.ua": {
+    "role": "teacher",
+    "name": "Кривюк Лілія Михайлівна",
     "class": null
   },
   "kokh_alla@kolgym.if.ua": {
