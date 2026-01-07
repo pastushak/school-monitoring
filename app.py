@@ -6,8 +6,8 @@ import db_mongo
 import export_excel
 
 # Версія додатку
-APP_VERSION = "1.2.0"
-APP_UPDATE_DATE = "27.12.2024"
+APP_VERSION = "1.5.0"
+APP_UPDATE_DATE = "08.01.2026"
 
 # Автоматична синхронізація school_data при старті
 def sync_school_data_on_startup():
