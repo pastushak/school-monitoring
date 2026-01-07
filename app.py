@@ -1,9 +1,11 @@
-from flask import Flask, render_template, request, redirect, url_for, session, jsonify, send_file
+from flask import Flask, render_template, request, redirect, url_for, session, jsonify, send_file, make_response
 from datetime import datetime
 import os
 from dotenv import load_dotenv
 import db_mongo
 import export_excel
+import json
+import time
 
 # Версія додатку
 APP_VERSION = "1.5.0"
@@ -252,25 +254,53 @@ def get_student_count(class_name):
 @app.route('/save_monitoring', methods=['POST'])
 def save_monitoring():
     if 'email' not in session:
-        return jsonify({'success': False, 'error': 'Немає прав доступу'})
+        return jsonify({'success': False, 'message': 'Не авторизовано'})
     
     data = request.json
+    data['teacher'] = session.get('email')
     
-    # ✅ ДОДАТИ: Підтримка звільнених для фізкультури
-    if data.get('subject') == 'Фізична культура':
-        data['pe_exempted_count'] = data.get('pe_exempted_count', 0)
-    else:
-        # Для інших предметів - видалити поле якщо воно є
-        data.pop('pe_exempted_count', None)
+    # ✅ ДОДАТИ: Детальне логування
+    print(f"\n{'='*80}")
+    print(f"[SAVE REQUEST] User: {session.get('email')}")
+    print(f"[SAVE REQUEST] Data: {json.dumps(data, indent=2, ensure_ascii=False)}")
+    print(f"{'='*80}\n")
     
-    db_mongo.save_monitoring_data(data)
-    
-    return jsonify({'success': True})
+    try:
+        success = db_mongo.save_monitoring_data(data)
+        
+        if success:
+            # ✅ ДОДАТИ: Затримка для синхронізації
+            import time
+            time.sleep(0.1)  # 100ms затримка
+            
+            return jsonify({'success': True, 'message': 'Дані збережено'})
+        else:
+            return jsonify({'success': False, 'message': 'Помилка збереження'})
+    except Exception as e:
+        print(f"[SAVE ERROR] {str(e)}")
+        import traceback
+        traceback.print_exc()
+        return jsonify({'success': False, 'message': str(e)})
 
 @app.route('/get_monitoring/<year>/<class_name>/<teacher>/<subject>/<semester>')
 def get_monitoring(year, class_name, teacher, subject, semester):
-    data = db_mongo.get_monitoring_data(year, class_name, teacher, subject, semester)
-    return jsonify(data if data else {})
+    """Отримати збережені дані моніторингу"""
+    
+    # ✅ ДОДАТИ: Детальне логування
+    print(f"\n{'='*80}")
+    print(f"[GET REQUEST] Year: {year}, Class: {class_name}, Teacher: {teacher}")
+    print(f"[GET REQUEST] Subject: {subject}, Semester: {semester}")
+    print(f"{'='*80}\n")
+    
+    data = db_mongo.get_monitoring_data(year, class_name, teacher, subject, int(semester))
+    
+    # ✅ ДОДАТИ: Заголовки для уникнення кешування
+    response = make_response(jsonify(data if data else {}))
+    response.headers['Cache-Control'] = 'no-cache, no-store, must-revalidate'
+    response.headers['Pragma'] = 'no-cache'
+    response.headers['Expires'] = '0'
+    
+    return response
 
 # Звіт по класу - дані
 @app.route('/get_class_report/<year>/<class_name>')

@@ -107,12 +107,30 @@ def get_user_by_email(email):
 
 def save_monitoring_data(data):
     """Зберегти дані моніторингу з урахуванням семестру"""
+    db = get_database()
+    collection = db['monitoring']
+    
+    # ✅ ДОДАТИ: Створити індекс для швидшого пошуку (виконується один раз)
+    try:
+        collection.create_index([
+            ('year', 1),
+            ('class', 1),
+            ('teacher', 1),
+            ('subject', 1),
+            ('semester', 1)
+        ], unique=True, background=True, name='monitoring_unique_index')
+    except Exception as e:
+        # Індекс вже існує або помилка створення
+        pass
+    
+    # Додати timestamp оновлення
     data['updated_at'] = datetime.now()
     
     # Перетворити semester на int якщо це строка
     if 'semester' in data:
         data['semester'] = int(data['semester'])
     
+    # Підготувати фільтр для пошуку
     query = {
         'year': data['year'],
         'class': data['class'],
@@ -121,25 +139,70 @@ def save_monitoring_data(data):
         'semester': data.get('semester', 1)  # За замовчуванням 1
     }
     
-    existing = monitoring_collection.find_one(query)
+    # ✅ ДОДАТИ: Логування
+    print(f"[SAVE] Query: {query}")
+    
+    # Перевірити чи існує запис
+    existing = collection.find_one(query)
     
     if existing:
-        monitoring_collection.update_one(query, {"$set": data})
+        # ✅ ОНОВЛЕНО: Використати update_one з upsert
+        result = collection.update_one(query, {"$set": data}, upsert=True)
+        print(f"[SAVE] Updated existing record, matched: {result.matched_count}, modified: {result.modified_count}")
     else:
+        # Додати timestamp створення
         data['created_at'] = datetime.now()
-        monitoring_collection.insert_one(data)
+        result = collection.insert_one(data)
+        print(f"[SAVE] Inserted new record, id: {result.inserted_id}")
+    
+    # ✅ ДОДАТИ: Примусово синхронізувати з диском (для Render.com)
+    try:
+        # Спробувати fsync для гарантії запису
+        db.client.admin.command('fsync', lock=False)
+        print(f"[SAVE] fsync completed successfully")
+    except Exception as e:
+        # fsync може не працювати на деяких хостингах (MongoDB Atlas)
+        print(f"[SAVE] fsync skipped or failed: {e}")
+    
+    # ✅ ДОДАТИ: Перевірка що дані збережено
+    saved = collection.find_one(query)
+    if saved:
+        print(f"[SAVE] Verification: Data saved successfully")
+        return True
+    else:
+        print(f"[SAVE] WARNING: Data not found after save!")
+        return False
 
 def get_monitoring_data(year, class_name, teacher, subject, semester):
-    """Отримати дані моніторингу з урахуванням семестру"""
-    result = monitoring_collection.find_one({
+    """Отримати дані моніторингу"""
+    db = get_database()
+    collection = db['monitoring']
+    
+    # Перетворити semester на int
+    if isinstance(semester, str):
+        semester = int(semester)
+    
+    # Підготувати запит
+    query = {
         'year': year,
         'class': class_name,
         'teacher': teacher,
         'subject': subject,
-        'semester': int(semester)
-    })
+        'semester': semester
+    }
+    
+    # ✅ ДОДАТИ: Логування
+    print(f"[GET] Query: {query}")
+    
+    # Знайти запис
+    result = collection.find_one(query)
+    
+    # ✅ ДОДАТИ: Логування результату
     if result:
-        result.pop('_id', None)
+        print(f"[GET] Found record, updated_at: {result.get('updated_at')}")
+    else:
+        print(f"[GET] No record found")
+    
     return result
 
 def get_class_monitoring_data(year, class_name, semester=None):
