@@ -151,7 +151,19 @@ document.addEventListener('DOMContentLoaded', function() {
             const semesterSelect = document.getElementById('semester');
             const semester = semesterSelect ? semesterSelect.value : '1';
             
-            const response = await fetch(`/get_monitoring/${year}/${className}/${encodeURIComponent(teacherName)}/${encodeURIComponent(subject)}/${semester}`);
+            // ✅ ОНОВЛЕНО: Додати timestamp
+            const timestamp = Date.now();
+            const url = `/get_monitoring/${year}/${className}/${encodeURIComponent(teacherName)}/${encodeURIComponent(subject)}/${semester}?t=${timestamp}`;
+            
+            const response = await fetch(url, {
+                // ✅ ДОДАТИ: Заголовки
+                headers: {
+                    'Cache-Control': 'no-cache, no-store, must-revalidate',
+                    'Pragma': 'no-cache',
+                    'Expires': '0'
+                }
+            });
+            
             const data = await response.json();
             
             if (data.grades) {
@@ -160,7 +172,6 @@ document.addEventListener('DOMContentLoaded', function() {
                     document.getElementById('grade' + i).value = data.grades['grade' + i] || 0;
                 }
                 
-                // ✅ ДОДАТИ н/а
                 if (data.grades.gradeNA !== undefined) {
                     document.getElementById('gradeNA').value = data.grades.gradeNA || 0;
                 }
@@ -170,7 +181,6 @@ document.addEventListener('DOMContentLoaded', function() {
                     studentCountInput.value = data.student_count;
                 }
 
-                // ✅ ДОДАТИ ЦЕ:
                 if (subject === 'Фізична культура' && data.pe_exempted_count !== undefined) {
                     peExemptedCount.value = data.pe_exempted_count;
                     originalStudentCount = data.student_count + data.pe_exempted_count;
@@ -182,6 +192,76 @@ document.addEventListener('DOMContentLoaded', function() {
             console.error('Error loading saved data:', error);
         }
     });
+
+    // ✅ ДОДАТИ: Обробник зміни семестру
+    const semesterRadios = document.querySelectorAll('input[name="semester"]');
+    semesterRadios.forEach(radio => {
+        radio.addEventListener('change', async function() {
+            const subject = subjectSelect.value;
+            
+            if (!subject) {
+                return;
+            }
+            
+            // Перезавантажити дані для нового семестру
+            await reloadCurrentData();
+        });
+    });
+
+    // ✅ ДОДАТИ: Функція для перезавантаження поточних даних
+async function reloadCurrentData() {
+    const year = yearSelect.value;
+    const className = classSelect.value;
+    const subject = subjectSelect.value;
+    const semesterSelect = document.getElementById('semester');
+    const semester = semesterSelect ? semesterSelect.value : '1';
+    
+    if (!year || !className || !subject || !semester) {
+        return;
+    }
+    
+    try {
+        // ✅ Додати timestamp для уникнення кешування
+        const timestamp = Date.now();
+        const url = `/get_monitoring/${year}/${className}/${encodeURIComponent(teacherName)}/${encodeURIComponent(subject)}/${semester}?t=${timestamp}`;
+        
+        const response = await fetch(url, {
+            // ✅ Заголовки для уникнення кешу
+            headers: {
+                'Cache-Control': 'no-cache, no-store, must-revalidate',
+                'Pragma': 'no-cache',
+                'Expires': '0'
+            }
+        });
+        
+        const data = await response.json();
+        
+        if (data.grades) {
+            // Заповнити форму збереженими даними
+            for (let i = 1; i <= 12; i++) {
+                document.getElementById('grade' + i).value = data.grades['grade' + i] || 0;
+            }
+            
+            if (data.grades.gradeNA !== undefined) {
+                document.getElementById('gradeNA').value = data.grades.gradeNA || 0;
+            }
+            
+            if (data.student_count) {
+                studentCountInput.value = data.student_count;
+            }
+
+            if (subject === 'Фізична культура' && data.pe_exempted_count !== undefined) {
+                peExemptedCount.value = data.pe_exempted_count;
+                originalStudentCount = data.student_count + data.pe_exempted_count;
+            }
+            
+            calculateStatistics();
+            console.log('[RELOAD] Дані успішно перезавантажено');
+        }
+    } catch (error) {
+        console.error('[RELOAD] Помилка перезавантаження:', error);
+    }
+}
 
     // ✅ ДОДАТИ ЦІЛКОМ НОВИЙ ОБРОБНИК:
     // Автопідрахунок при зміні звільнених
@@ -314,6 +394,8 @@ document.addEventListener('DOMContentLoaded', function() {
         const year = yearSelect.value;
         const className = classSelect.value;
         const subject = subjectSelect.value;
+        const semesterSelect = document.getElementById('semester');
+        const semester = semesterSelect ? semesterSelect.value : '1';
         
         if (!year || !className || !teacherName || !subject) {
             showMessage('Заповніть всі обов\'язкові поля', 'error');
@@ -331,7 +413,6 @@ document.addEventListener('DOMContentLoaded', function() {
         for (let i = 1; i <= 12; i++) {
             grades['grade' + i] = parseInt(document.getElementById('grade' + i).value) || 0;
         }
-        // ✅ ДОДАТИ н/а
         grades['gradeNA'] = parseInt(document.getElementById('gradeNA').value) || 0;
         
         // Зібрати статистику
@@ -350,10 +431,10 @@ document.addEventListener('DOMContentLoaded', function() {
             subject: subject,
             student_count: parseInt(studentCountInput.value),
             grades: grades,
-            statistics: statistics
+            statistics: statistics,
+            semester: parseInt(semester)  // ✅ ДОДАТИ семестр
         };
 
-        // ✅ ДОДАТИ ЦЕ:
         if (subject === 'Фізична культура') {
             data.pe_exempted_count = parseInt(peExemptedCount.value) || 0;
         }
@@ -371,6 +452,12 @@ document.addEventListener('DOMContentLoaded', function() {
             
             if (result.success) {
                 showMessage('✓ Дані успішно збережено!', 'success');
+                
+                // ✅ ДОДАТИ: Затримка перед перезавантаженням
+                await new Promise(resolve => setTimeout(resolve, 500));
+                
+                // ✅ ДОДАТИ: Примусово перезавантажити дані
+                await reloadCurrentData();
             } else {
                 showMessage('✗ Помилка збереження даних', 'error');
             }
