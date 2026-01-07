@@ -7,10 +7,30 @@ __pycache__/
 venv/
 env/
 ENV/
+.venv/
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
 
 # Flask
 instance/
 .webassets-cache
+*.db
+*.sqlite
+*.sqlite3
 
 # IDE
 .vscode/
@@ -18,6 +38,7 @@ instance/
 *.swp
 *.swo
 *~
+.DS_Store
 
 # OS
 .DS_Store
@@ -28,7 +49,62 @@ data/*.json
 
 # Логи
 *.log
+logs/
 
 # Секретні ключі
 .env
+.env.local
+.env.*.local
 secrets.py
+config_local.py
+
+# ✅ ДОДАНО: Архів застарілих файлів
+archive/
+
+# ✅ ДОДАНО: Тимчасові файли
+tmp/
+temp/
+*.tmp
+*.backup
+*.old
+
+# ✅ ДОДАНО: Excel тимчасові файли
+~$*.xlsx
+~$*.xls
+*.xlsm~
+
+# ✅ ДОДАНО: Testing
+.pytest_cache/
+.coverage
+htmlcov/
+.tox/
+.cache/
+
+# ✅ ДОДАНО: MongoDB local
+mongodb_data/
+dump/
+
+# ✅ ДОДАТИ: Render specific
+.render/
+
+# ✅ ДОДАНО: Node (якщо колись буде потрібно)
+node_modules/
+package-lock.json
+
+# ✅ ДОДАНО: Python compiled
+*.pyc
+*.pyo
+*.pyd
+
+# ✅ ДОДАНО: Jupyter Notebooks (якщо використовуєш)
+.ipynb_checkpoints/
+*.ipynb
+
+# ✅ ДОДАНО: Coverage reports
+coverage/
+.coverage.*
+
+# ✅ ДОДАНО: mypy
+.mypy_cache/
+.dmypy.json
+dmypy.json
