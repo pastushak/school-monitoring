@@ -79,6 +79,12 @@ document.addEventListener('DOMContentLoaded', function() {
             average: 0,
             sufficient: 0,
             high: 0,
+            // ✅ ДОДАТИ: Абсолютні числа
+            notAssessedCount: 0,
+            initialCount: 0,
+            averageCount: 0,
+            sufficientCount: 0,
+            highCount: 0,
             avgScore: [],
             learningLevel: [],
             qualityCoeff: [],
@@ -132,14 +138,15 @@ document.addEventListener('DOMContentLoaded', function() {
                 else if (learningLevelNum >= 36) learningLevelText = 'достатній ступінь навченості';
                 else if (learningLevelNum > 0) learningLevelText = 'середній ступінь навченості';
                 
+                // ✅ ОНОВЛЕНО: Додати кількість в дужках
                 row.innerHTML = `
                     <td>${rowNum}</td>
                     <td style="text-align: left;">${item.subject}</td>
-                    <td>${notAssessedPercent}%</td>
-                    <td>${initialPercent}%</td>
-                    <td>${averagePercent}%</td>
-                    <td>${sufficientPercent}%</td>
-                    <td>${highPercent}%</td>
+                    <td>${notAssessedPercent}% (${item.not_assessed_count || notAssessed})</td>
+                    <td>${initialPercent}% (${item.initial_count || initialLevel})</td>
+                    <td>${averagePercent}% (${item.average_count || averageLevel})</td>
+                    <td>${sufficientPercent}% (${item.sufficient_count || sufficientLevel})</td>
+                    <td>${highPercent}% (${item.high_count || highLevel})</td>
                     <td>${stats.avgScore}</td>
                     <td>${stats.learningLevel}</td>
                     <td style="font-size: 0.85rem;">${learningLevelText}</td>
@@ -148,12 +155,19 @@ document.addEventListener('DOMContentLoaded', function() {
                     <td>${stats.resultCoeff}</td>
                 `;
                 
-                // Накопичення для середнього по класу
+                // ✅ ОНОВЛЕНО: Накопичення для середнього по класу
                 totalData.notAssessed += parseFloat(notAssessedPercent);
                 totalData.initial += parseFloat(initialPercent);
                 totalData.average += parseFloat(averagePercent);
                 totalData.sufficient += parseFloat(sufficientPercent);
                 totalData.high += parseFloat(highPercent);
+                
+                totalData.notAssessedCount += (item.not_assessed_count || notAssessed);
+                totalData.initialCount += (item.initial_count || initialLevel);
+                totalData.averageCount += (item.average_count || averageLevel);
+                totalData.sufficientCount += (item.sufficient_count || sufficientLevel);
+                totalData.highCount += (item.high_count || highLevel);
+                
                 totalData.avgScore.push(parseFloat(stats.avgScore));
                 totalData.learningLevel.push(learningLevelNum);
                 totalData.qualityCoeff.push(parseFloat(stats.qualityCoeff.replace('%', '')));
@@ -174,7 +188,7 @@ document.addEventListener('DOMContentLoaded', function() {
             reportBody.appendChild(row);
         });
         
-        // Додати рядок "ПОКАЗНИК ПО КЛАСУ"
+        // ✅ ОНОВЛЕНО: Додати рядок "ПОКАЗНИК ПО КЛАСУ" з абсолютними числами
         if (totalData.count > 0) {
             const avgRow = document.createElement('tr');
             avgRow.className = 'total-row';
@@ -198,11 +212,11 @@ document.addEventListener('DOMContentLoaded', function() {
             
             avgRow.innerHTML = `
                 <td colspan="2" style="text-align: left;"><strong>ПОКАЗНИК ПО КЛАСУ</strong></td>
-                <td>${avgNotAssessed}%</td>
-                <td>${avgInitial}%</td>
-                <td>${avgAverage}%</td>
-                <td>${avgSufficient}%</td>
-                <td>${avgHigh}%</td>
+                <td>${avgNotAssessed}% (${totalData.notAssessedCount})</td>
+                <td>${avgInitial}% (${totalData.initialCount})</td>
+                <td>${avgAverage}% (${totalData.averageCount})</td>
+                <td>${avgSufficient}% (${totalData.sufficientCount})</td>
+                <td>${avgHigh}% (${totalData.highCount})</td>
                 <td>${avgScore}</td>
                 <td>${avgLearningLevel}%</td>
                 <td style="font-size: 0.85rem;">${avgLearningText}</td>

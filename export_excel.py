@@ -28,7 +28,6 @@ def create_teacher_report_excel(data, year, class_name, teacher, subject, semest
     
     ws.merge_cells('A2:N2')
     subtitle_cell = ws['A2']
-    # Визначити правильний семестр на основі переданого значення
     semester_display = 'I' if str(semester) == '1' or semester == 1 else 'II'
     subtitle_cell.value = f'Звіт вчителя за {semester_display} семестр {year} н.р.'
     subtitle_cell.font = Font(size=12, bold=True)
@@ -40,7 +39,6 @@ def create_teacher_report_excel(data, year, class_name, teacher, subject, semest
     info_cell.font = Font(size=11)
     info_cell.alignment = Alignment(horizontal='center')
     
-    # ✅ ДОДАТИ: Інформація про звільнених для фізкультури
     current_row = 4
     if subject == 'Фізична культура' and data.get('pe_exempted_count', 0) > 0:
         ws.merge_cells(f'A{current_row}:N{current_row}')
@@ -51,11 +49,10 @@ def create_teacher_report_excel(data, year, class_name, teacher, subject, semest
         info_exempted.alignment = Alignment(horizontal='center')
         current_row += 1
     
-    # ✅ ЗАМІНИТИ фіксовані номери рядків на current_row
     # Заголовки колонок
     headers = ['Учні', 'н/а', '1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '11', '12']
     
-    current_row += 1  # Відступ перед таблицею
+    current_row += 1
     header_row = current_row
     
     for col, header in enumerate(headers, start=1):
@@ -74,11 +71,10 @@ def create_teacher_report_excel(data, year, class_name, teacher, subject, semest
     student_count = data.get('student_count', 0)
     grades = data.get('grades', {})
     
-    # Заголовок для кількості учнів класу
     ws.cell(row=header_row, column=1, value='Кількість учнів класу').font = Font(bold=True)
     ws.cell(row=header_row, column=1).alignment = Alignment(horizontal='left')
     
-    current_row = header_row + 1  # Переходимо на наступний рядок
+    current_row = header_row + 1
     
     # Показати кількість учнів та розподіл оцінок
     ws.cell(row=current_row, column=1, value=student_count).font = Font(bold=True, size=12)
@@ -116,7 +112,6 @@ def create_teacher_report_excel(data, year, class_name, teacher, subject, semest
     # Місце для підписів
     current_row += 3
     
-    # Підпис директора - спочатку значення, потім об'єднання
     ws.cell(row=current_row, column=1, value='Директор')
     ws.cell(row=current_row, column=6, value='________________')
     ws.cell(row=current_row, column=10, value='Володимир ТКАЧУК')
@@ -131,8 +126,7 @@ def create_teacher_report_excel(data, year, class_name, teacher, subject, semest
     ws[f'J{current_row}'].alignment = Alignment(horizontal='left')
     ws[f'J{current_row}'].font = Font(size=11)
     
-    # Підпис вчителя
-    current_row += 3  # Більше відступу після директора
+    current_row += 3
     ws.cell(row=current_row, column=1, value='Вчитель')
     ws.cell(row=current_row, column=6, value='________________')
     ws.cell(row=current_row, column=10, value=format_name(teacher))
@@ -147,7 +141,6 @@ def create_teacher_report_excel(data, year, class_name, teacher, subject, semest
     ws[f'J{current_row}'].alignment = Alignment(horizontal='left')
     ws[f'J{current_row}'].font = Font(size=11)
     
-    # Автоширина
     column_widths = {'A': 35, 'B': 8, 'C': 8, 'D': 8, 'E': 8, 'F': 8, 'G': 8, 
                      'H': 8, 'I': 8, 'J': 8, 'K': 8, 'L': 8, 'M': 8, 'N': 8}
     for col, width in column_widths.items():
@@ -167,20 +160,20 @@ def create_class_report_excel(class_data, class_name, year, semester):
     ws.title = f"{class_name}"
     
     # Заголовок
-    ws.merge_cells('A1:N1')  # ✅ ЗМІНЕНО: A1:M1 → A1:N1 (додали колонку)
+    ws.merge_cells('A1:N1')
     title_cell = ws['A1']
     title_cell.value = f'Коломийський ліцей "Коломийська гімназія імені Михайла Грушевського"'
     title_cell.font = Font(size=14, bold=True)
     title_cell.alignment = Alignment(horizontal='center', vertical='center')
     
-    ws.merge_cells('A2:N2')  # ✅ ЗМІНЕНО: A2:M2 → A2:N2
+    ws.merge_cells('A2:N2')
     subtitle_cell = ws['A2']
     subtitle_cell.value = f'Попредметний звіт за {semester} семестр {year} н.р. ({class_name})'
     subtitle_cell.font = Font(size=12, bold=True)
     subtitle_cell.alignment = Alignment(horizontal='center')
     
-    # ✅ ЗМІНЕНО: Заголовки колонок - додано "Звільн."
-    headers = ['№', 'Предмет', 'Звільн.', 'н/а (%)', 'початковий', 'середній', 'достатній', 
+    # ✅ ОНОВЛЕНО: Заголовки з абсолютними числами
+    headers = ['№', 'Предмет', 'Звільн.', 'н/а', 'початковий', 'середній', 'достатній', 
                'високий', 'СБ', 'СН(%)', 'СН', 'КЯЗ', 'ЯЗ', 'КР']
     
     for col, header in enumerate(headers, start=1):
@@ -204,34 +197,34 @@ def create_class_report_excel(class_data, class_name, year, semester):
         grades = item['grades']
         student_count = item['student_count']
         
-        # Розрахунок відсотків
+        # Розрахунок
         g3 = int(grades.get('grade3', 0))
         g2 = int(grades.get('grade2', 0))
         g1 = int(grades.get('grade1', 0))
         initial = g3 + g2 + g1
-        initial_pct = f"{(initial / student_count * 100):.2f}%"
+        initial_pct = (initial / student_count * 100) if student_count > 0 else 0
         
         g6 = int(grades.get('grade6', 0))
         g5 = int(grades.get('grade5', 0))
         g4 = int(grades.get('grade4', 0))
         average = g6 + g5 + g4
-        average_pct = f"{(average / student_count * 100):.2f}%"
+        average_pct = (average / student_count * 100) if student_count > 0 else 0
         
         g9 = int(grades.get('grade9', 0))
         g8 = int(grades.get('grade8', 0))
         g7 = int(grades.get('grade7', 0))
         sufficient = g9 + g8 + g7
-        sufficient_pct = f"{(sufficient / student_count * 100):.2f}%"
+        sufficient_pct = (sufficient / student_count * 100) if student_count > 0 else 0
         
         g12 = int(grades.get('grade12', 0))
         g11 = int(grades.get('grade11', 0))
         g10 = int(grades.get('grade10', 0))
         high = g12 + g11 + g10
-        high_pct = f"{(high / student_count * 100):.2f}%"
+        high_pct = (high / student_count * 100) if student_count > 0 else 0
         
         total_graded = initial + average + sufficient + high
-        not_assessed = student_count - total_graded
-        not_assessed_pct = f"{(not_assessed / student_count * 100):.2f}%"
+        not_assessed = max(0, student_count - total_graded)
+        not_assessed_pct = (not_assessed / student_count * 100) if student_count > 0 else 0
         
         # СН текст
         learning_level_num = float(stats['learningLevel'].replace('%', ''))
@@ -242,21 +235,21 @@ def create_class_report_excel(class_data, class_name, year, semester):
         else:
             sn_text = 'середній ступінь навченості'
         
-        # ✅ ДОДАТИ: Інформація про звільнених
+        # Звільнені
         exempted_display = '-'
         if item.get('subject') == 'Фізична культура' and item.get('pe_exempted_count', 0) > 0:
             exempted_display = str(item['pe_exempted_count'])
         
-        # ✅ ЗМІНЕНО: Додано exempted_display у row_data
+        # ✅ ОНОВЛЕНО: Формат "60% (18)"
         row_data = [
             idx,
             item['subject'],
-            exempted_display,  # ✅ НОВА КОЛОНКА
-            not_assessed_pct,
-            initial_pct,
-            average_pct,
-            sufficient_pct,
-            high_pct,
+            exempted_display,
+            f"{not_assessed_pct:.2f}% ({not_assessed})",
+            f"{initial_pct:.2f}% ({initial})",
+            f"{average_pct:.2f}% ({average})",
+            f"{sufficient_pct:.2f}% ({sufficient})",
+            f"{high_pct:.2f}% ({high})",
             stats['avgScore'],
             stats['learningLevel'],
             sn_text,
@@ -267,8 +260,7 @@ def create_class_report_excel(class_data, class_name, year, semester):
         
         for col, value in enumerate(row_data, start=1):
             cell = ws.cell(row=row, column=col, value=value)
-            # ✅ ЗМІНЕНО: col > 3 замість col > 2 (зсув через нову колонку)
-            cell.alignment = Alignment(horizontal='center' if col > 3 else 'center', vertical='center')
+            cell.alignment = Alignment(horizontal='center' if col > 2 else 'center', vertical='center')
             cell.border = Border(
                 left=Side(style='thin'),
                 right=Side(style='thin'),
@@ -280,16 +272,15 @@ def create_class_report_excel(class_data, class_name, year, semester):
     
     # Підпис директора
     row += 2
-    ws.merge_cells(f'A{row}:N{row}')  # ✅ ЗМІНЕНО: M → N
+    ws.merge_cells(f'A{row}:N{row}')
     ws.cell(row=row, column=1, value='Директор                          /підпис/              Володимир ТКАЧУК')
     ws.cell(row=row, column=1).alignment = Alignment(horizontal='left')
     row += 1
-    ws.merge_cells(f'A{row}:N{row}')  # ✅ ЗМІНЕНО: M → N
+    ws.merge_cells(f'A{row}:N{row}')
     ws.cell(row=row, column=1, value='                  МП')
     ws.cell(row=row, column=1).alignment = Alignment(horizontal='left')
     
-    # ✅ ЗМІНЕНО: Автоширина колонок - додано колонку C
-    column_widths = {'A': 5, 'B': 30, 'C': 8, 'D': 10, 'E': 12, 'F': 12, 'G': 12, 'H': 12,
+    column_widths = {'A': 5, 'B': 30, 'C': 8, 'D': 14, 'E': 14, 'F': 14, 'G': 14, 'H': 14,
                      'I': 8, 'J': 10, 'K': 30, 'L': 8, 'M': 8, 'N': 8}
     for col, width in column_widths.items():
         ws.column_dimensions[col].width = width
@@ -321,8 +312,8 @@ def create_school_report_excel(school_data, all_monitoring, year, semester):
     subtitle_cell.alignment = Alignment(horizontal='center')
     
     # Заголовки колонок
-    headers = ['Клас', 'н/а (%)', 'початковий (%)', 'середній (%)', 'достатній (%)', 
-               'високий (%)', 'СБ', 'СН(%)', 'СН', 'КЯЗ', 'ЯЗ', 'КР']
+    headers = ['Клас', 'н/а', 'початковий', 'середній', 'достатній', 
+               'високий', 'СБ', 'СН(%)', 'СН', 'КЯЗ', 'ЯЗ', 'КР']
     
     for col, header in enumerate(headers, start=1):
         cell = ws.cell(row=4, column=col, value=header)
@@ -348,7 +339,6 @@ def create_school_report_excel(school_data, all_monitoring, year, semester):
             }
         
         class_stats[class_name]['subjects'].append(record)
-        # ✅ ВИПРАВЛЕНО: Беремо максимальне значення (повний клас, а не групу)
         current_count = record['student_count']
         if current_count > class_stats[class_name]['total_students']:
             class_stats[class_name]['total_students'] = current_count
@@ -356,13 +346,18 @@ def create_school_report_excel(school_data, all_monitoring, year, semester):
     # Дані по класах
     row = 5
     
-    # Обчислення середніх показників
     overall_stats = {
         'not_assessed': [],
         'initial': [],
         'average': [],
         'sufficient': [],
         'high': [],
+        # ✅ ДОДАНО: Абсолютні числа
+        'not_assessed_count': [],
+        'initial_count': [],
+        'average_count': [],
+        'sufficient_count': [],
+        'high_count': [],
         'avg_score': [],
         'learning_level': [],
         'quality_coeff': [],
@@ -384,6 +379,12 @@ def create_school_report_excel(school_data, all_monitoring, year, semester):
         total_average = 0
         total_sufficient = 0
         total_high = 0
+        # ✅ ДОДАНО: Лічильники абсолютних чисел
+        sum_not_assessed_count = 0
+        sum_initial_count = 0
+        sum_average_count = 0
+        sum_sufficient_count = 0
+        sum_high_count = 0
         sum_avg_score = 0
         sum_learning_level = 0
         sum_quality_coeff = 0
@@ -392,10 +393,8 @@ def create_school_report_excel(school_data, all_monitoring, year, semester):
         
         for subject in subjects:
             grades = subject['grades']
-            # ✅ ВИПРАВЛЕНО: Використовуємо кількість учнів для ЦЬОГО предмету
             subject_student_count = subject['student_count']
             
-            # ✅ ДОДАНО: Захист відділення на нуль
             if subject_student_count == 0:
                 continue
             
@@ -421,10 +420,15 @@ def create_school_report_excel(school_data, all_monitoring, year, semester):
             high = g12 + g11 + g10
             
             total_graded = initial + average + sufficient + high
-            # ✅ ВИПРАВЛЕНО: Захист від від'ємних значень
             not_assessed = max(0, subject_student_count - total_graded)
             
-            # ✅ ВИПРАВЛЕНО: Рахуємо відсотки від кількості учнів ЦЬОГО предмету
+            # ✅ ДОДАНО: Накопичення абсолютних чисел
+            sum_not_assessed_count += not_assessed
+            sum_initial_count += initial
+            sum_average_count += average
+            sum_sufficient_count += sufficient
+            sum_high_count += high
+            
             total_not_assessed += (not_assessed / subject_student_count * 100)
             total_initial += (initial / subject_student_count * 100)
             total_average += (average / subject_student_count * 100)
@@ -441,7 +445,6 @@ def create_school_report_excel(school_data, all_monitoring, year, semester):
         
         num_subjects = len(subjects)
         
-        # ✅ ДОДАНО: Захист відділення на нуль
         if num_subjects == 0:
             continue
         
@@ -464,14 +467,14 @@ def create_school_report_excel(school_data, all_monitoring, year, semester):
         else:
             sn_text = 'середній ступінь навченості'
         
-        # Записати дані
+        # ✅ ОНОВЛЕНО: Формат "60% (18)"
         row_data = [
             class_name,
-            f"{avg_not_assessed:.2f}%",
-            f"{avg_initial:.2f}%",
-            f"{avg_average:.2f}%",
-            f"{avg_sufficient:.2f}%",
-            f"{avg_high:.2f}%",
+            f"{avg_not_assessed:.2f}% ({sum_not_assessed_count})",
+            f"{avg_initial:.2f}% ({sum_initial_count})",
+            f"{avg_average:.2f}% ({sum_average_count})",
+            f"{avg_sufficient:.2f}% ({sum_sufficient_count})",
+            f"{avg_high:.2f}% ({sum_high_count})",
             f"{avg_score:.2f}",
             f"{avg_learning_level:.2f}%",
             sn_text,
@@ -496,6 +499,12 @@ def create_school_report_excel(school_data, all_monitoring, year, semester):
         overall_stats['average'].append(avg_average)
         overall_stats['sufficient'].append(avg_sufficient)
         overall_stats['high'].append(avg_high)
+        # ✅ ДОДАНО
+        overall_stats['not_assessed_count'].append(sum_not_assessed_count)
+        overall_stats['initial_count'].append(sum_initial_count)
+        overall_stats['average_count'].append(sum_average_count)
+        overall_stats['sufficient_count'].append(sum_sufficient_count)
+        overall_stats['high_count'].append(sum_high_count)
         overall_stats['avg_score'].append(avg_score)
         overall_stats['learning_level'].append(avg_learning_level)
         overall_stats['quality_coeff'].append(avg_quality_coeff)
@@ -504,18 +513,24 @@ def create_school_report_excel(school_data, all_monitoring, year, semester):
         
         row += 1
     
-    # Рядок "середні дані по ліцею"
+    # ✅ ОНОВЛЕНО: Рядок "середні дані по ліцею"
     if overall_stats['avg_score']:
         avg_row = ws.cell(row=row, column=1, value='середні дані по ліцею')
         avg_row.font = Font(bold=True)
         avg_row.fill = PatternFill(start_color='FFFF00', end_color='FFFF00', fill_type='solid')
         
+        total_not_assessed_count = sum(overall_stats['not_assessed_count'])
+        total_initial_count = sum(overall_stats['initial_count'])
+        total_average_count = sum(overall_stats['average_count'])
+        total_sufficient_count = sum(overall_stats['sufficient_count'])
+        total_high_count = sum(overall_stats['high_count'])
+        
         overall_data = [
-            f"{sum(overall_stats['not_assessed'])/len(overall_stats['not_assessed']):.2f}%",
-            f"{sum(overall_stats['initial'])/len(overall_stats['initial']):.2f}%",
-            f"{sum(overall_stats['average'])/len(overall_stats['average']):.2f}%",
-            f"{sum(overall_stats['sufficient'])/len(overall_stats['sufficient']):.2f}%",
-            f"{sum(overall_stats['high'])/len(overall_stats['high']):.2f}%",
+            f"{sum(overall_stats['not_assessed'])/len(overall_stats['not_assessed']):.2f}% ({total_not_assessed_count})",
+            f"{sum(overall_stats['initial'])/len(overall_stats['initial']):.2f}% ({total_initial_count})",
+            f"{sum(overall_stats['average'])/len(overall_stats['average']):.2f}% ({total_average_count})",
+            f"{sum(overall_stats['sufficient'])/len(overall_stats['sufficient']):.2f}% ({total_sufficient_count})",
+            f"{sum(overall_stats['high'])/len(overall_stats['high']):.2f}% ({total_high_count})",
             f"{sum(overall_stats['avg_score'])/len(overall_stats['avg_score']):.2f}",
             f"{sum(overall_stats['learning_level'])/len(overall_stats['learning_level']):.2f}%",
             'високий ступінь навченості',
@@ -546,8 +561,8 @@ def create_school_report_excel(school_data, all_monitoring, year, semester):
     ws.cell(row=row, column=1, value='                  МП')
     ws.cell(row=row, column=1).alignment = Alignment(horizontal='left')
     
-    # Автоширина
-    column_widths = {'A': 20, 'B': 10, 'C': 15, 'D': 13, 'E': 14, 'F': 13,
+    # ✅ ОНОВЛЕНО: Збільшено ширину колонок для формату "60% (18)"
+    column_widths = {'A': 20, 'B': 14, 'C': 14, 'D': 14, 'E': 14, 'F': 14,
                      'G': 8, 'H': 10, 'I': 30, 'J': 10, 'K': 10, 'L': 10, 'M': 10}
     for col, width in column_widths.items():
         ws.column_dimensions[col].width = width

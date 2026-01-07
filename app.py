@@ -302,12 +302,45 @@ def get_class_report(year, class_name):
     for key, info in all_subjects.items():
         if key in monitoring_dict:
             record = monitoring_dict[key]
+            grades = record['grades']
+            student_count = record['student_count']
+            
+            # ✅ ДОДАТИ: Розрахувати абсолютні числа
+            g3 = int(grades.get('grade3', 0))
+            g2 = int(grades.get('grade2', 0))
+            g1 = int(grades.get('grade1', 0))
+            initial_count = g3 + g2 + g1
+            
+            g6 = int(grades.get('grade6', 0))
+            g5 = int(grades.get('grade5', 0))
+            g4 = int(grades.get('grade4', 0))
+            average_count = g6 + g5 + g4
+            
+            g9 = int(grades.get('grade9', 0))
+            g8 = int(grades.get('grade8', 0))
+            g7 = int(grades.get('grade7', 0))
+            sufficient_count = g9 + g8 + g7
+            
+            g12 = int(grades.get('grade12', 0))
+            g11 = int(grades.get('grade11', 0))
+            g10 = int(grades.get('grade10', 0))
+            high_count = g12 + g11 + g10
+            
+            total_graded = initial_count + average_count + sufficient_count + high_count
+            not_assessed_count = max(0, student_count - total_graded)
+            
             class_data.append({
                 'subject': info['subject'],
                 'teacher': info['teacher'],
                 'statistics': record['statistics'],
                 'grades': record['grades'],
                 'student_count': record['student_count'],
+                # ✅ ДОДАТИ: Абсолютні числа
+                'not_assessed_count': not_assessed_count,
+                'initial_count': initial_count,
+                'average_count': average_count,
+                'sufficient_count': sufficient_count,
+                'high_count': high_count,
                 'filled': True
             })
             filled_count += 1
@@ -369,7 +402,13 @@ def get_school_report(year):
         
         # Розрахувати середні показники для класу
         if class_records:
-            # Ініціалізація сум
+            # ✅ ДОДАТИ: Лічильники для абсолютних чисел
+            total_not_assessed = 0
+            total_initial = 0
+            total_average = 0
+            total_sufficient = 0
+            total_high = 0
+            
             total_not_assessed_pct = 0
             total_initial_pct = 0
             total_average_pct = 0
@@ -384,6 +423,10 @@ def get_school_report(year):
             for record in class_records:
                 grades = record['grades']
                 rec_student_count = record['student_count']
+                
+                # ✅ ДОДАТИ: Захист від ділення на нуль
+                if rec_student_count == 0:
+                    continue
                 
                 # Рівні
                 g1 = int(grades.get('grade1', 0))
@@ -407,14 +450,21 @@ def get_school_report(year):
                 high = g10 + g11 + g12
                 
                 total_graded = initial + average + sufficient + high
-                not_assessed = rec_student_count - total_graded
+                not_assessed = max(0, rec_student_count - total_graded)
+                
+                # ✅ ОНОВЛЕНО: Додати абсолютні числа
+                total_not_assessed += not_assessed
+                total_initial += initial
+                total_average += average
+                total_sufficient += sufficient
+                total_high += high
                 
                 # Відсотки
-                total_not_assessed_pct += (not_assessed / rec_student_count * 100) if rec_student_count > 0 else 0
-                total_initial_pct += (initial / rec_student_count * 100) if rec_student_count > 0 else 0
-                total_average_pct += (average / rec_student_count * 100) if rec_student_count > 0 else 0
-                total_sufficient_pct += (sufficient / rec_student_count * 100) if rec_student_count > 0 else 0
-                total_high_pct += (high / rec_student_count * 100) if rec_student_count > 0 else 0
+                total_not_assessed_pct += (not_assessed / rec_student_count * 100)
+                total_initial_pct += (initial / rec_student_count * 100)
+                total_average_pct += (average / rec_student_count * 100)
+                total_sufficient_pct += (sufficient / rec_student_count * 100)
+                total_high_pct += (high / rec_student_count * 100)
                 
                 # Статистика
                 stats = record['statistics']
@@ -426,6 +476,10 @@ def get_school_report(year):
             
             num_records = len(class_records)
             
+            # ✅ ДОДАТИ: Захист від ділення на нуль
+            if num_records == 0:
+                continue
+            
             class_reports[class_name] = {
                 'filled': class_filled,
                 'total': class_total,
@@ -436,6 +490,12 @@ def get_school_report(year):
                     'average': round(total_average_pct / num_records, 2),
                     'sufficient': round(total_sufficient_pct / num_records, 2),
                     'high': round(total_high_pct / num_records, 2),
+                    # ✅ ДОДАТИ: Абсолютні числа
+                    'not_assessed_count': total_not_assessed,
+                    'initial_count': total_initial,
+                    'average_count': total_average,
+                    'sufficient_count': total_sufficient,
+                    'high_count': total_high,
                     'avg_score': round(sum_avg_score / num_records, 2),
                     'learning_level': round(sum_learning_level / num_records, 2),
                     'quality_coeff': round(sum_quality_coeff / num_records, 2),
