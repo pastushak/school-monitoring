@@ -198,6 +198,50 @@
         .chart-container.scrollable::-webkit-scrollbar-thumb:hover {
             background: #5568d3;
         }
+
+        /* ✅ ДОДАТИ: Стилі для детальної таблиці */
+        .data-table {
+            overflow-x: auto;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+            margin-top: 1.5rem;
+        }
+
+        .data-table table {
+            width: 100%;
+            border-collapse: collapse;
+            background: white;
+        }
+
+        .data-table th {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            padding: 1rem 0.75rem;
+            font-weight: 600;
+            text-align: center;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            font-size: 0.9rem;
+            white-space: nowrap;
+        }
+
+        .data-table td {
+            padding: 0.875rem 0.75rem;
+            text-align: center;
+            border: 1px solid #e2e8f0;
+            font-size: 0.9rem;
+        }
+
+        .data-table tbody tr:hover {
+            background: #f0f9ff;
+        }
+
+        .data-table tbody tr:nth-child(even) {
+            background: #f8fafc;
+        }
+
+        .data-table tbody tr:nth-child(even):hover {
+            background: #e0f2fe;
+        }
         
         /* Stats Cards */
         .stats-grid {
@@ -510,6 +554,150 @@
                                 <span class="stat-value" id="overallResult">-</span>
                             </li>
                         </ul>
+                    </div>
+                </div>
+
+                <!-- ✅ ДОДАТИ: Row 5: Class-specific charts (показується тільки для конкретного класу) -->
+                <div id="classSpecificCharts" style="display: none;">
+                    <h2 style="text-align: center; color: #667eea; margin: 3rem 0 2rem 0; font-size: 2rem;">
+                        📚 Детальна аналітика класу: <span id="selectedClassName"></span>
+                    </h2>
+                    
+                    <!-- КЯЗ та КР по предметах -->
+                    <div class="charts-grid">
+                        <div class="chart-card">
+                            <div class="chart-header">
+                                <h3 class="chart-title">
+                                    <span class="chart-icon">📊</span>
+                                    КЯЗ по предметах
+                                </h3>
+                                <button class="chart-export" onclick="exportChart('classQualityChart')">💾 Експорт</button>
+                            </div>
+                            <div style="max-height: 600px; overflow-y: auto; overflow-x: hidden; padding-right: 10px;">
+                                <div id="classQualityContainer" style="position: relative; width: 100%;">
+                                    <canvas id="classQualityChart"></canvas>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="chart-card">
+                            <div class="chart-header">
+                                <h3 class="chart-title">
+                                    <span class="chart-icon">✅</span>
+                                    КР по предметах
+                                </h3>
+                                <button class="chart-export" onclick="exportChart('classResultChart')">💾 Експорт</button>
+                            </div>
+                            <div style="max-height: 600px; overflow-y: auto; overflow-x: hidden; padding-right: 10px;">
+                                <div id="classResultContainer" style="position: relative; width: 100%;">
+                                    <canvas id="classResultChart"></canvas>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Порівняння вчителів та Динаміка класу -->
+                    <div class="charts-grid">
+                        <div class="chart-card">
+                            <div class="chart-header">
+                                <h3 class="chart-title">
+                                    <span class="chart-icon">👨‍🏫</span>
+                                    Порівняння вчителів
+                                </h3>
+                                <button class="chart-export" onclick="exportChart('classTeachersChart')">💾 Експорт</button>
+                            </div>
+                            <div class="chart-container">
+                                <canvas id="classTeachersChart"></canvas>
+                            </div>
+                        </div>
+                        
+                        <div class="chart-card">
+                            <div class="chart-header">
+                                <h3 class="chart-title">
+                                    <span class="chart-icon">📈</span>
+                                    Динаміка класу (семестри)
+                                </h3>
+                                <button class="chart-export" onclick="exportChart('classDynamicsChart')">💾 Експорт</button>
+                            </div>
+                            <div class="chart-container small">
+                                <canvas id="classDynamicsChart"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Порівняння з паралельними класами -->
+                    <div class="charts-grid">
+                        <div class="chart-card full-width">
+                            <div class="chart-header">
+                                <h3 class="chart-title">
+                                    <span class="chart-icon">🏆</span>
+                                    Порівняння з паралельними класами
+                                </h3>
+                                <button class="chart-export" onclick="exportChart('parallelClassesChart')">💾 Експорт</button>
+                            </div>
+                            <div class="chart-container small">
+                                <canvas id="parallelClassesChart"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Топ та аутсайдери предметів -->
+                    <div class="stats-grid">
+                        <div class="stat-card">
+                            <div class="stat-header">🏆 Найкращі предмети</div>
+                            <ul class="stat-list" id="classTopSubjectsList">
+                                <li class="stat-item">
+                                    <span class="stat-name">Завантаження...</span>
+                                </li>
+                            </ul>
+                        </div>
+                        
+                        <div class="stat-card">
+                            <div class="stat-header">⚠️ Предмети, що потребують уваги</div>
+                            <ul class="stat-list" id="classBottomSubjectsList">
+                                <li class="stat-item">
+                                    <span class="stat-name">Завантаження...</span>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                    
+                    <!-- Детальна таблиця -->
+                    <div class="chart-card full-width" style="margin-top: 2rem;">
+                        <div class="chart-header">
+                            <h3 class="chart-title">
+                                <span class="chart-icon">📋</span>
+                                Детальна таблиця по предметах
+                            </h3>
+                        </div>
+                        <div class="data-table" style="overflow-x: auto;">
+                            <table id="classDetailedTable" style="min-width: 1200px;">
+                                <thead>
+                                    <tr>
+                                        <th>Предмет</th>
+                                        <th>Вчитель</th>
+                                        <th>Учнів</th>
+                                        <th>СБ</th>
+                                        <th>СН</th>
+                                        <th>КЯЗ</th>
+                                        <th>ЯЗ</th>
+                                        <th>КР</th>
+                                        <th>Високий</th>
+                                        <th>Достатній</th>
+                                        <th>Середній</th>
+                                        <th>Початковий</th>
+                                        <th>н/а</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td colspan="13" style="text-align: center; padding: 2rem;">
+                                            Завантаження...
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
                     </div>
                 </div>
             </div>

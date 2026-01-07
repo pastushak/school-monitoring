@@ -243,15 +243,25 @@ def get_level_distribution(year, semester, class_name=None):
     """Розподіл учнів по рівнях навченості"""
     data = get_analytics_data(year, semester, class_name)
     
-    total_high = 0
-    total_sufficient = 0
-    total_average = 0
-    total_initial = 0
-    total_students = 0
+    if not data:
+        return {
+            'high': 0, 'sufficient': 0, 'average': 0, 'initial': 0,
+            'high_percent': 0, 'sufficient_percent': 0, 
+            'average_percent': 0, 'initial_percent': 0
+        }
+    
+    # ✅ ВИПРАВЛЕНО: Рахуємо СЕРЕДНІЙ відсоток, а не суму учнів
+    total_high_pct = 0
+    total_sufficient_pct = 0
+    total_average_pct = 0
+    total_initial_pct = 0
     
     for record in data:
         grades = record.get('grades', {})
         student_count = record.get('student_count', 0)
+        
+        if student_count == 0:
+            continue
         
         # Високий рівень (10-12)
         high = (int(grades.get('grade12', 0)) + 
@@ -273,21 +283,24 @@ def get_level_distribution(year, semester, class_name=None):
                   int(grades.get('grade2', 0)) + 
                   int(grades.get('grade1', 0)))
         
-        total_high += high
-        total_sufficient += sufficient
-        total_average += average
-        total_initial += initial
-        total_students += student_count
+        # Рахуємо відсотки для цього предмету
+        total_high_pct += (high / student_count * 100)
+        total_sufficient_pct += (sufficient / student_count * 100)
+        total_average_pct += (average / student_count * 100)
+        total_initial_pct += (initial / student_count * 100)
+    
+    # Середній відсоток по всіх предметах
+    num_records = len(data)
     
     return {
-        'high': total_high,
-        'sufficient': total_sufficient,
-        'average': total_average,
-        'initial': total_initial,
-        'high_percent': round(total_high / total_students * 100, 2) if total_students > 0 else 0,
-        'sufficient_percent': round(total_sufficient / total_students * 100, 2) if total_students > 0 else 0,
-        'average_percent': round(total_average / total_students * 100, 2) if total_students > 0 else 0,
-        'initial_percent': round(total_initial / total_students * 100, 2) if total_students > 0 else 0
+        'high': round(total_high_pct / num_records, 1) if num_records > 0 else 0,
+        'sufficient': round(total_sufficient_pct / num_records, 1) if num_records > 0 else 0,
+        'average': round(total_average_pct / num_records, 1) if num_records > 0 else 0,
+        'initial': round(total_initial_pct / num_records, 1) if num_records > 0 else 0,
+        'high_percent': round(total_high_pct / num_records, 1) if num_records > 0 else 0,
+        'sufficient_percent': round(total_sufficient_pct / num_records, 1) if num_records > 0 else 0,
+        'average_percent': round(total_average_pct / num_records, 1) if num_records > 0 else 0,
+        'initial_percent': round(total_initial_pct / num_records, 1) if num_records > 0 else 0
     }
 
 
@@ -302,7 +315,7 @@ def get_subject_analysis(year, semester):
             subject_stats[subject] = {
                 'avg_scores': [],
                 'quality_coeffs': [],
-                'classes': []
+                'classes': []  # ✅ ВЖЕ Є
             }
         
         stats = record.get('statistics', {})
@@ -310,7 +323,9 @@ def get_subject_analysis(year, semester):
         subject_stats[subject]['quality_coeffs'].append(
             float(stats.get('qualityCoeff', '0%').replace('%', ''))
         )
-        subject_stats[subject]['classes'].append(record['class'])
+        # ✅ ДОДАТИ: Зберігати унікальні класи
+        if record['class'] not in subject_stats[subject]['classes']:
+            subject_stats[subject]['classes'].append(record['class'])
     
     result = []
     for subject, data in sorted(subject_stats.items()):
@@ -319,7 +334,8 @@ def get_subject_analysis(year, semester):
                 'subject': subject,
                 'avg_score': round(sum(data['avg_scores']) / len(data['avg_scores']), 2),
                 'avg_quality': round(sum(data['quality_coeffs']) / len(data['quality_coeffs']), 2),
-                'classes_count': len(data['classes'])
+                'classes_count': len(data['classes']),
+                'classes': sorted(data['classes'])  # ✅ ДОДАТИ: Список класів
             })
     
     # Сортувати по середньому балу
@@ -364,6 +380,221 @@ def get_top_bottom_classes(year, semester, limit=5):
         'top': sorted_by_score[:limit],
         'bottom': sorted_by_score[-limit:][::-1]  # Реверс щоб показати найгірші
     }
+
+def get_class_subjects_comparison(year, semester, class_name):
+    """Середній бал по предметах для конкретного класу"""
+    data = get_analytics_data(year, semester, class_name)
+    
+    result = []
+    for record in data:
+        stats = record.get('statistics', {})
+        result.append({
+            'subject': record['subject'],
+            'teacher': record['teacher'],
+            'avg_score': float(stats.get('avgScore', 0)),
+            'quality': float(stats.get('qualityCoeff', '0%').replace('%', '')),
+            'result': float(stats.get('resultCoeff', '0%').replace('%', '')),
+            'student_count': record.get('student_count', 0)
+        })
+    
+    # Сортувати по середньому балу
+    result.sort(key=lambda x: x['avg_score'], reverse=True)
+    
+    return result
+
+
+def get_class_quality_comparison(year, semester, class_name):
+    """КЯЗ по предметах для конкретного класу"""
+    data = get_analytics_data(year, semester, class_name)
+    
+    result = []
+    for record in data:
+        stats = record.get('statistics', {})
+        result.append({
+            'subject': record['subject'],
+            'teacher': record['teacher'],
+            'quality': float(stats.get('qualityCoeff', '0%').replace('%', ''))
+        })
+    
+    # Сортувати по КЯЗ
+    result.sort(key=lambda x: x['quality'], reverse=True)
+    
+    return result
+
+
+def get_class_result_comparison(year, semester, class_name):
+    """КР по предметах для конкретного класу"""
+    data = get_analytics_data(year, semester, class_name)
+    
+    result = []
+    for record in data:
+        stats = record.get('statistics', {})
+        result.append({
+            'subject': record['subject'],
+            'teacher': record['teacher'],
+            'result': float(stats.get('resultCoeff', '0%').replace('%', ''))
+        })
+    
+    # Сортувати по КР
+    result.sort(key=lambda x: x['result'], reverse=True)
+    
+    return result
+
+
+def get_class_teachers_comparison(year, semester, class_name):
+    """Порівняння вчителів у конкретному класі"""
+    data = get_analytics_data(year, semester, class_name)
+    
+    teachers_stats = {}
+    for record in data:
+        teacher = record['teacher']
+        if teacher not in teachers_stats:
+            teachers_stats[teacher] = {
+                'subjects': [],
+                'avg_scores': [],
+                'quality_coeffs': [],
+                'result_coeffs': []
+            }
+        
+        stats = record.get('statistics', {})
+        teachers_stats[teacher]['subjects'].append(record['subject'])
+        teachers_stats[teacher]['avg_scores'].append(float(stats.get('avgScore', 0)))
+        teachers_stats[teacher]['quality_coeffs'].append(
+            float(stats.get('qualityCoeff', '0%').replace('%', ''))
+        )
+        teachers_stats[teacher]['result_coeffs'].append(
+            float(stats.get('resultCoeff', '0%').replace('%', ''))
+        )
+    
+    result = []
+    for teacher, data in teachers_stats.items():
+        if data['avg_scores']:
+            result.append({
+                'teacher': teacher,
+                'avg_score': round(sum(data['avg_scores']) / len(data['avg_scores']), 2),
+                'avg_quality': round(sum(data['quality_coeffs']) / len(data['quality_coeffs']), 2),
+                'avg_result': round(sum(data['result_coeffs']) / len(data['result_coeffs']), 2),
+                'subjects': data['subjects']
+            })
+    
+    return result
+
+
+def get_class_semester_dynamics(year, class_name):
+    """Динаміка класу по семестрах"""
+    semester1_data = get_analytics_data(year, 1, class_name)
+    semester2_data = get_analytics_data(year, 2, class_name)
+    
+    def calculate_stats(data):
+        if not data:
+            return {'avg_score': 0, 'avg_quality': 0, 'avg_result': 0, 'count': 0}
+        
+        scores = []
+        qualities = []
+        results = []
+        
+        for record in data:
+            stats = record.get('statistics', {})
+            scores.append(float(stats.get('avgScore', 0)))
+            qualities.append(float(stats.get('qualityCoeff', '0%').replace('%', '')))
+            results.append(float(stats.get('resultCoeff', '0%').replace('%', '')))
+        
+        return {
+            'avg_score': round(sum(scores) / len(scores), 2) if scores else 0,
+            'avg_quality': round(sum(qualities) / len(qualities), 2) if qualities else 0,
+            'avg_result': round(sum(results) / len(results), 2) if results else 0,
+            'count': len(data)
+        }
+    
+    return {
+        'semester1': calculate_stats(semester1_data),
+        'semester2': calculate_stats(semester2_data)
+    }
+
+
+def get_class_top_bottom_subjects(year, semester, class_name, limit=5):
+    """Топ та аутсайдери предметів для класу"""
+    data = get_class_subjects_comparison(year, semester, class_name)
+    
+    if not data:
+        return {'top': [], 'bottom': []}
+    
+    return {
+        'top': data[:limit],
+        'bottom': data[-limit:][::-1]
+    }
+
+
+def get_parallel_classes_comparison(year, semester, class_name):
+    """Порівняння з паралельними класами"""
+    # Визначити паралелі (наприклад, для 6-А це 6-Б, 6-В)
+    grade = class_name.split('-')[0]  # "6" з "6-А"
+    
+    # Отримати всі класи цієї паралелі
+    school_data = get_school_data()
+    parallel_classes = [cls for cls in school_data['classes'].keys() if cls.startswith(grade + '-')]
+    
+    result = []
+    for cls in sorted(parallel_classes):
+        cls_data = get_analytics_data(year, semester, cls)
+        
+        if cls_data:
+            scores = [float(record.get('statistics', {}).get('avgScore', 0)) for record in cls_data]
+            qualities = [float(record.get('statistics', {}).get('qualityCoeff', '0%').replace('%', '')) for record in cls_data]
+            
+            result.append({
+                'class': cls,
+                'avg_score': round(sum(scores) / len(scores), 2) if scores else 0,
+                'avg_quality': round(sum(qualities) / len(qualities), 2) if qualities else 0,
+                'subjects_count': len(cls_data),
+                'is_current': cls == class_name
+            })
+    
+    return result
+
+
+def get_class_detailed_table(year, semester, class_name):
+    """Детальна таблиця по предметах для класу"""
+    data = get_analytics_data(year, semester, class_name)
+    
+    result = []
+    for record in data:
+        stats = record.get('statistics', {})
+        grades = record.get('grades', {})
+        
+        # Рівні
+        high = (int(grades.get('grade12', 0)) + 
+                int(grades.get('grade11', 0)) + 
+                int(grades.get('grade10', 0)))
+        sufficient = (int(grades.get('grade9', 0)) + 
+                     int(grades.get('grade8', 0)) + 
+                     int(grades.get('grade7', 0)))
+        average = (int(grades.get('grade6', 0)) + 
+                  int(grades.get('grade5', 0)) + 
+                  int(grades.get('grade4', 0)))
+        initial = (int(grades.get('grade3', 0)) + 
+                  int(grades.get('grade2', 0)) + 
+                  int(grades.get('grade1', 0)))
+        
+        student_count = record.get('student_count', 0)
+        
+        result.append({
+            'subject': record['subject'],
+            'teacher': record['teacher'],
+            'student_count': student_count,
+            'avg_score': stats.get('avgScore', '0'),
+            'learning_level': stats.get('learningLevel', '0%'),
+            'quality_coeff': stats.get('qualityCoeff', '0%'),
+            'quality_percent': stats.get('qualityPercent', '0%'),
+            'result_coeff': stats.get('resultCoeff', '0%'),
+            'high': high,
+            'sufficient': sufficient,
+            'average': average,
+            'initial': initial,
+            'not_assessed': int(grades.get('gradeNA', 0))
+        })
+    
+    return result
 
 if __name__ == "__main__":
     print("Підключення до MongoDB...")

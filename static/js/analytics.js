@@ -75,20 +75,17 @@ async function applyFilters() {
         return;
     }
     
-    // Показати індикатор завантаження
     showLoading();
     
     try {
-        // Завантажити всі дані паралельно
-        await Promise.all([
-            loadClassComparison(),
-            loadLevelDistribution(),
-            loadSubjectAnalysis(),
-            loadSemesterComparison(),
-            loadTopBottom()
-        ]);
+        if (currentClass) {
+            // ✅ РЕЖИМ: Конкретний клас
+            await loadClassDetailedView();
+        } else {
+            // ✅ РЕЖИМ: Всі класи
+            await loadSchoolOverview();
+        }
         
-        // Показати графіки
         hideLoading();
         document.getElementById('chartsContainer').style.display = 'block';
     } catch (error) {
@@ -96,6 +93,42 @@ async function applyFilters() {
         hideLoading();
         alert('Помилка завантаження даних. Спробуйте ще раз.');
     }
+}
+
+// Завантажити огляд по школі (всі класи)
+async function loadSchoolOverview() {
+    // Приховати графіки для конкретного класу
+    document.getElementById('classSpecificCharts').style.display = 'none';
+    
+    // Завантажити загальні графіки
+    await Promise.all([
+        loadClassComparison(),
+        loadLevelDistribution(),
+        loadSubjectAnalysis(),
+        loadSemesterComparison(),
+        loadTopBottom()
+    ]);
+}
+
+// Завантажити детальну аналітику для конкретного класу
+async function loadClassDetailedView() {
+    // Показати секцію для конкретного класу
+    document.getElementById('classSpecificCharts').style.display = 'block';
+    document.getElementById('selectedClassName').textContent = currentClass;
+    
+    // Завантажити загальні графіки (але з даними тільки цього класу)
+    await Promise.all([
+        loadClassComparison(),           // Середній бал по класах (буде тільки 1 клас)
+        loadLevelDistribution(),          // Розподіл рівнів цього класу
+        loadClassSubjects(),              // ✅ НОВИЙ: Предмети класу
+        loadClassQuality(),               // ✅ НОВИЙ: КЯЗ по предметах
+        loadClassResult(),                // ✅ НОВИЙ: КР по предметах
+        loadClassTeachers(),              // ✅ НОВИЙ: Порівняння вчителів
+        loadClassDynamics(),              // ✅ НОВИЙ: Динаміка класу
+        loadParallelClasses(),            // ✅ НОВИЙ: Порівняння з паралелями
+        loadClassTopBottom(),             // ✅ НОВИЙ: Топ предметів
+        loadClassDetailedTable()          // ✅ НОВИЙ: Детальна таблиця
+    ]);
 }
 
 // Скинути фільтри
@@ -600,4 +633,629 @@ function exportChart(chartId) {
 
 function showMessage(message, type = 'info') {
     alert(message);
+}
+
+// ==================== ГРАФІКИ ДЛЯ КОНКРЕТНОГО КЛАСУ ====================
+
+// 1. Середній бал по предметах класу
+async function loadClassSubjects() {
+    const response = await fetch(`/api/analytics/class-subjects/${currentYear}/${currentSemester}/${currentClass}`);
+    const data = await response.json();
+    
+    if (!data || data.length === 0) {
+        console.warn('No class subjects data');
+        return;
+    }
+    
+    // Оновити основний графік "Середній бал по класах" для показу предметів
+    const ctx = document.getElementById('classComparisonChart').getContext('2d');
+    
+    if (charts.classComparison) {
+        charts.classComparison.destroy();
+    }
+    
+    // Динамічна висота для багатьох предметів
+    const canvas = document.getElementById('classComparisonChart');
+    const container = canvas.parentElement;
+    const itemHeight = 35;
+    const totalHeight = Math.max(400, data.length * itemHeight);
+    
+    canvas.style.height = `${totalHeight}px`;
+    container.style.height = `${totalHeight}px`;
+    container.style.maxHeight = '600px';
+    container.style.overflowY = 'auto';
+    
+    charts.classComparison = new Chart(ctx, {
+        type: 'bar',
+        data: {
+            labels: data.map(item => item.subject),
+            datasets: [{
+                label: 'Середній бал',
+                data: data.map(item => item.avg_score),
+                backgroundColor: 'rgba(102, 126, 234, 0.8)',
+                borderColor: 'rgba(102, 126, 234, 1)',
+                borderWidth: 2,
+                borderRadius: 8
+            }]
+        },
+        options: {
+            indexAxis: 'y',
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    display: false
+                },
+                title: {
+                    display: true,
+                    text: `Середній бал по предметах (${currentClass})`,
+                    font: {
+                        size: 16,
+                        weight: 'bold'
+                    },
+                    color: '#667eea'
+                },
+                tooltip: {
+                    callbacks: {
+                        label: function(context) {
+                            const item = data[context.dataIndex];
+                            return [
+                                `Середній бал: ${item.avg_score.toFixed(2)}`,
+                                `Вчитель: ${item.teacher}`,
+                                `Учнів: ${item.student_count}`
+                            ];
+                        }
+                    }
+                }
+            },
+            scales: {
+                x: {
+                    beginAtZero: true,
+                    max: 12,
+                    grid: {
+                        color: 'rgba(0, 0, 0, 0.05)'
+                    }
+                },
+                y: {
+                    grid: {
+                        display: false
+                    },
+                    ticks: {
+                        font: {
+                            size: 11
+                        }
+                    }
+                }
+            }
+        }
+    });
+}
+
+// 2. КЯЗ по предметах класу
+async function loadClassQuality() {
+    const response = await fetch(`/api/analytics/class-quality/${currentYear}/${currentSemester}/${currentClass}`);
+    const data = await response.json();
+    
+    if (!data || data.length === 0) {
+        console.warn('No class quality data');
+        return;
+    }
+    
+    const canvas = document.getElementById('classQualityChart');
+    const container = document.getElementById('classQualityContainer');
+    const ctx = canvas.getContext('2d');
+    
+    if (charts.classQuality) {
+        charts.classQuality.destroy();
+    }
+    
+    // Динамічна висота
+    const itemHeight = 35;
+    const totalHeight = data.length * itemHeight;
+    canvas.style.height = `${totalHeight}px`;
+    container.style.height = `${totalHeight}px`;
+    
+    charts.classQuality = new Chart(ctx, {
+        type: 'bar',
+        data: {
+            labels: data.map(item => item.subject),
+            datasets: [{
+                label: 'КЯЗ (%)',
+                data: data.map(item => item.quality),
+                backgroundColor: 'rgba(255, 99, 132, 0.8)',
+                borderColor: 'rgba(255, 99, 132, 1)',
+                borderWidth: 2,
+                borderRadius: 8
+            }]
+        },
+        options: {
+            indexAxis: 'y',
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    display: false
+                },
+                tooltip: {
+                    callbacks: {
+                        label: function(context) {
+                            const item = data[context.dataIndex];
+                            return [
+                                `КЯЗ: ${item.quality.toFixed(1)}%`,
+                                `Вчитель: ${item.teacher}`
+                            ];
+                        }
+                    }
+                }
+            },
+            scales: {
+                x: {
+                    beginAtZero: true,
+                    max: 100,
+                    ticks: {
+                        callback: function(value) {
+                            return value + '%';
+                        }
+                    },
+                    grid: {
+                        color: 'rgba(0, 0, 0, 0.05)'
+                    }
+                },
+                y: {
+                    grid: {
+                        display: false
+                    },
+                    ticks: {
+                        font: {
+                            size: 11
+                        }
+                    }
+                }
+            }
+        }
+    });
+}
+
+// 3. КР по предметах класу
+async function loadClassResult() {
+    const response = await fetch(`/api/analytics/class-result/${currentYear}/${currentSemester}/${currentClass}`);
+    const data = await response.json();
+    
+    if (!data || data.length === 0) {
+        console.warn('No class result data');
+        return;
+    }
+    
+    const canvas = document.getElementById('classResultChart');
+    const container = document.getElementById('classResultContainer');
+    const ctx = canvas.getContext('2d');
+    
+    if (charts.classResult) {
+        charts.classResult.destroy();
+    }
+    
+    // Динамічна висота
+    const itemHeight = 35;
+    const totalHeight = data.length * itemHeight;
+    canvas.style.height = `${totalHeight}px`;
+    container.style.height = `${totalHeight}px`;
+    
+    charts.classResult = new Chart(ctx, {
+        type: 'bar',
+        data: {
+            labels: data.map(item => item.subject),
+            datasets: [{
+                label: 'КР (%)',
+                data: data.map(item => item.result),
+                backgroundColor: 'rgba(54, 162, 235, 0.8)',
+                borderColor: 'rgba(54, 162, 235, 1)',
+                borderWidth: 2,
+                borderRadius: 8
+            }]
+        },
+        options: {
+            indexAxis: 'y',
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    display: false
+                },
+                tooltip: {
+                    callbacks: {
+                        label: function(context) {
+                            const item = data[context.dataIndex];
+                            return [
+                                `КР: ${item.result.toFixed(1)}%`,
+                                `Вчитель: ${item.teacher}`
+                            ];
+                        }
+                    }
+                }
+            },
+            scales: {
+                x: {
+                    beginAtZero: true,
+                    max: 100,
+                    ticks: {
+                        callback: function(value) {
+                            return value + '%';
+                        }
+                    },
+                    grid: {
+                        color: 'rgba(0, 0, 0, 0.05)'
+                    }
+                },
+                y: {
+                    grid: {
+                        display: false
+                    },
+                    ticks: {
+                        font: {
+                            size: 11
+                        }
+                    }
+                }
+            }
+        }
+    });
+}
+
+// 4. Порівняння вчителів класу (радарна діаграма)
+async function loadClassTeachers() {
+    const response = await fetch(`/api/analytics/class-teachers/${currentYear}/${currentSemester}/${currentClass}`);
+    const data = await response.json();
+    
+    if (!data || data.length === 0) {
+        console.warn('No class teachers data');
+        const ctx = document.getElementById('classTeachersChart').getContext('2d');
+        const chartContainer = ctx.canvas.parentElement;
+        chartContainer.innerHTML = `
+            <div style="display: flex; align-items: center; justify-content: center; height: 100%; flex-direction: column; color: #64748b;">
+                <div style="font-size: 3rem; margin-bottom: 1rem;">👨‍🏫</div>
+                <h3 style="margin: 0; color: #1e293b;">Недостатньо даних</h3>
+                <p style="margin: 0.5rem 0 0 0; font-size: 0.95rem;">
+                    Для порівняння вчителів потрібно більше даних
+                </p>
+            </div>
+        `;
+        return;
+    }
+    
+    const ctx = document.getElementById('classTeachersChart').getContext('2d');
+    
+    if (charts.classTeachers) {
+        charts.classTeachers.destroy();
+    }
+    
+    // Підготувати дані для радарної діаграми
+    const teachers = data.slice(0, 5); // Максимум 5 вчителів для читабельності
+    
+    const datasets = teachers.map((teacher, index) => {
+        const colors = [
+            'rgba(255, 99, 132, 0.6)',
+            'rgba(54, 162, 235, 0.6)',
+            'rgba(255, 206, 86, 0.6)',
+            'rgba(75, 192, 192, 0.6)',
+            'rgba(153, 102, 255, 0.6)'
+        ];
+        
+        return {
+            label: teacher.teacher,
+            data: [
+                teacher.avg_score,
+                teacher.avg_quality,
+                teacher.avg_result
+            ],
+            backgroundColor: colors[index % colors.length],
+            borderColor: colors[index % colors.length].replace('0.6', '1'),
+            borderWidth: 2
+        };
+    });
+    
+    charts.classTeachers = new Chart(ctx, {
+        type: 'radar',
+        data: {
+            labels: ['Середній бал', 'КЯЗ (%)', 'КР (%)'],
+            datasets: datasets
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    position: 'bottom',
+                    labels: {
+                        padding: 15,
+                        font: {
+                            size: 11
+                        }
+                    }
+                },
+                tooltip: {
+                    callbacks: {
+                        label: function(context) {
+                            const teacher = teachers[context.datasetIndex];
+                            return `${teacher.teacher}: ${context.parsed.r.toFixed(1)}`;
+                        }
+                    }
+                }
+            },
+            scales: {
+                r: {
+                    beginAtZero: true,
+                    max: 100,
+                    ticks: {
+                        stepSize: 20
+                    }
+                }
+            }
+        }
+    });
+}
+
+// 5. Динаміка класу (I vs II семестр)
+async function loadClassDynamics() {
+    const response = await fetch(`/api/analytics/class-dynamics/${currentYear}/${currentClass}`);
+    const data = await response.json();
+    
+    const ctx = document.getElementById('classDynamicsChart').getContext('2d');
+    
+    if (charts.classDynamics) {
+        charts.classDynamics.destroy();
+    }
+    
+    // Перевірка чи є дані
+    const hasSemester1 = data.semester1.count > 0;
+    const hasSemester2 = data.semester2.count > 0;
+    
+    if (!hasSemester1 || !hasSemester2) {
+        const chartContainer = ctx.canvas.parentElement;
+        chartContainer.innerHTML = `
+            <div style="display: flex; align-items: center; justify-content: center; height: 100%; flex-direction: column; color: #64748b;">
+                <div style="font-size: 3rem; margin-bottom: 1rem;">📈</div>
+                <h3 style="margin: 0; color: #1e293b;">Відсутні дані для порівняння</h3>
+                <p style="margin: 0.5rem 0 0 0; font-size: 0.95rem;">
+                    Для порівняння семестрів потрібні дані з обох семестрів
+                </p>
+                <p style="margin: 0.5rem 0 0 0; font-size: 0.9rem; opacity: 0.7;">
+                    I семестр: ${hasSemester1 ? '✓ Є дані' : '✗ Немає даних'} | 
+                    II семестр: ${hasSemester2 ? '✓ Є дані' : '✗ Немає даних'}
+                </p>
+            </div>
+        `;
+        return;
+    }
+    
+    charts.classDynamics = new Chart(ctx, {
+        type: 'bar',
+        data: {
+            labels: ['Середній бал', 'КЯЗ (%)', 'КР (%)'],
+            datasets: [
+                {
+                    label: 'I семестр',
+                    data: [
+                        data.semester1.avg_score,
+                        data.semester1.avg_quality,
+                        data.semester1.avg_result
+                    ],
+                    backgroundColor: 'rgba(33, 150, 243, 0.8)',
+                    borderColor: 'rgba(33, 150, 243, 1)',
+                    borderWidth: 2,
+                    borderRadius: 8
+                },
+                {
+                    label: 'II семестр',
+                    data: [
+                        data.semester2.avg_score,
+                        data.semester2.avg_quality,
+                        data.semester2.avg_result
+                    ],
+                    backgroundColor: 'rgba(76, 175, 80, 0.8)',
+                    borderColor: 'rgba(76, 175, 80, 1)',
+                    borderWidth: 2,
+                    borderRadius: 8
+                }
+            ]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    position: 'top',
+                    labels: {
+                        font: {
+                            size: 13,
+                            weight: 'bold'
+                        }
+                    }
+                },
+                tooltip: {
+                    callbacks: {
+                        label: function(context) {
+                            return `${context.dataset.label}: ${context.parsed.y.toFixed(1)}`;
+                        }
+                    }
+                }
+            },
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    max: 100,
+                    grid: {
+                        color: 'rgba(0, 0, 0, 0.05)'
+                    }
+                },
+                x: {
+                    grid: {
+                        display: false
+                    }
+                }
+            }
+        }
+    });
+}
+
+// 6. Порівняння з паралельними класами
+async function loadParallelClasses() {
+    const response = await fetch(`/api/analytics/parallel-classes/${currentYear}/${currentSemester}/${currentClass}`);
+    const data = await response.json();
+    
+    if (!data || data.length === 0) {
+        console.warn('No parallel classes data');
+        return;
+    }
+    
+    const ctx = document.getElementById('parallelClassesChart').getContext('2d');
+    
+    if (charts.parallelClasses) {
+        charts.parallelClasses.destroy();
+    }
+    
+    // Виділити поточний клас іншим кольором
+    const backgroundColors = data.map(item => 
+        item.is_current ? 'rgba(255, 193, 7, 0.8)' : 'rgba(102, 126, 234, 0.8)'
+    );
+    const borderColors = data.map(item => 
+        item.is_current ? 'rgba(255, 193, 7, 1)' : 'rgba(102, 126, 234, 1)'
+    );
+    
+    charts.parallelClasses = new Chart(ctx, {
+        type: 'bar',
+        data: {
+            labels: data.map(item => item.class),
+            datasets: [{
+                label: 'Середній бал',
+                data: data.map(item => item.avg_score),
+                backgroundColor: backgroundColors,
+                borderColor: borderColors,
+                borderWidth: 2,
+                borderRadius: 8
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    display: false
+                },
+                tooltip: {
+                    callbacks: {
+                        label: function(context) {
+                            const item = data[context.dataIndex];
+                            return [
+                                `Середній бал: ${item.avg_score.toFixed(2)}`,
+                                `Предметів: ${item.subjects_count}`,
+                                item.is_current ? '⭐ Поточний клас' : ''
+                            ].filter(Boolean);
+                        }
+                    }
+                }
+            },
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    max: 12,
+                    grid: {
+                        color: 'rgba(0, 0, 0, 0.05)'
+                    }
+                },
+                x: {
+                    grid: {
+                        display: false
+                    }
+                }
+            }
+        }
+    });
+}
+
+// 7. Топ та аутсайдери предметів
+async function loadClassTopBottom() {
+    const response = await fetch(`/api/analytics/class-top-bottom/${currentYear}/${currentSemester}/${currentClass}?limit=5`);
+    const data = await response.json();
+    
+    // Топ-5 предметів
+    const topList = document.getElementById('classTopSubjectsList');
+    topList.innerHTML = '';
+    
+    if (data.top && data.top.length > 0) {
+        data.top.forEach((item, index) => {
+            const li = document.createElement('li');
+            li.className = 'stat-item';
+            li.innerHTML = `
+                <span class="stat-name">${index + 1}. ${item.subject}</span>
+                <span class="stat-value">${item.avg_score.toFixed(2)}</span>
+            `;
+            topList.appendChild(li);
+        });
+    } else {
+        topList.innerHTML = '<li class="stat-item"><span class="stat-name">Немає даних</span></li>';
+    }
+    
+    // Аутсайдери
+    const bottomList = document.getElementById('classBottomSubjectsList');
+    bottomList.innerHTML = '';
+    
+    if (data.bottom && data.bottom.length > 0) {
+        data.bottom.forEach((item) => {
+            const li = document.createElement('li');
+            li.className = 'stat-item';
+            
+            let badge = 'badge-warning';
+            if (item.avg_score < 7) {
+                badge = 'badge-danger';
+            }
+            
+            li.innerHTML = `
+                <span class="stat-name">${item.subject}</span>
+                <span class="stat-badge ${badge}">${item.avg_score.toFixed(2)}</span>
+            `;
+            bottomList.appendChild(li);
+        });
+    } else {
+        bottomList.innerHTML = '<li class="stat-item"><span class="stat-name">Немає даних</span></li>';
+    }
+}
+
+// 8. Детальна таблиця
+async function loadClassDetailedTable() {
+    const response = await fetch(`/api/analytics/class-detailed/${currentYear}/${currentSemester}/${currentClass}`);
+    const data = await response.json();
+    
+    const tbody = document.querySelector('#classDetailedTable tbody');
+    tbody.innerHTML = '';
+    
+    if (!data || data.length === 0) {
+        tbody.innerHTML = `
+            <tr>
+                <td colspan="13" style="text-align: center; padding: 2rem; color: #64748b;">
+                    Немає даних для відображення
+                </td>
+            </tr>
+        `;
+        return;
+    }
+    
+    data.forEach(item => {
+        const row = document.createElement('tr');
+        row.innerHTML = `
+            <td style="text-align: left;"><strong>${item.subject}</strong></td>
+            <td style="text-align: left;">${item.teacher}</td>
+            <td>${item.student_count}</td>
+            <td><strong>${item.avg_score}</strong></td>
+            <td>${item.learning_level}</td>
+            <td>${item.quality_coeff}</td>
+            <td>${item.quality_percent}</td>
+            <td>${item.result_coeff}</td>
+            <td>${item.high}</td>
+            <td>${item.sufficient}</td>
+            <td>${item.average}</td>
+            <td>${item.initial}</td>
+            <td>${item.not_assessed}</td>
+        `;
+        tbody.appendChild(row);
+    });
 }

@@ -808,5 +808,69 @@ def api_top_bottom(year, semester):
     data = db_mongo.get_top_bottom_classes(year, int(semester), limit)
     return jsonify(data)
 
+@app.route('/api/analytics/class-subjects/<year>/<semester>/<class_name>')
+@role_required(['superadmin', 'admin'])
+def api_class_subjects(year, semester, class_name):
+    """API: Предмети конкретного класу"""
+    data = db_mongo.get_class_subjects_comparison(year, int(semester), class_name)
+    return jsonify(data)
+
+
+@app.route('/api/analytics/class-quality/<year>/<semester>/<class_name>')
+@role_required(['superadmin', 'admin'])
+def api_class_quality(year, semester, class_name):
+    """API: КЯЗ по предметах класу"""
+    data = db_mongo.get_class_quality_comparison(year, int(semester), class_name)
+    return jsonify(data)
+
+
+@app.route('/api/analytics/class-result/<year>/<semester>/<class_name>')
+@role_required(['superadmin', 'admin'])
+def api_class_result(year, semester, class_name):
+    """API: КР по предметах класу"""
+    data = db_mongo.get_class_result_comparison(year, int(semester), class_name)
+    return jsonify(data)
+
+
+@app.route('/api/analytics/class-teachers/<year>/<semester>/<class_name>')
+@role_required(['superadmin', 'admin'])
+def api_class_teachers(year, semester, class_name):
+    """API: Вчителі класу"""
+    data = db_mongo.get_class_teachers_comparison(year, int(semester), class_name)
+    return jsonify(data)
+
+
+@app.route('/api/analytics/class-dynamics/<year>/<class_name>')
+@role_required(['superadmin', 'admin'])
+def api_class_dynamics(year, class_name):
+    """API: Динаміка класу"""
+    data = db_mongo.get_class_semester_dynamics(year, class_name)
+    return jsonify(data)
+
+
+@app.route('/api/analytics/class-top-bottom/<year>/<semester>/<class_name>')
+@role_required(['superadmin', 'admin'])
+def api_class_top_bottom(year, semester, class_name):
+    """API: Топ та аутсайдери предметів"""
+    limit = request.args.get('limit', 5, type=int)
+    data = db_mongo.get_class_top_bottom_subjects(year, int(semester), class_name, limit)
+    return jsonify(data)
+
+
+@app.route('/api/analytics/parallel-classes/<year>/<semester>/<class_name>')
+@role_required(['superadmin', 'admin'])
+def api_parallel_classes(year, semester, class_name):
+    """API: Порівняння з паралельними класами"""
+    data = db_mongo.get_parallel_classes_comparison(year, int(semester), class_name)
+    return jsonify(data)
+
+
+@app.route('/api/analytics/class-detailed/<year>/<semester>/<class_name>')
+@role_required(['superadmin', 'admin'])
+def api_class_detailed(year, semester, class_name):
+    """API: Детальна таблиця класу"""
+    data = db_mongo.get_class_detailed_table(year, int(semester), class_name)
+    return jsonify(data)
+
 if __name__ == '__main__':
     app.run(debug=True, host='0.0.0.0', port=5000)
