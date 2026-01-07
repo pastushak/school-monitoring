@@ -107,12 +107,10 @@ def get_user_by_email(email):
 
 def save_monitoring_data(data):
     """Зберегти дані моніторингу з урахуванням семестру"""
-    db = get_database()
-    collection = db['monitoring']
     
-    # ✅ ДОДАТИ: Створити індекс для швидшого пошуку (виконується один раз)
+    # ✅ ВИПРАВЛЕНО: Створити індекс для швидшого пошуку
     try:
-        collection.create_index([
+        monitoring_collection.create_index([
             ('year', 1),
             ('class', 1),
             ('teacher', 1),
@@ -120,7 +118,6 @@ def save_monitoring_data(data):
             ('semester', 1)
         ], unique=True, background=True, name='monitoring_unique_index')
     except Exception as e:
-        # Індекс вже існує або помилка створення
         pass
     
     # Додати timestamp оновлення
@@ -136,36 +133,31 @@ def save_monitoring_data(data):
         'class': data['class'],
         'teacher': data['teacher'],
         'subject': data['subject'],
-        'semester': data.get('semester', 1)  # За замовчуванням 1
+        'semester': data.get('semester', 1)
     }
     
-    # ✅ ДОДАТИ: Логування
     print(f"[SAVE] Query: {query}")
     
     # Перевірити чи існує запис
-    existing = collection.find_one(query)
+    existing = monitoring_collection.find_one(query)
     
     if existing:
-        # ✅ ОНОВЛЕНО: Використати update_one з upsert
-        result = collection.update_one(query, {"$set": data}, upsert=True)
+        result = monitoring_collection.update_one(query, {"$set": data}, upsert=True)
         print(f"[SAVE] Updated existing record, matched: {result.matched_count}, modified: {result.modified_count}")
     else:
-        # Додати timestamp створення
         data['created_at'] = datetime.now()
-        result = collection.insert_one(data)
+        result = monitoring_collection.insert_one(data)
         print(f"[SAVE] Inserted new record, id: {result.inserted_id}")
     
-    # ✅ ДОДАТИ: Примусово синхронізувати з диском (для Render.com)
+    # ✅ ВИПРАВЛЕНО: Примусово синхронізувати
     try:
-        # Спробувати fsync для гарантії запису
-        db.client.admin.command('fsync', lock=False)
+        client.admin.command('fsync', lock=False)
         print(f"[SAVE] fsync completed successfully")
     except Exception as e:
-        # fsync може не працювати на деяких хостингах (MongoDB Atlas)
         print(f"[SAVE] fsync skipped or failed: {e}")
     
-    # ✅ ДОДАТИ: Перевірка що дані збережено
-    saved = collection.find_one(query)
+    # Перевірка
+    saved = monitoring_collection.find_one(query)
     if saved:
         print(f"[SAVE] Verification: Data saved successfully")
         return True
@@ -175,14 +167,10 @@ def save_monitoring_data(data):
 
 def get_monitoring_data(year, class_name, teacher, subject, semester):
     """Отримати дані моніторингу"""
-    db = get_database()
-    collection = db['monitoring']
-    
     # Перетворити semester на int
     if isinstance(semester, str):
         semester = int(semester)
     
-    # Підготувати запит
     query = {
         'year': year,
         'class': class_name,
@@ -191,15 +179,15 @@ def get_monitoring_data(year, class_name, teacher, subject, semester):
         'semester': semester
     }
     
-    # ✅ ДОДАТИ: Логування
     print(f"[GET] Query: {query}")
     
-    # Знайти запис
-    result = collection.find_one(query)
+    result = monitoring_collection.find_one(query)
     
-    # ✅ ДОДАТИ: Логування результату
     if result:
         print(f"[GET] Found record, updated_at: {result.get('updated_at')}")
+        # ✅ ВИПРАВЛЕНО: Видалити _id перед поверненням
+        if '_id' in result:
+            del result['_id']
     else:
         print(f"[GET] No record found")
     
@@ -212,35 +200,44 @@ def get_class_monitoring_data(year, class_name, semester=None):
         'class': class_name
     }
     
-    # Якщо вказано семестр - фільтрувати
     if semester is not None:
         query['semester'] = int(semester)
     
     cursor = monitoring_collection.find(query)
     results = list(cursor)
+    
+    # ✅ ВИПРАВЛЕНО: Видалити _id з кожного результату
     for r in results:
-        r.pop('_id', None)
+        if '_id' in r:
+            del r['_id']
+    
     return results
 
 def get_all_monitoring_data(year, semester=None):
     """Отримати всі дані по школі з урахуванням семестру"""
     query = {'year': year}
     
-    # Якщо вказано семестр - фільтрувати
     if semester is not None:
         query['semester'] = int(semester)
     
     cursor = monitoring_collection.find(query)
     results = list(cursor)
+    
+    # ✅ ВИПРАВЛЕНО: Видалити _id з кожного результату
     for r in results:
-        r.pop('_id', None)
+        if '_id' in r:
+            del r['_id']
+    
     return results
 
 def get_school_data():
     """Отримати дані школи"""
     result = school_data_collection.find_one()
-    if result:
-        result.pop('_id', None)
+    
+    # ✅ ВИПРАВЛЕНО: Видалити _id
+    if result and '_id' in result:
+        del result['_id']
+    
     return result
 
 def get_analytics_data(year, semester=None, class_name=None):
@@ -255,9 +252,10 @@ def get_analytics_data(year, semester=None, class_name=None):
     
     data = list(monitoring_collection.find(query))
     
-    # Перетворити ObjectId в string для JSON
+    # ✅ ВИПРАВЛЕНО: Видалити _id з кожного результату
     for item in data:
-        item['_id'] = str(item['_id'])
+        if '_id' in item:
+            del item['_id']
     
     return data
 
@@ -287,7 +285,6 @@ def get_class_comparison(year, semester):
             float(stats.get('resultCoeff', '0%').replace('%', ''))
         )
     
-    # Розрахувати середні
     result = []
     for class_name, data in sorted(class_stats.items()):
         if data['avg_scores']:
@@ -313,7 +310,6 @@ def get_level_distribution(year, semester, class_name=None):
             'average_percent': 0, 'initial_percent': 0
         }
     
-    # ✅ ВИПРАВЛЕНО: Рахуємо СЕРЕДНІЙ відсоток, а не суму учнів
     total_high_pct = 0
     total_sufficient_pct = 0
     total_average_pct = 0
@@ -326,33 +322,27 @@ def get_level_distribution(year, semester, class_name=None):
         if student_count == 0:
             continue
         
-        # Високий рівень (10-12)
         high = (int(grades.get('grade12', 0)) + 
                 int(grades.get('grade11', 0)) + 
                 int(grades.get('grade10', 0)))
         
-        # Достатній рівень (7-9)
         sufficient = (int(grades.get('grade9', 0)) + 
                      int(grades.get('grade8', 0)) + 
                      int(grades.get('grade7', 0)))
         
-        # Середній рівень (4-6)
         average = (int(grades.get('grade6', 0)) + 
                   int(grades.get('grade5', 0)) + 
                   int(grades.get('grade4', 0)))
         
-        # Початковий рівень (1-3)
         initial = (int(grades.get('grade3', 0)) + 
                   int(grades.get('grade2', 0)) + 
                   int(grades.get('grade1', 0)))
         
-        # Рахуємо відсотки для цього предмету
         total_high_pct += (high / student_count * 100)
         total_sufficient_pct += (sufficient / student_count * 100)
         total_average_pct += (average / student_count * 100)
         total_initial_pct += (initial / student_count * 100)
     
-    # Середній відсоток по всіх предметах
     num_records = len(data)
     
     return {
@@ -378,7 +368,7 @@ def get_subject_analysis(year, semester):
             subject_stats[subject] = {
                 'avg_scores': [],
                 'quality_coeffs': [],
-                'classes': []  # ✅ ВЖЕ Є
+                'classes': []
             }
         
         stats = record.get('statistics', {})
@@ -386,7 +376,7 @@ def get_subject_analysis(year, semester):
         subject_stats[subject]['quality_coeffs'].append(
             float(stats.get('qualityCoeff', '0%').replace('%', ''))
         )
-        # ✅ ДОДАТИ: Зберігати унікальні класи
+        
         if record['class'] not in subject_stats[subject]['classes']:
             subject_stats[subject]['classes'].append(record['class'])
     
@@ -398,10 +388,9 @@ def get_subject_analysis(year, semester):
                 'avg_score': round(sum(data['avg_scores']) / len(data['avg_scores']), 2),
                 'avg_quality': round(sum(data['quality_coeffs']) / len(data['quality_coeffs']), 2),
                 'classes_count': len(data['classes']),
-                'classes': sorted(data['classes'])  # ✅ ДОДАТИ: Список класів
+                'classes': sorted(data['classes'])
             })
     
-    # Сортувати по середньому балу
     result.sort(key=lambda x: x['avg_score'], reverse=True)
     
     return result
@@ -441,7 +430,7 @@ def get_top_bottom_classes(year, semester, limit=5):
     
     return {
         'top': sorted_by_score[:limit],
-        'bottom': sorted_by_score[-limit:][::-1]  # Реверс щоб показати найгірші
+        'bottom': sorted_by_score[-limit:][::-1]
     }
 
 def get_class_subjects_comparison(year, semester, class_name):
@@ -460,7 +449,6 @@ def get_class_subjects_comparison(year, semester, class_name):
             'student_count': record.get('student_count', 0)
         })
     
-    # Сортувати по середньому балу
     result.sort(key=lambda x: x['avg_score'], reverse=True)
     
     return result
@@ -479,7 +467,6 @@ def get_class_quality_comparison(year, semester, class_name):
             'quality': float(stats.get('qualityCoeff', '0%').replace('%', ''))
         })
     
-    # Сортувати по КЯЗ
     result.sort(key=lambda x: x['quality'], reverse=True)
     
     return result
@@ -498,7 +485,6 @@ def get_class_result_comparison(year, semester, class_name):
             'result': float(stats.get('resultCoeff', '0%').replace('%', ''))
         })
     
-    # Сортувати по КР
     result.sort(key=lambda x: x['result'], reverse=True)
     
     return result
@@ -590,10 +576,8 @@ def get_class_top_bottom_subjects(year, semester, class_name, limit=5):
 
 def get_parallel_classes_comparison(year, semester, class_name):
     """Порівняння з паралельними класами"""
-    # Визначити паралелі (наприклад, для 6-А це 6-Б, 6-В)
-    grade = class_name.split('-')[0]  # "6" з "6-А"
+    grade = class_name.split('-')[0]
     
-    # Отримати всі класи цієї паралелі
     school_data = get_school_data()
     parallel_classes = [cls for cls in school_data['classes'].keys() if cls.startswith(grade + '-')]
     
@@ -625,7 +609,6 @@ def get_class_detailed_table(year, semester, class_name):
         stats = record.get('statistics', {})
         grades = record.get('grades', {})
         
-        # Рівні
         high = (int(grades.get('grade12', 0)) + 
                 int(grades.get('grade11', 0)) + 
                 int(grades.get('grade10', 0)))
