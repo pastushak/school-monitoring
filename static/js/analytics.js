@@ -1,5 +1,6 @@
 // Глобальні змінні для графіків
 let charts = {};
+let classComparisonChart = null;
 let currentYear = null;
 let currentSemester = '1';
 let currentClass = null;
@@ -160,68 +161,148 @@ function hideLoading() {
 
 // 1. Порівняння класів по середньому балу
 async function loadClassComparison() {
-    const response = await fetch(`/api/analytics/class-comparison/${currentYear}/${currentSemester}`);
-    const data = await response.json();
-    
-    if (!data || data.length === 0) {
-        console.warn('No class comparison data');
-        return;
-    }
-    
-    const ctx = document.getElementById('classComparisonChart').getContext('2d');
-    
-    // Знищити попередній графік якщо існує
-    if (charts.classComparison) {
-        charts.classComparison.destroy();
-    }
-    
-    charts.classComparison = new Chart(ctx, {
-        type: 'bar',
-        data: {
-            labels: data.map(item => item.class),
-            datasets: [{
-                label: 'Середній бал',
-                data: data.map(item => item.avg_score),
-                backgroundColor: 'rgba(102, 126, 234, 0.8)',
-                borderColor: 'rgba(102, 126, 234, 1)',
-                borderWidth: 2,
-                borderRadius: 8
-            }]
-        },
-        options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            plugins: {
-                legend: {
-                    display: false
+    try {
+        const response = await fetch(`/api/analytics/class-comparison/${currentYear}/${currentSemester}`);
+        const data = await response.json();
+        
+        if (!data || data.length === 0) {
+            document.getElementById('classComparisonChart').style.display = 'none';
+            return;
+        }
+        
+        // ✅ Розрахувати середній бал по ліцею
+        const averageScore = data.reduce((sum, item) => sum + item.avg_score, 0) / data.length;
+        
+        const ctx = document.getElementById('classComparisonChart').getContext('2d');
+        
+        // ✅ Визначити колір для кожного класу
+        const backgroundColors = data.map(item => 
+            item.avg_score >= averageScore 
+                ? 'rgba(34, 197, 94, 0.8)'    // Зелений - вище середнього
+                : 'rgba(251, 146, 60, 0.8)'   // Помаранчевий - нижче середнього
+        );
+        
+        const borderColors = data.map(item => 
+            item.avg_score >= averageScore 
+                ? 'rgba(34, 197, 94, 1)'
+                : 'rgba(251, 146, 60, 1)'
+        );
+        
+        // Знищити попередній графік
+        if (classComparisonChart) {
+            classComparisonChart.destroy();
+        }
+        
+        classComparisonChart = new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: data.map(item => item.class),
+                datasets: [
+                    {
+                        label: 'Середній бал',
+                        data: data.map(item => item.avg_score),
+                        backgroundColor: backgroundColors,
+                        borderColor: borderColors,
+                        borderWidth: 2
+                    }
+                    // ❌ БЕЗ лінійного датасету - малюємо вручну
+                ]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: true,
+                plugins: {
+                    legend: {
+                        display: true,
+                        position: 'bottom',
+                        labels: {
+                            generateLabels: function(chart) {
+                                // ✅ Створити custom legend
+                                return [
+                                    {
+                                        text: `Середній по ліцею: ${averageScore.toFixed(2)}`,
+                                        fillStyle: 'rgb(220, 38, 38)',
+                                        strokeStyle: 'rgb(220, 38, 38)',
+                                        lineWidth: 1,
+                                        lineDash: [10, 5],
+                                        hidden: false
+                                    }
+                                ];
+                            },
+                            usePointStyle: true,
+                            font: {
+                                size: 12,
+                                weight: 'bold'
+                            }
+                        }
+                    },
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                const value = context.parsed.y.toFixed(2);
+                                const diff = (context.parsed.y - averageScore).toFixed(2);
+                                const sign = diff >= 0 ? '+' : '';
+                                return [
+                                    `Середній бал: ${value}`,
+                                    `Відхилення: ${sign}${diff}`
+                                ];
+                            }
+                        }
+                    }
                 },
-                tooltip: {
-                    callbacks: {
-                        label: function(context) {
-                            return `Середній бал: ${context.parsed.y.toFixed(2)}`;
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        max: 12,
+                        ticks: {
+                            stepSize: 1
+                        },
+                        title: {
+                            display: true,
+                            text: 'Середній бал'
+                        }
+                    },
+                    x: {
+                        offset: true,
+                        grid: {
+                            display: false
+                        },
+                        title: {
+                            display: true,
+                            text: 'Класи'
                         }
                     }
                 }
             },
-            scales: {
-                y: {
-                    beginAtZero: true,
-                    max: 12,
-                    grid: {
-                        color: 'rgba(0, 0, 0, 0.05)'
-                    }
-                },
-                x: {
-                    grid: {
-                        display: false
-                    }
+            plugins: [{
+                // ✅ ДОДАТИ: Малювати червону лінію вручну
+                id: 'averageScoreLine',
+                afterDatasetsDraw: function(chart) {
+                    const ctx = chart.ctx;
+                    const xAxis = chart.scales.x;
+                    const yAxis = chart.scales.y;
+                    
+                    // Розрахувати Y позицію для середнього балу
+                    const yPos = yAxis.getPixelForValue(averageScore);
+                    
+                    // Малювати червону пунктирну лінію
+                    ctx.save();
+                    ctx.strokeStyle = 'rgb(220, 38, 38)';
+                    ctx.lineWidth = 1;
+                    ctx.setLineDash([10, 5]);
+                    
+                    ctx.beginPath();
+                    ctx.moveTo(xAxis.left, yPos);   // ✅ Від самого лівого краю
+                    ctx.lineTo(xAxis.right, yPos);  // ✅ До самого правого краю
+                    ctx.stroke();
+                    
+                    ctx.restore();
                 }
-            }
-        }
-    });
-    
-    // Також використати ці дані для графіка КЯЗ та КР
-    loadQualityChart(data);
+            }]
+        });
+    } catch (error) {
+        console.error('Error loading class comparison:', error);
+    }
 }
 
 // 2. Розподіл по рівнях (кругова діаграма)
@@ -239,7 +320,6 @@ async function loadLevelDistribution() {
         charts.levelDistribution.destroy();
     }
     
-    // ✅ ОНОВЛЕНО: Тепер data містить відсотки, а не абсолютні числа
     charts.levelDistribution = new Chart(ctx, {
         type: 'doughnut',
         data: {
@@ -283,9 +363,40 @@ async function loadLevelDistribution() {
                     callbacks: {
                         label: function(context) {
                             const label = context.label || '';
-                            const value = context.parsed || 0;
-                            // ✅ ОНОВЛЕНО: Показуємо відсотки
-                            return `${label}: ${value.toFixed(1)}%`;
+                            const percent = context.parsed || 0;
+                            
+                            // ✅ ДОДАТИ: Абсолютна кількість
+                            const counts = {
+                                'Високий рівень': data.high_count || 0,
+                                'Достатній рівень': data.sufficient_count || 0,
+                                'Середній рівень': data.average_count || 0,
+                                'Початковий рівень': data.initial_count || 0
+                            };
+                            
+                            const count = counts[label];
+                            const countText = count === 1 ? 'результат' : (count < 5 ? 'результати' : 'результатів');
+                            
+                            const lines = [
+                                `${label}`,
+                                `${percent.toFixed(1)}% (${count} ${countText})`
+                            ];
+                            
+                            // ✅ ДОДАТИ: Для початкового рівня - показати деталі
+                            if (label === 'Початковий рівень' && data.initial_details && data.initial_details.length > 0) {
+                                lines.push('');
+                                lines.push('⚠️ Потребує уваги:');
+                                
+                                data.initial_details.slice(0, 12).forEach(item => {
+                                    const studentText = item.count === 1 ? 'учень' : (item.count < 5 ? 'учні' : 'учнів');
+                                    lines.push(`• ${item.class} ${item.subject} (${item.count} ${studentText})`);
+                                });
+                                
+                                if (data.initial_details.length > 12) {
+                                    lines.push(`... та ще ${data.initial_details.length - 5}`);
+                                }
+                            }
+                            
+                            return lines;
                         }
                     }
                 }
@@ -369,81 +480,109 @@ async function loadSubjectAnalysis() {
 }
 
 // 4. КЯЗ та КР по класах (лінійна діаграма)
-function loadQualityChart(classData) {
-    const ctx = document.getElementById('qualityChart').getContext('2d');
-    
-    if (charts.quality) {
-        charts.quality.destroy();
-    }
-    
-    charts.quality = new Chart(ctx, {
-        type: 'line',
-        data: {
-            labels: classData.map(item => item.class),
-            datasets: [
-                {
-                    label: 'КЯЗ (%)',
-                    data: classData.map(item => item.avg_quality),
-                    borderColor: 'rgba(255, 99, 132, 1)',
-                    backgroundColor: 'rgba(255, 99, 132, 0.2)',
-                    borderWidth: 3,
-                    tension: 0.4,
-                    fill: true
-                },
-                {
-                    label: 'КР (%)',
-                    data: classData.map(item => item.avg_result),
-                    borderColor: 'rgba(54, 162, 235, 1)',
-                    backgroundColor: 'rgba(54, 162, 235, 0.2)',
-                    borderWidth: 3,
-                    tension: 0.4,
-                    fill: true
-                }
-            ]
-        },
-        options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            plugins: {
-                legend: {
-                    position: 'top',
-                    labels: {
-                        padding: 15,
-                        font: {
-                            size: 13,
-                            weight: 'bold'
-                        }
+async function loadQualityChart() {
+    try {
+        // ✅ ДОДАТИ: Отримати дані самостійно
+        const response = await fetch(`/api/analytics/class-comparison/${currentYear}/${currentSemester}`);
+        const classData = await response.json();
+        
+        if (!classData || classData.length === 0) {
+            document.getElementById('qualityChart').style.display = 'none';
+            return;
+        }
+        
+        const ctx = document.getElementById('qualityChart').getContext('2d');
+        
+        if (charts.quality) {
+            charts.quality.destroy();
+        }
+        
+        charts.quality = new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: classData.map(item => item.class),
+                datasets: [
+                    {
+                        label: 'КЯЗ (%)',
+                        data: classData.map(item => item.avg_quality),
+                        borderColor: 'rgba(255, 99, 132, 1)',
+                        backgroundColor: 'rgba(255, 99, 132, 0.2)',
+                        borderWidth: 3,
+                        tension: 0.4,
+                        fill: true
+                    },
+                    {
+                        label: 'КР (%)',
+                        data: classData.map(item => item.avg_result),
+                        borderColor: 'rgba(54, 162, 235, 1)',
+                        backgroundColor: 'rgba(54, 162, 235, 0.2)',
+                        borderWidth: 3,
+                        tension: 0.4,
+                        fill: true
                     }
-                },
-                tooltip: {
-                    callbacks: {
-                        label: function(context) {
-                            return `${context.dataset.label}: ${context.parsed.y.toFixed(1)}%`;
-                        }
-                    }
-                }
+                ]
             },
-            scales: {
-                y: {
-                    beginAtZero: true,
-                    max: 100,
-                    ticks: {
-                        callback: function(value) {
-                            return value + '%';
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        position: 'top',
+                        labels: {
+                            padding: 15,
+                            font: {
+                                size: 13,
+                                weight: 'bold'
+                            }
                         }
                     },
-                    grid: {
-                        color: 'rgba(0, 0, 0, 0.05)'
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                return `${context.dataset.label}: ${context.parsed.y.toFixed(1)}%`;
+                            }
+                        }
                     }
                 },
-                x: {
-                    grid: {
-                        display: false
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        max: 100,
+                        ticks: {
+                            callback: function(value) {
+                                return value + '%';
+                            }
+                        },
+                        grid: {
+                            color: 'rgba(0, 0, 0, 0.05)'
+                        }
+                    },
+                    x: {
+                        grid: {
+                            display: false
+                        }
                     }
                 }
             }
-        }
-    });
+        });
+    } catch (error) {
+        console.error('Error loading quality chart:', error);
+    }
+}
+
+async function loadSchoolOverview() {
+    // Приховати графіки для конкретного класу
+    document.getElementById('classSpecificCharts').style.display = 'none';
+    
+    // Завантажити загальні графіки
+    await Promise.all([
+        loadClassComparison(),
+        loadLevelDistribution(),
+        loadSubjectAnalysis(),
+        loadQualityChart(),        // ✅ ДОДАТИ ЦЕЙ РЯДОК
+        loadSemesterComparison(),
+        loadTopBottom()
+    ]);
 }
 
 // 5. Порівняння семестрів

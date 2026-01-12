@@ -307,13 +307,21 @@ def get_level_distribution(year, semester, class_name=None):
         return {
             'high': 0, 'sufficient': 0, 'average': 0, 'initial': 0,
             'high_percent': 0, 'sufficient_percent': 0, 
-            'average_percent': 0, 'initial_percent': 0
+            'average_percent': 0, 'initial_percent': 0,
+            'high_count': 0, 'sufficient_count': 0,  # ✅ ДОДАТИ
+            'average_count': 0, 'initial_count': 0   # ✅ ДОДАТИ
         }
     
     total_high_pct = 0
     total_sufficient_pct = 0
     total_average_pct = 0
     total_initial_pct = 0
+
+    # ✅ ДОДАТИ: Лічильники абсолютних чисел
+    total_high_count = 0
+    total_sufficient_count = 0
+    total_average_count = 0
+    total_initial_count = 0
     
     for record in data:
         grades = record.get('grades', {})
@@ -342,6 +350,12 @@ def get_level_distribution(year, semester, class_name=None):
         total_sufficient_pct += (sufficient / student_count * 100)
         total_average_pct += (average / student_count * 100)
         total_initial_pct += (initial / student_count * 100)
+
+        # ✅ ДОДАТИ: Рахуємо абсолютні числа
+        total_high_count += high
+        total_sufficient_count += sufficient
+        total_average_count += average
+        total_initial_count += initial
     
     num_records = len(data)
     
@@ -353,7 +367,12 @@ def get_level_distribution(year, semester, class_name=None):
         'high_percent': round(total_high_pct / num_records, 1) if num_records > 0 else 0,
         'sufficient_percent': round(total_sufficient_pct / num_records, 1) if num_records > 0 else 0,
         'average_percent': round(total_average_pct / num_records, 1) if num_records > 0 else 0,
-        'initial_percent': round(total_initial_pct / num_records, 1) if num_records > 0 else 0
+        'initial_percent': round(total_initial_pct / num_records, 1) if num_records > 0 else 0,
+        # ✅ ДОДАТИ: Абсолютні числа
+        'high_count': total_high_count,
+        'sufficient_count': total_sufficient_count,
+        'average_count': total_average_count,
+        'initial_count': total_initial_count
     }
 
 
@@ -641,6 +660,34 @@ def get_class_detailed_table(year, semester, class_name):
         })
     
     return result
+
+def get_initial_level_details(year, semester):
+    """Отримати деталі про початковий рівень (1-3 бали)"""
+    data = get_analytics_data(year, semester)
+    
+    initial_cases = []
+    
+    for record in data:
+        grades = record.get('grades', {})
+        class_name = record['class']
+        subject = record['subject']
+        
+        # Підрахувати кількість початкового рівня (1-3)
+        initial_count = (int(grades.get('grade3', 0)) + 
+                        int(grades.get('grade2', 0)) + 
+                        int(grades.get('grade1', 0)))
+        
+        if initial_count > 0:
+            initial_cases.append({
+                'class': class_name,
+                'subject': subject,
+                'count': initial_count
+            })
+    
+    # Сортувати по кількості (найбільше спочатку)
+    initial_cases.sort(key=lambda x: x['count'], reverse=True)
+    
+    return initial_cases[:10]  # Топ-10 випадків
 
 if __name__ == "__main__":
     print("Підключення до MongoDB...")

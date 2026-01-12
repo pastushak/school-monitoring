@@ -866,11 +866,18 @@ def api_class_comparison(year, semester):
 
 @app.route('/api/analytics/level-distribution/<year>/<semester>')
 @role_required(['superadmin', 'admin'])
-def api_level_distribution(year, semester):
-    """API: Розподіл по рівнях"""
-    class_name = request.args.get('class', None)
-    data = db_mongo.get_level_distribution(year, int(semester), class_name)
-    return jsonify(data)
+def get_level_distribution(year, semester):
+    class_name = request.args.get('class')
+    
+    # Отримати дані розподілу
+    distribution = db_mongo.get_level_distribution(year, int(semester), class_name)
+    
+    # ✅ ДОДАТИ: Отримати детальну інформацію для початкового рівня
+    if not class_name:  # Тільки для режиму "всі класи"
+        initial_details = db_mongo.get_initial_level_details(year, int(semester))
+        distribution['initial_details'] = initial_details
+    
+    return jsonify(distribution)
 
 
 @app.route('/api/analytics/subject-analysis/<year>/<semester>')
