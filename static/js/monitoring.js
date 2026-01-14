@@ -20,7 +20,8 @@ document.addEventListener('DOMContentLoaded', function() {
     const messageDiv = document.getElementById('message');
     const peExemptedSection = document.getElementById('peExemptedSection');
     const peExemptedCount = document.getElementById('peExemptedCount');
-    let originalStudentCount = 0; // Зберігати оригінальну кількість
+    let originalStudentCount = 0;
+    let calculateTimeout
     
     // Масив для зберігання полів оцінок
     const gradeInputs = [];
@@ -289,10 +290,18 @@ async function reloadCurrentData() {
         }
     });
     
-    // Автоматичний розрахунок відсотків при введенні
+    // ✅ ОПТИМІЗОВАНО: Debouncing для розрахунків
+    let calculateTimeout;
+
     gradeInputs.forEach(input => {
         input.addEventListener('input', function() {
-            calculatePercentages();
+            // Скасувати попередній таймер
+            clearTimeout(calculateTimeout);
+            
+            // Почекати 300ms перед розрахунком
+            calculateTimeout = setTimeout(() => {
+                calculatePercentages();
+            }, 300);
         });
     });
     

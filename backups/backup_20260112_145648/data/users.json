@@ -1,0 +1,182 @@
+{
+  "tkachuk_volodymyr@kolgym.if.ua": {
+    "role": "admin",
+    "name": "Ткачук Володимир Михайлович",
+    "class": null
+  },
+  "kushytckyy_roman1@kolgym.if.ua": {
+    "role": "admin",
+    "name": "Кушицький Роман Зеновійович",
+    "class": null
+  },
+  "fedoryshyna_olena@kolgym.if.ua": {
+    "role": "admin",
+    "name": "Федоришина Олена Миколаївна",
+    "class": null
+  },
+  "sembratovych_lyubov@kolgym.if.ua": {
+    "role": "admin",
+    "name": "Сембратович Любов Василівна",
+    "class": null
+  },
+  "zademlenyuk_iryna@kolgym.if.ua": {
+    "role": "admin",
+    "name": "Задемленюк Ірина Тарасівна",
+    "class": null
+  },
+  "kudyba_liliya@kolgym.if.ua": {
+    "role": "class_head",
+    "name": "Кудиба Лілія Богданівна",
+    "class": "5-А"
+  },
+  "filonenko_iryna@kolgym.if.ua": {
+    "role": "class_head",
+    "name": "Філоненко Ірина Миколаївна",
+    "class": "6-А"
+  },
+  "boichuk_maryana@kolgym.if.ua": {
+    "role": "class_head",
+    "name": "Бойчук Мар'яна Юріївна",
+    "class": "6-Б"
+  }, 
+  "tytyk_svitlana@kolgym.if.ua": {
+    "role": "class_head",
+    "name": "Титик Світлана Григорівна",
+    "class": "7-А"
+  },
+  "vasylkova_iryna@kolgym.if.ua": {
+    "role": "class_head",
+    "name": "Василькова Ірина Василівна",
+    "class": "7-Б"
+  },
+  "pertsovych_dariya@kolgym.if.ua": {
+    "role": "class_head",
+    "name": "Перцович Дарія Несторівна",
+    "class": "8-А"
+  },
+  "pashnyk_tetyana@kolgym.if.ua": {
+    "role": "class_head",
+    "name": "Пашник Тетяна Миколаївна",
+    "class": "8-Б"
+  },
+  "ilkiv_nataliya@kolgym.if.ua": {
+    "role": "class_head",
+    "name": "Ільків Наталія Валентинівна",
+    "class": "9-А"
+  },
+  "andreychenko_lesya@kolgym.if.ua": {
+    "role": "class_head",
+    "name": "Андрейченко Леся Євгенівна",
+    "class": "9-Б"
+  },
+  "jaremczuk_iryna@kolgym.if.ua": {
+    "role": "class_head",
+    "name": "Яремчук Ірина Михайлівна",
+    "class": "10-А"
+  },
+  "vovk_mariya@kolgym.if.ua": {
+    "role": "class_head",
+    "name": "Вовк Марія Василівна",
+    "class": "10-Б"
+  },
+  "boledzyuk_iryna@kolgym.if.ua": {
+    "role": "class_head",
+    "name": "Боледзюк Ірина Степанівна",
+    "class": "11-А"
+  },
+  "petranyuk_ulyana@kolgym.if.ua": {
+    "role": "class_head",
+    "name": "Петранюк Уляна Василівна",
+    "class": "11-Б"
+  },
+  "boytsan_larysa@kolgym.if.ua": {
+    "role": "teacher",
+    "name": "Бойцан Лариса Василівна",
+    "class": null
+  },
+  "vankovych_khrystyna@kolgym.if.ua": {
+    "role": "teacher",
+    "name": "Ванькович Христина Степанівна",
+    "class": null
+  },
+  "grytsaniuk_galyna@kolgym.if.ua": {
+    "role": "teacher",
+    "name": "Грицанюк Галина Миколаївна",
+    "class": null
+  },
+  "dzvinchuk_taras@kolgym.if.ua": {
+    "role": "teacher",
+    "name": "Дзвінчук Тарас Юрійович",
+    "class": null
+  },
+  "zademleniuk_oleg@kolgym.if.ua": {
+    "role": "teacher",
+    "name": "Задемленюк Олег Вікторович",
+    "class": null
+  },
+  "koltsiuk_valeriy@kolgym.if.ua": {
+    "role": "teacher",
+    "name": "Кольцюк Валерій Дмитрович",
+    "class": null
+  },
+  "kryvyuk_liliya@kolgym.if.ua": {
+    "role": "teacher",
+    "name": "Кривюк Лілія Михайлівна",
+    "class": null
+  },
+  "kokh_alla@kolgym.if.ua": {
+    "role": "teacher",
+    "name": "Кох Алла Степанівна",
+    "class": null
+  },
+  "lazor_olha@kolgym.if.ua": {
+    "role": "teacher",
+    "name": "Лазор Ольга Ярославівна",
+    "class": null
+  },
+  "matiichuk_mariia@kolgym.if.ua": {
+    "role": "teacher",
+    "name": "Матійчук Марія Михайлівна",
+    "class": null
+  },
+  "matkovska_lyubov@kolgym.if.ua": {
+    "role": "teacher",
+    "name": "Матковська Любов Михайлівна",
+    "class": null
+  },
+  "nosurak_ivan@kolgym.if.ua": {
+    "role": "teacher",
+    "name": "Носурак Іван Васильович",
+    "class": null
+  },
+  "pastushak_roman@kolgym.if.ua": {
+    "role": "superadmin",
+    "name": "Пастушак Роман Васильович",
+    "class": null
+  },
+  "pashko_tetyana@kolgym.if.ua": {
+    "role": "teacher",
+    "name": "Пашко Тетяна Миколаївна",
+    "class": null
+  },
+  "fedorak_olena@kolgym.if.ua": {
+    "role": "teacher",
+    "name": "Федорак Олена Ігорівна",
+    "class": null
+  },
+  "tkachuk_oksana@kolgym.if.ua": {
+    "role": "teacher",
+    "name": "Ткачук Оксана Євгенівна",
+    "class": null
+  },
+  "nadraga_svyatoslav@kolgym.if.ua": {
+    "role": "teacher",
+    "name": "Надрага Святослав Іванович",
+    "class": null
+  },
+  "siletskyy_andrian@kolgym.if.ua": {
+    "role": "teacher",
+    "name": "Сілецький Андріан Володимирович",
+    "class": null
+  }
+}

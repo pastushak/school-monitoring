@@ -109,6 +109,16 @@ def save_monitoring_data(data):
     """Зберегти дані моніторингу з урахуванням семестру"""
     
     # ✅ ВИПРАВЛЕНО: Створити індекс для швидшого пошуку
+    try:
+        monitoring_collection.create_index([
+            ('year', 1),
+            ('class', 1),
+            ('teacher', 1),
+            ('subject', 1),
+            ('semester', 1)
+        ], unique=True, background=True, name='monitoring_unique_index')
+    except Exception as e:
+        pass
     
     # Додати timestamp оновлення
     data['updated_at'] = datetime.now()

@@ -266,31 +266,7 @@ def save_monitoring():
     print(f"{'='*80}\n")
     
     try:
-        # ✅ НОВЕ: Валідація даних через Pydantic
-        from models.monitoring import MonitoringDataModel
-        from pydantic import ValidationError
-        
-        try:
-            # Валідувати дані
-            validated = MonitoringDataModel(**data)
-            validated_data = validated.model_dump(by_alias=True)
-            
-            # Зберегти валідовані дані
-            success = db_mongo.save_monitoring_data(validated_data)
-            
-        except ValidationError as ve:
-            # Повернути помилки валідації
-            errors = []
-            for error in ve.errors():
-                field = ' -> '.join(str(x) for x in error['loc'])
-                errors.append(f"{field}: {error['msg']}")
-            
-            print(f"[VALIDATION ERROR] {errors}")
-            return jsonify({
-                'success': False, 
-                'message': 'Помилка валідації даних',
-                'errors': errors
-            }), 400
+        success = db_mongo.save_monitoring_data(data)
         
         if success:
             # ✅ ДОДАТИ: Затримка для синхронізації
@@ -300,7 +276,6 @@ def save_monitoring():
             return jsonify({'success': True, 'message': 'Дані збережено'})
         else:
             return jsonify({'success': False, 'message': 'Помилка збереження'})
-            
     except Exception as e:
         print(f"[SAVE ERROR] {str(e)}")
         import traceback
@@ -995,9 +970,4 @@ def api_class_detailed(year, semester, class_name):
     return jsonify(data)
 
 if __name__ == '__main__':
-    # Ініціалізувати індекси MongoDB один раз при старті
-    from services.mongodb_indexes import initialize_indexes
-    from db_mongo import monitoring_collection
-    initialize_indexes(monitoring_collection)
-    
     app.run(debug=True, host='0.0.0.0', port=5000)

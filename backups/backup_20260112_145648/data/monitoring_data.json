@@ -1,0 +1,31 @@
+{
+  "2025-2026_11-А_Пастушак Роман Васильович_Інформатика": {
+    "year": "2025-2026",
+    "class": "11-А",
+    "teacher": "Пастушак Роман Васильович",
+    "subject": "Інформатика",
+    "student_count": 26,
+    "grades": {
+      "grade1": 1,
+      "grade2": 1,
+      "grade3": 1,
+      "grade4": 1,
+      "grade5": 2,
+      "grade6": 2,
+      "grade7": 6,
+      "grade8": 1,
+      "grade9": 0,
+      "grade10": 0,
+      "grade11": 6,
+      "grade12": 4
+    },
+    "statistics": {
+      "avgScore": "7.84",
+      "learningLevel": "60.90%",
+      "qualityCoeff": "38.46%",
+      "qualityPercent": "65.38%",
+      "resultCoeff": "96.15%"
+    },
+    "date": "2025-12-12 13:58:19"
+  }
+}
