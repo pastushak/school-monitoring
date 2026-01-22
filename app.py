@@ -344,15 +344,11 @@ def get_class_report(year, class_name):
     for teacher, classes in school_data.get('teachers', {}).items():
         if class_name in classes:
             for subject in classes[class_name]:
-                all_subjects[f"{teacher}_{subject}"] = {
+                key = f"{teacher}_{subject}"
+                all_subjects[key] = {
                     'teacher': teacher,
                     'subject': subject
                 }
-    
-    # Зібрати дані
-    class_data = []
-    filled_count = 0
-    total_count = len(all_subjects)
     
     # Створити словник для швидкого пошуку
     monitoring_dict = {}
@@ -360,13 +356,51 @@ def get_class_report(year, class_name):
         key = f"{record['teacher']}_{record['subject']}"
         monitoring_dict[key] = record
     
+    # ✅ ДОДАНО: Групування по предметах
+    subject_groups = {}
+    
     for key, info in all_subjects.items():
+        subject = info['subject']
+        teacher = info['teacher']
+        
+        if subject not in subject_groups:
+            subject_groups[subject] = {
+                'teachers': [],
+                'records': []
+            }
+        
+        subject_groups[subject]['teachers'].append(teacher)
+        
         if key in monitoring_dict:
-            record = monitoring_dict[key]
+            subject_groups[subject]['records'].append(monitoring_dict[key])
+    
+    # ✅ ДОДАНО: Об'єднати дані по предметах
+    class_data = []
+    filled_count = 0
+    total_count = len(subject_groups)
+    
+    for subject, group_data in sorted(subject_groups.items()):
+        records = group_data['records']
+        teachers = group_data['teachers']
+        
+        if not records:
+            # Предмет не заповнений
+            class_data.append({
+                'subject': subject,
+                'teacher': ' / '.join(teachers),
+                'filled': False
+            })
+            continue
+        
+        filled_count += 1
+        
+        if len(records) == 1:
+            # Один вчитель - просто додаємо
+            record = records[0]
             grades = record['grades']
             student_count = record['student_count']
             
-            # ✅ ДОДАТИ: Розрахувати абсолютні числа
+            # Розрахунок абсолютних чисел
             g3 = int(grades.get('grade3', 0))
             g2 = int(grades.get('grade2', 0))
             g1 = int(grades.get('grade1', 0))
@@ -391,12 +425,11 @@ def get_class_report(year, class_name):
             not_assessed_count = max(0, student_count - total_graded)
             
             class_data.append({
-                'subject': info['subject'],
-                'teacher': info['teacher'],
+                'subject': subject,
+                'teacher': record['teacher'],
                 'statistics': record['statistics'],
                 'grades': record['grades'],
                 'student_count': record['student_count'],
-                # ✅ ДОДАТИ: Абсолютні числа
                 'not_assessed_count': not_assessed_count,
                 'initial_count': initial_count,
                 'average_count': average_count,
@@ -404,12 +437,68 @@ def get_class_report(year, class_name):
                 'high_count': high_count,
                 'filled': True
             })
-            filled_count += 1
         else:
+            # ✅ Кілька вчителів (підгрупи) - об'єднуємо
+            teacher_display = ' / '.join([r['teacher'] for r in records])
+            
+            # Сумуємо кількість учнів та оцінки
+            total_students = sum(r['student_count'] for r in records)
+            
+            # Об'єднуємо grades (сумуємо)
+            merged_grades = {}
+            for grade_key in ['grade1', 'grade2', 'grade3', 'grade4', 'grade5', 'grade6',
+                            'grade7', 'grade8', 'grade9', 'grade10', 'grade11', 'grade12', 'gradeNA']:
+                merged_grades[grade_key] = sum(int(r['grades'].get(grade_key, 0)) for r in records)
+            
+            # Усереднюємо статистику
+            avg_score = sum(float(r['statistics']['avgScore']) for r in records) / len(records)
+            avg_learning = sum(float(r['statistics']['learningLevel'].replace('%', '')) for r in records) / len(records)
+            avg_quality_coeff = sum(float(r['statistics']['qualityCoeff'].replace('%', '')) for r in records) / len(records)
+            avg_quality_percent = sum(float(r['statistics']['qualityPercent'].replace('%', '')) for r in records) / len(records)
+            avg_result = sum(float(r['statistics']['resultCoeff'].replace('%', '')) for r in records) / len(records)
+            
+            # Розрахунок абсолютних чисел
+            g3 = int(merged_grades.get('grade3', 0))
+            g2 = int(merged_grades.get('grade2', 0))
+            g1 = int(merged_grades.get('grade1', 0))
+            initial_count = g3 + g2 + g1
+            
+            g6 = int(merged_grades.get('grade6', 0))
+            g5 = int(merged_grades.get('grade5', 0))
+            g4 = int(merged_grades.get('grade4', 0))
+            average_count = g6 + g5 + g4
+            
+            g9 = int(merged_grades.get('grade9', 0))
+            g8 = int(merged_grades.get('grade8', 0))
+            g7 = int(merged_grades.get('grade7', 0))
+            sufficient_count = g9 + g8 + g7
+            
+            g12 = int(merged_grades.get('grade12', 0))
+            g11 = int(merged_grades.get('grade11', 0))
+            g10 = int(merged_grades.get('grade10', 0))
+            high_count = g12 + g11 + g10
+            
+            total_graded = initial_count + average_count + sufficient_count + high_count
+            not_assessed_count = max(0, total_students - total_graded)
+            
             class_data.append({
-                'subject': info['subject'],
-                'teacher': info['teacher'],
-                'filled': False
+                'subject': subject,
+                'teacher': teacher_display,
+                'statistics': {
+                    'avgScore': f'{avg_score:.2f}',
+                    'learningLevel': f'{avg_learning:.2f}%',
+                    'qualityCoeff': f'{avg_quality_coeff:.2f}%',
+                    'qualityPercent': f'{avg_quality_percent:.2f}%',
+                    'resultCoeff': f'{avg_result:.2f}%'
+                },
+                'grades': merged_grades,
+                'student_count': total_students,
+                'not_assessed_count': not_assessed_count,
+                'initial_count': initial_count,
+                'average_count': average_count,
+                'sufficient_count': sufficient_count,
+                'high_count': high_count,
+                'filled': True
             })
     
     progress = (filled_count / total_count * 100) if total_count > 0 else 0
@@ -590,6 +679,14 @@ def export_class_report(year, class_name, semester):
     school_data = db_mongo.get_school_data()
     monitoring_data = db_mongo.get_class_monitoring_data(year, class_name)
     
+    # ✅ ДОДАНО: Знайти класного керівника
+    class_head_name = None
+    all_users = list(db_mongo.users_collection.find({'role': {'$in': ['class_head', 'admin', 'superadmin']}}))
+    for user in all_users:
+        if user.get('class') == class_name:
+            class_head_name = user.get('name')
+            break
+    
     # Зібрати дані як у get_class_report
     all_subjects = {}
     for teacher, classes in school_data.get('teachers', {}).items():
@@ -623,7 +720,8 @@ def export_class_report(year, class_name, semester):
         class_data, 
         class_name, 
         year, 
-        'I' if semester == '1' else 'II'
+        'I' if semester == '1' else 'II',
+        class_head_name  # ✅ ДОДАНО: Передати ПІБ класного керівника
     )
     
     filename = f"Zvit_{class_name}_{year}_{semester}_semestr.xlsx"

@@ -152,32 +152,100 @@ def create_teacher_report_excel(data, year, class_name, teacher, subject, semest
     
     return output
 
-def create_class_report_excel(class_data, class_name, year, semester):
-    """Створити Excel звіт по класу"""
+def create_class_report_excel(class_data, class_name, year, semester, class_head_name=None):
+    """Створити Excel звіт по класу з об'єднанням підгруп"""
     
     wb = Workbook()
     ws = wb.active
     ws.title = f"{class_name}"
     
-    # Заголовок
-    ws.merge_cells('A1:N1')
+    # ✅ КРОК 1: СПОЧАТКУ створити merged_data
+    filled_data = [item for item in class_data if item.get('filled', False)]
+    
+    # Групувати дані по предметах
+    subject_groups = {}
+    for item in filled_data:
+        subject = item['subject']
+        if subject not in subject_groups:
+            subject_groups[subject] = []
+        subject_groups[subject].append(item)
+    
+    # Об'єднати дані для кожного предмету
+    merged_data = []
+    for subject, items in sorted(subject_groups.items()):
+        if len(items) == 1:
+            merged_data.append(items[0])
+        else:
+            # Кілька вчителів (підгрупи) - об'єднуємо
+            teachers = [item['teacher'] for item in items]
+            teacher_display = ' / '.join(teachers)
+            
+            total_students = sum(item['student_count'] for item in items)
+            
+            merged_grades = {}
+            for grade_key in ['grade1', 'grade2', 'grade3', 'grade4', 'grade5', 'grade6',
+                            'grade7', 'grade8', 'grade9', 'grade10', 'grade11', 'grade12', 'gradeNA']:
+                merged_grades[grade_key] = sum(int(item['grades'].get(grade_key, 0)) for item in items)
+            
+            avg_score = sum(float(item['statistics']['avgScore']) for item in items) / len(items)
+            avg_learning = sum(float(item['statistics']['learningLevel'].replace('%', '')) for item in items) / len(items)
+            avg_quality_coeff = sum(float(item['statistics']['qualityCoeff'].replace('%', '')) for item in items) / len(items)
+            avg_quality_percent = sum(float(item['statistics']['qualityPercent'].replace('%', '')) for item in items) / len(items)
+            avg_result = sum(float(item['statistics']['resultCoeff'].replace('%', '')) for item in items) / len(items)
+            
+            merged_item = {
+                'subject': subject,
+                'teacher': teacher_display,
+                'student_count': total_students,
+                'grades': merged_grades,
+                'statistics': {
+                    'avgScore': f'{avg_score:.2f}',
+                    'learningLevel': f'{avg_learning:.2f}%',
+                    'qualityCoeff': f'{avg_quality_coeff:.2f}%',
+                    'qualityPercent': f'{avg_quality_percent:.2f}%',
+                    'resultCoeff': f'{avg_result:.2f}%'
+                },
+                'filled': True
+            }
+            merged_data.append(merged_item)
+    
+    # ✅ ВИПРАВЛЕНО: Шапка звіту - всі рядки на всю ширину по центру
+
+    # Рядок 1: Назва ліцею (по центру)
+    ws.merge_cells('A1:O1')
     title_cell = ws['A1']
     title_cell.value = f'Коломийський ліцей "Коломийська гімназія імені Михайла Грушевського"'
-    title_cell.font = Font(size=14, bold=True)
+    title_cell.font = Font(size=12, bold=True)
     title_cell.alignment = Alignment(horizontal='center', vertical='center')
-    
-    ws.merge_cells('A2:N2')
+
+    # Рядок 2: Попредметний звіт (по центру)
+    ws.merge_cells('A2:O2')
     subtitle_cell = ws['A2']
-    subtitle_cell.value = f'Попредметний звіт за {semester} семестр {year} н.р. ({class_name})'
-    subtitle_cell.font = Font(size=12, bold=True)
-    subtitle_cell.alignment = Alignment(horizontal='center')
-    
-    # ✅ ОНОВЛЕНО: Заголовки з абсолютними числами
-    headers = ['№', 'Предмет', 'Звільн.', 'н/а', 'початковий', 'середній', 'достатній', 
-               'високий', 'СБ', 'СН(%)', 'СН', 'КЯЗ', 'ЯЗ', 'КР']
+    subtitle_cell.value = f'Попредметний звіт {class_name} класу'
+    subtitle_cell.font = Font(size=11, bold=True)
+    subtitle_cell.alignment = Alignment(horizontal='center', vertical='center')
+
+    # Рядок 3: Інформація про клас (по центру)
+    if merged_data:
+        student_count = max(item.get('student_count', 0) for item in merged_data)
+        
+        ws.merge_cells('A3:O3')
+        info_cell = ws['A3']
+        info_cell.value = f'Кількість учнів у класі: {student_count}  |  Навчальний рік: {year}  |  Семестр: {semester}'
+        info_cell.font = Font(size=11, bold=True, color='0066CC')
+        info_cell.alignment = Alignment(horizontal='center', vertical='center')
+
+    # Рядок 4: Порожній
+    ws.row_dimensions[4].height = 5
+
+    # Рядок 5: Заголовки таблиці
+    headers = ['№', 'Предмет', 'Вчитель', 'Звільн.', 'н/а', 'початковий', 'середній', 'достатній', 
+            'високий', 'СБ', 'СН(%)', 'СН', 'КЯЗ', 'ЯЗ', 'КР']
+
+    header_row = 5
     
     for col, header in enumerate(headers, start=1):
-        cell = ws.cell(row=4, column=col, value=header)
+        cell = ws.cell(row=header_row, column=col, value=header)
         cell.font = Font(bold=True, color='FFFFFF')
         cell.fill = PatternFill(start_color='4472C4', end_color='4472C4', fill_type='solid')
         cell.alignment = Alignment(horizontal='center', vertical='center')
@@ -189,10 +257,18 @@ def create_class_report_excel(class_data, class_name, year, semester):
         )
     
     # Дані
-    row = 5
-    filled_data = [item for item in class_data if item.get('filled', False)]
+    row = header_row + 1
     
-    for idx, item in enumerate(filled_data, start=1):
+    # Змінні для обчислення зведеної статистики
+    total_stats = {
+        'not_assessed': [], 'initial': [], 'average': [], 'sufficient': [], 'high': [],
+        'not_assessed_count': 0, 'initial_count': 0, 'average_count': 0, 
+        'sufficient_count': 0, 'high_count': 0,
+        'avg_scores': [], 'quality_coeffs': [], 'result_coeffs': []
+    }
+    
+    # ✅ ЗМІНЕНО: Використовуємо merged_data
+    for idx, item in enumerate(merged_data, start=1):
         stats = item['statistics']
         grades = item['grades']
         student_count = item['student_count']
@@ -226,6 +302,21 @@ def create_class_report_excel(class_data, class_name, year, semester):
         not_assessed = max(0, student_count - total_graded)
         not_assessed_pct = (not_assessed / student_count * 100) if student_count > 0 else 0
         
+        # Накопичення для зведеної статистики
+        total_stats['not_assessed'].append(not_assessed_pct)
+        total_stats['initial'].append(initial_pct)
+        total_stats['average'].append(average_pct)
+        total_stats['sufficient'].append(sufficient_pct)
+        total_stats['high'].append(high_pct)
+        total_stats['not_assessed_count'] += not_assessed
+        total_stats['initial_count'] += initial
+        total_stats['average_count'] += average
+        total_stats['sufficient_count'] += sufficient
+        total_stats['high_count'] += high
+        total_stats['avg_scores'].append(float(stats['avgScore']))
+        total_stats['quality_coeffs'].append(float(stats['qualityCoeff'].replace('%', '')))
+        total_stats['result_coeffs'].append(float(stats['resultCoeff'].replace('%', '')))
+        
         # СН текст
         learning_level_num = float(stats['learningLevel'].replace('%', ''))
         if learning_level_num >= 64:
@@ -240,10 +331,11 @@ def create_class_report_excel(class_data, class_name, year, semester):
         if item.get('subject') == 'Фізична культура' and item.get('pe_exempted_count', 0) > 0:
             exempted_display = str(item['pe_exempted_count'])
         
-        # ✅ ОНОВЛЕНО: Формат "60% (18)"
+        # ✅ ДОДАНО: Стовпець "Вчитель"
         row_data = [
             idx,
             item['subject'],
+            item.get('teacher', '-'),  # ✅ НОВИЙ СТОВПЕЦЬ
             exempted_display,
             f"{not_assessed_pct:.2f}% ({not_assessed})",
             f"{initial_pct:.2f}% ({initial})",
@@ -260,28 +352,183 @@ def create_class_report_excel(class_data, class_name, year, semester):
         
         for col, value in enumerate(row_data, start=1):
             cell = ws.cell(row=row, column=col, value=value)
-            cell.alignment = Alignment(horizontal='center' if col > 2 else 'center', vertical='center')
+            # Вирівнювання
+            if col == 2 or col == 3:  # Предмет та Вчитель - ліворуч
+                cell.alignment = Alignment(horizontal='left', vertical='center')
+            else:
+                cell.alignment = Alignment(horizontal='center', vertical='center')
             cell.border = Border(
                 left=Side(style='thin'),
                 right=Side(style='thin'),
                 top=Side(style='thin'),
                 bottom=Side(style='thin')
             )
+            
+            # ✅ ДОДАНО: Перенесення тексту для стовпця "Вчитель"
+            if col == 3:  # Стовпець "Вчитель"
+                cell.alignment = Alignment(horizontal='left', vertical='center', wrap_text=True)
+        
+        # ✅ ДОДАНО: Встановити висоту рядка
+        ws.row_dimensions[row].height = 30
         
         row += 1
+
+        # ✅ ДОДАНО: Зведена статистика класу
+    if total_stats['avg_scores']:
+        row += 2
+        ws.merge_cells(f'A{row}:O{row}')  # ✅ ЗМІНЕНО: N → O
+        stats_header = ws.cell(row=row, column=1, value='ЗВЕДЕНІ ПОКАЗНИКИ КЛАСУ')
+        stats_header.font = Font(size=12, bold=True, color='FFFFFF')
+        stats_header.fill = PatternFill(start_color='305496', end_color='305496', fill_type='solid')
+        stats_header.alignment = Alignment(horizontal='center')
+        
+        row += 1
+        
+        # Обчислити середні значення
+        avg_score = sum(total_stats['avg_scores']) / len(total_stats['avg_scores'])
+        avg_quality = sum(total_stats['quality_coeffs']) / len(total_stats['quality_coeffs'])
+        avg_result = sum(total_stats['result_coeffs']) / len(total_stats['result_coeffs'])
+        
+        # Обчислити середній рівень навченості
+        avg_sn = (avg_quality + avg_result) / 2
+        
+        summary_data = [
+            ('Середній бал по класу:', f'{avg_score:.2f}'),
+            ('Коефіцієнт якості знань (КЯЗ):', f'{avg_quality:.2f}%'),
+            ('Коефіцієнт результативності (КР):', f'{avg_result:.2f}%'),
+            ('Рівень навченості (СН):', f'{avg_sn:.2f}%'),
+        ]
+        
+        for label, value in summary_data:
+            ws.merge_cells(f'A{row}:G{row}')
+            ws.cell(row=row, column=1, value=label).font = Font(bold=True, size=11)
+            ws.cell(row=row, column=1).alignment = Alignment(horizontal='left')
+            
+            ws.merge_cells(f'H{row}:O{row}')  # ✅ ЗМІНЕНО: N → O
+            ws.cell(row=row, column=8, value=value).font = Font(size=11, color='0000FF', bold=True)
+            ws.cell(row=row, column=8).alignment = Alignment(horizontal='center')
+            
+            row += 1
+        
+        row += 1
+        ws.merge_cells(f'A{row}:O{row}')  # ✅ ЗМІНЕНО
+        distribution_header = ws.cell(row=row, column=1, value='Розподіл за рівнями:')
+        distribution_header.font = Font(size=11, bold=True)
+        distribution_header.alignment = Alignment(horizontal='left')
+        
+        row += 1
+        
+        # Розподіл
+        num_subjects = len(total_stats['avg_scores'])
+        distribution_data = [
+            ('Високий рівень:', f'{total_stats["high_count"]} результатів ({sum(total_stats["high"])/num_subjects:.2f}%)'),
+            ('Достатній рівень:', f'{total_stats["sufficient_count"]} результатів ({sum(total_stats["sufficient"])/num_subjects:.2f}%)'),
+            ('Середній рівень:', f'{total_stats["average_count"]} результатів ({sum(total_stats["average"])/num_subjects:.2f}%)'),
+            ('Початковий рівень:', f'{total_stats["initial_count"]} результатів ({sum(total_stats["initial"])/num_subjects:.2f}%)'),
+            ('Не оцінено:', f'{total_stats["not_assessed_count"]} результатів ({sum(total_stats["not_assessed"])/num_subjects:.2f}%)'),
+        ]
+        
+        for label, value in distribution_data:
+            ws.merge_cells(f'A{row}:G{row}')
+            ws.cell(row=row, column=1, value=label).font = Font(size=10)
+            ws.cell(row=row, column=1).alignment = Alignment(horizontal='left', indent=2)
+            
+            ws.merge_cells(f'H{row}:O{row}')  # ✅ ЗМІНЕНО
+            ws.cell(row=row, column=8, value=value).font = Font(size=10)
+            ws.cell(row=row, column=8).alignment = Alignment(horizontal='center')
+            
+            row += 1
+        
+        # ✅ ДОДАНО: Топ-3 та проблемні предмети
+        row += 1
+        
+        # Сортуємо предмети по середньому балу
+        subject_scores = [(item['subject'], float(item['statistics']['avgScore'])) 
+                         for item in merged_data]
+        subject_scores_sorted = sorted(subject_scores, key=lambda x: x[1], reverse=True)
+        
+        # Топ-3
+        ws.merge_cells(f'A{row}:O{row}')  # ✅ ЗМІНЕНО
+        top_header = ws.cell(row=row, column=1, value='Найвищі показники (за середнім балом):')
+        top_header.font = Font(size=11, bold=True, color='006600')
+        top_header.alignment = Alignment(horizontal='left')
+        row += 1
+        
+        for i, (subject, score) in enumerate(subject_scores_sorted[:3], start=1):
+            ws.merge_cells(f'A{row}:O{row}')  # ✅ ЗМІНЕНО
+            ws.cell(row=row, column=1, value=f'{i}. {subject} — СБ: {score:.2f}').font = Font(size=10)
+            ws.cell(row=row, column=1).alignment = Alignment(horizontal='left', indent=2)
+            row += 1
+        
+        # Проблемні (якщо є предмети з СБ < 7)
+        problem_subjects = [(subj, score) for subj, score in subject_scores_sorted if score < 7]
+        
+        if problem_subjects:
+            row += 1
+            ws.merge_cells(f'A{row}:O{row}')  # ✅ ЗМІНЕНО
+            problem_header = ws.cell(row=row, column=1, value='Потребують уваги (СБ < 7):')
+            problem_header.font = Font(size=11, bold=True, color='CC0000')
+            problem_header.alignment = Alignment(horizontal='left')
+            row += 1
+            
+            for i, (subject, score) in enumerate(problem_subjects[:3], start=1):
+                ws.merge_cells(f'A{row}:O{row}')  # ✅ ЗМІНЕНО
+                ws.cell(row=row, column=1, value=f'{i}. {subject} — СБ: {score:.2f}').font = Font(size=10, color='CC0000')
+                ws.cell(row=row, column=1).alignment = Alignment(horizontal='left', indent=2)
+                row += 1
     
-    # Підпис директора
+    # ✅ ОНОВЛЕНО: Дата та підписи
     row += 2
-    ws.merge_cells(f'A{row}:N{row}')
-    ws.cell(row=row, column=1, value='Директор                          /підпис/              Володимир ТКАЧУК')
-    ws.cell(row=row, column=1).alignment = Alignment(horizontal='left')
-    row += 1
-    ws.merge_cells(f'A{row}:N{row}')
-    ws.cell(row=row, column=1, value='                  МП')
-    ws.cell(row=row, column=1).alignment = Alignment(horizontal='left')
+    ws.merge_cells(f'A{row}:G{row}')
+    date_cell = ws.cell(row=row, column=1, value=f'Дата складання звіту: "___" __________ 202__ р.')
+    date_cell.font = Font(size=10)
+    date_cell.alignment = Alignment(horizontal='left')
     
-    column_widths = {'A': 5, 'B': 30, 'C': 8, 'D': 14, 'E': 14, 'F': 14, 'G': 14, 'H': 14,
-                     'I': 8, 'J': 10, 'K': 30, 'L': 8, 'M': 8, 'N': 8}
+    # Класний керівник
+    row += 2
+    ws.merge_cells(f'H{row}:J{row}')
+    ws.cell(row=row, column=8, value='Класний керівник')
+    ws.cell(row=row, column=8).alignment = Alignment(horizontal='left')
+    ws.cell(row=row, column=8).font = Font(size=11)
+    
+    ws.merge_cells(f'K{row}:O{row}')  # ✅ ЗМІНЕНО: N → O
+    if class_head_name:
+        class_head_formatted = format_name(class_head_name)
+        ws.cell(row=row, column=11, value=class_head_formatted)
+    else:
+        ws.cell(row=row, column=11, value='___________________________')
+    ws.cell(row=row, column=11).alignment = Alignment(horizontal='left')
+    ws.cell(row=row, column=11).font = Font(size=11)
+    
+    # /підпис/
+    row += 1
+    ws.merge_cells(f'I{row}:J{row}')
+    ws.cell(row=row, column=9, value='/підпис/')
+    ws.cell(row=row, column=9).alignment = Alignment(horizontal='center')
+    ws.cell(row=row, column=9).font = Font(size=10, italic=True)
+    
+    # Директор
+    row += 2
+    ws.merge_cells(f'H{row}:J{row}')
+    ws.cell(row=row, column=8, value='Директор')
+    ws.cell(row=row, column=8).alignment = Alignment(horizontal='left')
+    ws.cell(row=row, column=8).font = Font(size=11)
+    
+    ws.merge_cells(f'K{row}:O{row}')  # ✅ ЗМІНЕНО: N → O
+    ws.cell(row=row, column=11, value='Володимир ТКАЧУК')
+    ws.cell(row=row, column=11).alignment = Alignment(horizontal='left')
+    ws.cell(row=row, column=11).font = Font(size=11)
+    
+    # /підпис/
+    row += 1
+    ws.merge_cells(f'I{row}:J{row}')
+    ws.cell(row=row, column=9, value='/підпис/')
+    ws.cell(row=row, column=9).alignment = Alignment(horizontal='center')
+    ws.cell(row=row, column=9).font = Font(size=10, italic=True)
+    
+    # ✅ ОНОВЛЕНО: Ширина колонок (додано стовпець O для вчителя)
+    column_widths = {'A': 5, 'B': 30, 'C': 25, 'D': 8, 'E': 14, 'F': 14, 'G': 14, 'H': 14, 'I': 14,
+                     'J': 8, 'K': 10, 'L': 30, 'M': 8, 'N': 8, 'O': 8}
     for col, width in column_widths.items():
         ws.column_dimensions[col].width = width
     

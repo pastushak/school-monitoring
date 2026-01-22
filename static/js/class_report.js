@@ -79,7 +79,6 @@ document.addEventListener('DOMContentLoaded', function() {
             average: 0,
             sufficient: 0,
             high: 0,
-            // ✅ ДОДАТИ: Абсолютні числа
             notAssessedCount: 0,
             initialCount: 0,
             averageCount: 0,
@@ -138,10 +137,11 @@ document.addEventListener('DOMContentLoaded', function() {
                 else if (learningLevelNum >= 36) learningLevelText = 'достатній ступінь навченості';
                 else if (learningLevelNum > 0) learningLevelText = 'середній ступінь навченості';
                 
-                // ✅ ОНОВЛЕНО: Додати кількість в дужках
+                // ✅ ДОДАНО: Стовпець "Вчитель"
                 row.innerHTML = `
                     <td>${rowNum}</td>
                     <td style="text-align: left;">${item.subject}</td>
+                    <td style="text-align: left; font-size: 0.85rem;">${item.teacher || '-'}</td>
                     <td>${notAssessedPercent}% (${item.not_assessed_count || notAssessed})</td>
                     <td>${initialPercent}% (${item.initial_count || initialLevel})</td>
                     <td>${averagePercent}% (${item.average_count || averageLevel})</td>
@@ -155,7 +155,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     <td>${stats.resultCoeff}</td>
                 `;
                 
-                // ✅ ОНОВЛЕНО: Накопичення для середнього по класу
+                // Накопичення для середнього по класу
                 totalData.notAssessed += parseFloat(notAssessedPercent);
                 totalData.initial += parseFloat(initialPercent);
                 totalData.average += parseFloat(averagePercent);
@@ -177,9 +177,11 @@ document.addEventListener('DOMContentLoaded', function() {
                 
                 rowNum++;
             } else {
+                // ✅ ОНОВЛЕНО: +1 стовпець для вчителя
                 row.innerHTML = `
                     <td>${rowNum}</td>
                     <td style="text-align: left;">${item.subject}</td>
+                    <td style="text-align: left;">${item.teacher || '-'}</td>
                     <td colspan="11" class="status-empty">Дані не внесені</td>
                 `;
                 rowNum++;
@@ -188,7 +190,7 @@ document.addEventListener('DOMContentLoaded', function() {
             reportBody.appendChild(row);
         });
         
-        // ✅ ОНОВЛЕНО: Додати рядок "ПОКАЗНИК ПО КЛАСУ" з абсолютними числами
+        // ✅ ОНОВЛЕНО: Додати рядок "ПОКАЗНИК ПО КЛАСУ"
         if (totalData.count > 0) {
             const avgRow = document.createElement('tr');
             avgRow.className = 'total-row';
@@ -210,8 +212,9 @@ document.addEventListener('DOMContentLoaded', function() {
             else if (avgLearningLevel >= 36) avgLearningText = 'достатній ступінь навченості';
             else if (avgLearningLevel > 0) avgLearningText = 'середній ступінь навченості';
             
+            // ✅ ОНОВЛЕНО: colspan="3" для об'єднання № + Предмет + Вчитель
             avgRow.innerHTML = `
-                <td colspan="2" style="text-align: left;"><strong>ПОКАЗНИК ПО КЛАСУ</strong></td>
+                <td colspan="3" style="text-align: left;"><strong>ПОКАЗНИК ПО КЛАСУ</strong></td>
                 <td>${avgNotAssessed}% (${totalData.notAssessedCount})</td>
                 <td>${avgInitial}% (${totalData.initialCount})</td>
                 <td>${avgAverage}% (${totalData.averageCount})</td>
@@ -252,7 +255,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 return;
             }
             
-            // Завантажити Excel - кодуємо назву класу
+            // Завантажити Excel
             window.location.href = `/export_class_report/${encodeURIComponent(year)}/${encodeURIComponent(className)}/${semester}`;
         });
     }
