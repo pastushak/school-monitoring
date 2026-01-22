@@ -5,6 +5,20 @@ let currentYear = null;
 let currentSemester = '1';
 let currentClass = null;
 
+// ✅ ОПТИМІЗАЦІЯ: Intersection Observer для lazy loading графіків
+const chartObserver = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+        if (entry.isIntersecting && !entry.target.dataset.loaded) {
+            const chartId = entry.target.id;
+            loadChartById(chartId);
+            entry.target.dataset.loaded = 'true';
+        }
+    });
+}, {
+    threshold: 0.1,
+    rootMargin: '50px'
+});
+
 // Ініціалізація при завантаженні сторінки
 document.addEventListener('DOMContentLoaded', function() {
     initializeFilters();
@@ -109,6 +123,39 @@ async function loadSchoolOverview() {
         loadSemesterComparison(),
         loadTopBottom()
     ]);
+}
+
+// ✅ ОПТИМІЗАЦІЯ: Спостерігати за графіками для lazy loading
+function observeCharts(chartIds) {
+    chartIds.forEach(chartId => {
+        const element = document.getElementById(chartId);
+        if (element) {
+            element.dataset.loaded = 'false';
+            chartObserver.observe(element);
+        }
+    });
+}
+
+// ✅ ОПТИМІЗАЦІЯ: Завантажити графік по ID
+async function loadChartById(chartId) {
+    console.log('🔄 Lazy loading chart:', chartId);
+    
+    const loadingMap = {
+        'levelDistributionChart': loadLevelDistribution,
+        'subjectAnalysisChart': loadSubjectAnalysis,
+        'qualityChart': loadQualityChart,
+        'semesterComparisonChart': loadSemesterComparison
+    };
+    
+    const loadFunc = loadingMap[chartId];
+    if (loadFunc) {
+        try {
+            await loadFunc();
+            console.log('✅ Loaded chart:', chartId);
+        } catch (error) {
+            console.error('❌ Error loading chart:', chartId, error);
+        }
+    }
 }
 
 // Завантажити детальну аналітику для конкретного класу
@@ -570,18 +617,23 @@ async function loadQualityChart() {
     }
 }
 
+// Завантажити огляд по школі (всі класи)
 async function loadSchoolOverview() {
     // Приховати графіки для конкретного класу
     document.getElementById('classSpecificCharts').style.display = 'none';
     
-    // Завантажити загальні графіки
+    // ✅ ОПТИМІЗОВАНО: Завантажувати тільки перші 2 графіки одразу
     await Promise.all([
         loadClassComparison(),
-        loadLevelDistribution(),
-        loadSubjectAnalysis(),
-        loadQualityChart(),        // ✅ ДОДАТИ ЦЕЙ РЯДОК
-        loadSemesterComparison(),
         loadTopBottom()
+    ]);
+    
+    // ✅ Інші графіки завантажаться автоматично при прокручуванні
+    observeCharts([
+        'levelDistributionChart',
+        'subjectAnalysisChart',
+        'qualityChart',
+        'semesterComparisonChart'
     ]);
 }
 

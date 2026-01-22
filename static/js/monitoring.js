@@ -290,9 +290,6 @@ async function reloadCurrentData() {
         }
     });
     
-    // ✅ ОПТИМІЗОВАНО: Debouncing для розрахунків
-    let calculateTimeout;
-
     gradeInputs.forEach(input => {
         input.addEventListener('input', function() {
             // Скасувати попередній таймер
