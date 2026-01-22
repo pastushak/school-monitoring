@@ -105,6 +105,10 @@ def get_user_by_email(email):
     """Отримати користувача за email"""
     return users_collection.find_one({"email": email})
 
+def get_teacher_by_email(email):
+    """Отримати дані вчителя за email"""
+    return users_collection.find_one({"email": email})
+
 def save_monitoring_data(data):
     """Зберегти дані моніторингу з урахуванням семестру"""
     

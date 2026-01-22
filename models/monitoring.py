@@ -38,7 +38,7 @@ class MonitoringDataModel(BaseModel):
     year: str = Field(pattern=r'^\d{4}-\d{4}$')
     class_name: str = Field(alias='class', pattern=r'^\d{1,2}-[А-ЯІЄЇҐ]$')
     teacher: str = Field(min_length=5, max_length=100)
-    subject: str = Field(min_length=3, max_length=100)
+    subject: str = Field(min_length=3, max_length=150)  # ✅ Збільшено ліміт
     student_count: int = Field(ge=1, le=50)
     semester: int = Field(ge=1, le=2)
     grades: GradesModel
@@ -58,6 +58,10 @@ class MonitoringDataModel(BaseModel):
 
     @field_validator('subject')
     def validate_subject(cls, v):
-        if not re.match(r'^[А-ЯІЄЇҐа-яієїґ\s\'\-]+$', v):
-            raise ValueError('Subject format error')
+        # ✅ ВИПРАВЛЕНО: Дозволити лапки, коми, дужки та інші символи
+        # Просто перевірити базові вимоги без жорсткого regex
+        if not v or len(v.strip()) < 2:
+            raise ValueError('Subject name too short')
+        if len(v) > 150:
+            raise ValueError('Subject name too long')
         return v
