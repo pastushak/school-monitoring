@@ -257,7 +257,13 @@ def save_monitoring():
         return jsonify({'success': False, 'message': 'Не авторизовано'})
     
     data = request.json
-    data['teacher'] = session.get('email')
+    # ✅ ВИПРАВЛЕНО: Конвертувати email у ПІБ
+    teacher_email = session.get('email')
+    teacher_data = db_mongo.get_teacher_by_email(teacher_email)
+    if teacher_data:
+        data['teacher'] = teacher_data.get('name')
+    else:
+        data['teacher'] = teacher_email  # fallback якщо не знайдено
     
     # ✅ ДОДАТИ: Детальне логування
     print(f"\n{'='*80}")

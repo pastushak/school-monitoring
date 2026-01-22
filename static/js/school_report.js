@@ -72,7 +72,6 @@ document.addEventListener('DOMContentLoaded', function() {
             average: 0,
             sufficient: 0,
             high: 0,
-            // ✅ ДОДАТИ: Абсолютні числа
             notAssessedCount: 0,
             initialCount: 0,
             averageCount: 0,
@@ -101,9 +100,17 @@ document.addEventListener('DOMContentLoaded', function() {
                     snText = 'середній ступінь навченості';
                 }
                 
-                // ✅ ОНОВЛЕНО: Додати кількість в дужках
                 row.innerHTML = `
-                    <td><strong>${className}</strong></td>
+                    <td style="display: flex; align-items: center; justify-content: space-between; gap: 10px;">
+                        <strong>${className}</strong>
+                        <button onclick="downloadClassReport('${className}')" 
+                                style="background: linear-gradient(135deg, #16a34a, #15803d); color: white; border: none; padding: 0.4rem 0.6rem; border-radius: 8px; cursor: pointer; font-size: 1rem; transition: all 0.3s; box-shadow: 0 2px 8px rgba(22, 163, 74, 0.3);"
+                                onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 4px 12px rgba(22, 163, 74, 0.5)'"
+                                onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 2px 8px rgba(22, 163, 74, 0.3)'"
+                                title="Завантажити звіт по класу ${className}">
+                            ⬇️
+                        </button>
+                    </td>
                     <td>${classInfo.statistics.not_assessed}% (${classInfo.statistics.not_assessed_count || 0})</td>
                     <td>${classInfo.statistics.initial}% (${classInfo.statistics.initial_count || 0})</td>
                     <td>${classInfo.statistics.average}% (${classInfo.statistics.average_count || 0})</td>
@@ -123,7 +130,6 @@ document.addEventListener('DOMContentLoaded', function() {
                     </td>
                 `;
                 
-                // ✅ ОНОВЛЕНО: Накопичувати дані включно з абсолютними числами
                 totalData.notAssessed += classInfo.statistics.not_assessed;
                 totalData.initial += classInfo.statistics.initial;
                 totalData.average += classInfo.statistics.average;
@@ -145,7 +151,15 @@ document.addEventListener('DOMContentLoaded', function() {
                 
             } else {
                 row.innerHTML = `
-                    <td><strong>${className}</strong></td>
+                    <td style="display: flex; align-items: center; justify-content: space-between; gap: 10px;">
+                        <strong>${className}</strong>
+                        <button onclick="downloadClassReport('${className}')" 
+                                style="background: linear-gradient(135deg, #94a3b8, #64748b); color: white; border: none; padding: 0.4rem 0.6rem; border-radius: 8px; cursor: pointer; font-size: 1rem; opacity: 0.5;"
+                                disabled
+                                title="Немає даних для завантаження">
+                            ⬇️
+                        </button>
+                    </td>
                     <td colspan="11" class="status-empty" style="text-align: center; font-style: italic; color: #64748b;">Дані не внесені</td>
                     <td>
                         <div class="mini-progress">
@@ -159,7 +173,7 @@ document.addEventListener('DOMContentLoaded', function() {
             reportBody.appendChild(row);
         });
         
-        // ✅ ОНОВЛЕНО: Додати рядок "середні дані по ліцею" з абсолютними числами
+        // Додати рядок "середні дані по ліцею"
         if (totalData.count > 0) {
             const avgNotAssessed = (totalData.notAssessed / totalData.count).toFixed(2);
             const avgInitial = (totalData.initial / totalData.count).toFixed(2);
@@ -233,3 +247,20 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
 });
+
+// Функція для завантаження звіту по класу
+function downloadClassReport(className) {
+    const year = document.getElementById('yearFilter').value;
+    const semester = document.getElementById('semesterFilter').value;
+    
+    if (!year || !semester) {
+        alert('Помилка: не вибрано рік або семестр');
+        return;
+    }
+    
+    // Створити URL для завантаження
+    const url = `/export_class_report/${encodeURIComponent(year)}/${encodeURIComponent(className)}/${semester}`;
+    
+    // Завантажити файл
+    window.location.href = url;
+}
