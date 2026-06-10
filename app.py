@@ -824,21 +824,25 @@ def superadmin_dashboard():
 def superadmin_classes():
     if 'email' not in session or session['role'] != 'superadmin':
         return redirect(url_for('index'))
-    
+
+    # ✅ ДОДАНО: вибір семестру (за замовчуванням II)
+    selected_semester = request.args.get('semester', 2, type=int)
+    if selected_semester not in (1, 2):
+        selected_semester = 2
+
     school_data = db_mongo.get_school_data()
     classes_stats = {}
-    
-    # Підрахунок для кожного класу
+
     for class_name in school_data['classes'].keys():
-        # Підрахувати всі можливі предмети
+        # Всі можливі предмети (зі структури — без семестру, це нормально)
         total_subjects = 0
         for teacher, classes in school_data['teachers'].items():
             if class_name in classes:
                 total_subjects += len(classes[class_name])
-        
-        # Підрахувати УНІКАЛЬНІ комбінації (вчитель + предмет)
+
+        # ✅ ЗМІНЕНО: рахуємо унікальні комбінації ТІЛЬКИ за вибраний семестр
         pipeline = [
-            {"$match": {"class": class_name}},
+            {"$match": {"class": class_name, "semester": selected_semester}},
             {"$group": {
                 "_id": {
                     "teacher": "$teacher",
@@ -847,21 +851,22 @@ def superadmin_classes():
             }},
             {"$count": "unique_count"}
         ]
-        
+
         result = list(db_mongo.monitoring_collection.aggregate(pipeline))
         filled_subjects = result[0]['unique_count'] if result else 0
-        
+
         progress = (filled_subjects / total_subjects * 100) if total_subjects > 0 else 0
-        
+
         classes_stats[class_name] = {
             'total': total_subjects,
             'filled': filled_subjects,
             'progress': round(progress, 1),
             'student_count': school_data['classes'][class_name]
         }
-    
+
     return render_template('superadmin_classes.html',
                          classes_stats=classes_stats,
+                         selected_semester=selected_semester,  # ✅ ДОДАНО
                          user_name=session['name'])
 
 # Перегляд по вчителях для суперадміна
@@ -869,21 +874,23 @@ def superadmin_classes():
 def superadmin_teachers():
     if 'email' not in session or session['role'] != 'superadmin':
         return redirect(url_for('index'))
-    
+
+    # ✅ ДОДАНО: вибір семестру
+    selected_semester = request.args.get('semester', 2, type=int)
+    if selected_semester not in (1, 2):
+        selected_semester = 2
+
     school_data = db_mongo.get_school_data()
     teachers_stats = {}
-    
-    # Підрахунок для кожного вчителя
+
     for teacher_name in school_data['teachers'].keys():
-        # Підрахувати всі можливі предмети вчителя
         total_subjects = 0
         for class_name, subjects in school_data['teachers'][teacher_name].items():
             total_subjects += len(subjects)
-        
-        # Підрахувати УНІКАЛЬНІ комбінації (клас + предмет)
-        # Використовуємо distinct для підрахунку унікальних записів
+
+        # ✅ ЗМІНЕНО: фільтр за семестром
         pipeline = [
-            {"$match": {"teacher": teacher_name}},
+            {"$match": {"teacher": teacher_name, "semester": selected_semester}},
             {"$group": {
                 "_id": {
                     "class": "$class",
@@ -892,21 +899,22 @@ def superadmin_teachers():
             }},
             {"$count": "unique_count"}
         ]
-        
+
         result = list(db_mongo.monitoring_collection.aggregate(pipeline))
         filled_subjects = result[0]['unique_count'] if result else 0
-        
+
         progress = (filled_subjects / total_subjects * 100) if total_subjects > 0 else 0
-        
+
         teachers_stats[teacher_name] = {
             'total': total_subjects,
             'filled': filled_subjects,
             'progress': round(progress, 1),
             'classes': list(school_data['teachers'][teacher_name].keys())
         }
-    
+
     return render_template('superadmin_teachers.html',
                          teachers_stats=teachers_stats,
+                         selected_semester=selected_semester,  # ✅ ДОДАНО
                          user_name=session['name'])
 
 # Детальна статистика по вчителю
@@ -914,17 +922,23 @@ def superadmin_teachers():
 def superadmin_teacher_detail(teacher_name):
     if 'email' not in session or session['role'] != 'superadmin':
         return redirect(url_for('index'))
-    
+
+    # ✅ ДОДАНО: вибір семестру
+    selected_semester = request.args.get('semester', 2, type=int)
+    if selected_semester not in (1, 2):
+        selected_semester = 2
+
     school_data = db_mongo.get_school_data()
-    
-    # Перевірити чи існує вчитель
+
     if teacher_name not in school_data['teachers']:
         return redirect(url_for('superadmin_teachers'))
-    
-    # Отримати всі записи вчителя (тільки останні версії для кожної комбінації клас+предмет)
-    teacher_records_raw = list(db_mongo.monitoring_collection.find({'teacher': teacher_name}).sort('updated_at', -1))
 
-    # Створити словник для зберігання тільки останніх записів
+    # ✅ ЗМІНЕНО: тільки записи вибраного семестру
+    teacher_records_raw = list(db_mongo.monitoring_collection.find({
+        'teacher': teacher_name,
+        'semester': selected_semester
+    }).sort('updated_at', -1))
+
     unique_records = {}
     for record in teacher_records_raw:
         key = (record['class'], record['subject'])
@@ -932,29 +946,25 @@ def superadmin_teacher_detail(teacher_name):
             unique_records[key] = record
 
     teacher_records = list(unique_records.values())
-    
-    # Підготувати дані по класах та предметах
+
     teacher_data = {}
     for class_name, subjects in school_data['teachers'][teacher_name].items():
         teacher_data[class_name] = {}
         for subject in subjects:
-            # Знайти запис для цього предмету
             record = next((r for r in teacher_records if r['class'] == class_name and r['subject'] == subject), None)
-            
             teacher_data[class_name][subject] = {
                 'filled': bool(record),
                 'statistics': record.get('statistics', {}) if record else {},
                 'student_count': record.get('student_count', 0) if record else 0,
-                'semester': record.get('semester', 1) if record else 1,
+                'semester': record.get('semester', selected_semester) if record else selected_semester,
                 'updated_at': record.get('updated_at') if record else None
             }
-    
-    # Загальна статистика (рахуємо тільки унікальні комбінації)
+
     total_subjects = sum(len(subjects) for subjects in school_data['teachers'][teacher_name].values())
 
-    # Підрахунок заповнених предметів через aggregation pipeline
+    # ✅ ЗМІНЕНО: фільтр за семестром
     pipeline = [
-        {"$match": {"teacher": teacher_name}},
+        {"$match": {"teacher": teacher_name, "semester": selected_semester}},
         {"$group": {
             "_id": {
                 "class": "$class",
@@ -966,13 +976,14 @@ def superadmin_teacher_detail(teacher_name):
     result = list(db_mongo.monitoring_collection.aggregate(pipeline))
     filled_subjects = result[0]['unique_count'] if result else 0
     progress = (filled_subjects / total_subjects * 100) if total_subjects > 0 else 0
-    
+
     return render_template('superadmin_teacher_detail.html',
                          teacher_name=teacher_name,
                          teacher_data=teacher_data,
                          total_subjects=total_subjects,
                          filled_subjects=filled_subjects,
                          progress=round(progress, 1),
+                         selected_semester=selected_semester,  # ✅ ДОДАНО
                          user_name=session['name'])
 
 @app.route('/analytics')

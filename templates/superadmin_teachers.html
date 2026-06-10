@@ -269,6 +269,14 @@
         <main class="superadmin-content">
             <div class="teachers-card">
                 <h2>👥 Всі вчителі ліцею</h2>
+                <div style="text-align: center; margin-bottom: 1.5rem;">
+                    <a href="?semester=1"
+                    class="btn btn-sm {{ 'btn-primary' if selected_semester == 1 else 'btn-secondary' }}"
+                    style="margin: 0 0.25rem;">I семестр</a>
+                    <a href="?semester=2"
+                    class="btn btn-sm {{ 'btn-primary' if selected_semester == 2 else 'btn-secondary' }}"
+                    style="margin: 0 0.25rem;">II семестр</a>
+                </div>
                 
                 <div class="search-box">
                     <input type="text" id="teacherSearch" placeholder="🔍 Пошук вчителя за прізвищем...">
@@ -312,7 +320,7 @@
                         </div>
                         
                         <div class="teacher-actions">
-                            <a href="{{ url_for('superadmin_teacher_detail', teacher_name=teacher_name) }}" class="btn-view">
+                            <a href="{{ url_for('superadmin_teacher_detail', teacher_name=teacher_name, semester=selected_semester) }}" class="btn-view">
                                 📊 Детальна статистика
                             </a>
                         </div>

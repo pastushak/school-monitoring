@@ -255,6 +255,14 @@
         <main class="superadmin-content">
             <div class="classes-card">
                 <h2>📊 Всі класи ліцею</h2>
+                <div style="text-align: center; margin-bottom: 1.5rem;">
+                    <a href="?semester=1"
+                    class="btn btn-sm {{ 'btn-primary' if selected_semester == 1 else 'btn-secondary' }}"
+                    style="margin: 0 0.25rem;">I семестр</a>
+                    <a href="?semester=2"
+                    class="btn btn-sm {{ 'btn-primary' if selected_semester == 2 else 'btn-secondary' }}"
+                    style="margin: 0 0.25rem;">II семестр</a>
+                </div>
                 
                 <div class="classes-grid">
                     {% for class_name, stats in classes_stats.items() | sort %}
