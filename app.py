@@ -334,10 +334,11 @@ def get_monitoring(year, class_name, teacher, subject, semester):
     return response
 
 # Звіт по класу - дані
-@app.route('/get_class_report/<year>/<class_name>')
-def get_class_report(year, class_name):
+@app.route('/get_class_report/<year>/<class_name>/<semester>')
+def get_class_report(year, class_name, semester):
+    semester = int(semester)
     school_data = db_mongo.get_school_data()
-    monitoring_data = db_mongo.get_class_monitoring_data(year, class_name)
+    monitoring_data = db_mongo.get_class_monitoring_data(year, class_name, int(semester))
     
     # Знайти всі можливі предмети для класу
     all_subjects = {}
@@ -677,7 +678,7 @@ def export_class_report(year, class_name, semester):
         return redirect(url_for('index'))
     
     school_data = db_mongo.get_school_data()
-    monitoring_data = db_mongo.get_class_monitoring_data(year, class_name)
+    monitoring_data = db_mongo.get_class_monitoring_data(year, class_name, int(semester))
     
     # ✅ ДОДАНО: Знайти класного керівника
     class_head_name = None
