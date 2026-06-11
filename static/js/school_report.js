@@ -17,7 +17,7 @@ document.addEventListener('DOMContentLoaded', function() {
         }
         
         try {
-            const response = await fetch(`/get_school_report/${year}`);
+            const response = await fetch(`/get_school_report/${year}/${semester}`);
             const result = await response.json();
             
             if (!result.classes || Object.keys(result.classes).length === 0) {

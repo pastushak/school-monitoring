@@ -512,10 +512,11 @@ def get_class_report(year, class_name, semester):
     })
 
 # Звіт по школі - дані
-@app.route('/get_school_report/<year>')
-def get_school_report(year):
+@app.route('/get_school_report/<year>/<semester>')
+def get_school_report(year, semester):
+    semester = int(semester)
     school_data = db_mongo.get_school_data()
-    all_monitoring = db_mongo.get_all_monitoring_data(year)
+    all_monitoring = db_mongo.get_all_monitoring_data(year, semester)
     
     # Створити словник для швидкого пошуку
     monitoring_dict = {}
@@ -741,7 +742,7 @@ def export_school_report(year, semester):
         return redirect(url_for('index'))
     
     school_data = db_mongo.get_school_data()
-    all_monitoring = db_mongo.get_all_monitoring_data(year)
+    all_monitoring = db_mongo.get_all_monitoring_data(year, int(semester))
     
     # Створити Excel файл з усіма даними моніторингу
     excel_file = export_excel.create_school_report_excel(
